@@ -119,10 +119,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 /* ══════════════════════════════════════
    FRONTEND STATIC SERVING
-   Serves the EcoSphere frontend directly from the project root.
+   Serves the EcoSphere frontend from the frontend/ directory.
    Route order: health → api/v1 → swagger → static files → SPA fallback → error
 ══════════════════════════════════════ */
-/* Serve all static files (HTML, CSS, JS, images) from project root.
+/* Serve all static files (HTML, CSS, JS, images) from frontend/ directory.
    In development: disable browser caching so JS/CSS changes are picked up
    immediately without needing a hard refresh. */
 const staticOptions = {
@@ -140,12 +140,12 @@ const staticOptions = {
       }
     : undefined
 };
-app.use(express.static(path.join(__dirname, '../../'), staticOptions));
+app.use(express.static(path.join(__dirname, '../../frontend'), staticOptions));
 
 /* SPA fallback: for any non-API route that didn't match a static file, serve index.html */
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/') || req.path === '/health') return next();
-  res.sendFile(path.join(__dirname, '../../index.html'));
+  res.sendFile(path.join(__dirname, '../../frontend/index.html'));
 });
 
 /* 404 handler (API routes only) */
