@@ -1,0 +1,522 @@
+/* ═══════════════════════════════════════════════════════════════
+   EcoSphere — 3D Effects & Per-Section Animations v2
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────
+   GLOBAL CARD 3D TILT (applied via JS)
+   ────────────────────────────────────────────────────────────── */
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform .18s ease, box-shadow .18s ease;
+  will-change: transform;
+}
+.tilt-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,.18) !important; }
+
+/* ──────────────────────────────────────────────────────────────
+   LANDING PAGE — HERO 3D ENHANCEMENTS
+   ────────────────────────────────────────────────────────────── */
+
+/* Floating eco badge pills that orbit the hero area */
+.hero-eco-badge {
+  position: absolute;
+  background: rgba(22,163,74,.12);
+  border: 1px solid rgba(52,211,153,.3);
+  border-radius: 30px;
+  padding: 7px 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .78rem; font-weight: 800;
+  color: #4ade80;
+  backdrop-filter: blur(8px);
+  z-index: 3;
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.hero-eco-badge i { color: #fbbf24; }
+
+/* Badge float animations */
+.heb-1 { top: 18%; left: 8%;  animation: badgeFloat 5.5s ease-in-out infinite; }
+.heb-2 { top: 40%; left: 5%;  animation: badgeFloat 7s   1s ease-in-out infinite; }
+.heb-3 { top: 70%; left: 9%;  animation: badgeFloat 6s   2s ease-in-out infinite; }
+.heb-4 { top: 22%; right: 7%; animation: badgeFloat 6.5s .5s ease-in-out infinite; }
+.heb-5 { top: 55%; right: 6%; animation: badgeFloat 5s   1.5s ease-in-out infinite; }
+.heb-6 { top: 78%; right: 10%;animation: badgeFloat 7.5s .8s ease-in-out infinite; }
+
+@keyframes badgeFloat {
+  0%,100% { transform: translateY(0) rotate(-1deg); opacity: .7; }
+  50%      { transform: translateY(-14px) rotate(1deg); opacity: 1; }
+}
+
+/* 3D stat counters on landing */
+.hs strong {
+  display: inline-block;
+  animation: statPop .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes statPop {
+  from { transform: scale(0) translateY(10px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);    opacity: 1; }
+}
+.hs:nth-child(1) strong { animation-delay: .3s; }
+.hs:nth-child(3) strong { animation-delay: .5s; }
+.hs:nth-child(5) strong { animation-delay: .7s; }
+
+/* Feature cards 3D depth */
+.feat-card {
+  transform-style: preserve-3d;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.feat-card:hover {
+  transform: translateY(-8px) rotateX(3deg);
+  box-shadow: 0 24px 60px rgba(22,163,74,.18), 0 8px 24px rgba(0,0,0,.12);
+}
+.feat-card .fc-icon {
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.feat-card:hover .fc-icon {
+  transform: scale(1.15) rotate(-8deg);
+}
+
+/* Industry cards 3D */
+.ind-card {
+  transition: transform .25s ease, box-shadow .25s ease;
+  transform-style: preserve-3d;
+}
+.ind-card:hover {
+  transform: translateY(-7px) rotateY(4deg);
+  box-shadow: 0 20px 50px rgba(29,78,216,.15), 0 6px 20px rgba(0,0,0,.1);
+}
+.ind-card .ind-icon {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.ind-card:hover .ind-icon {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* Monitoring parameter domain cards */
+.pd-card {
+  transition: transform .3s ease, box-shadow .3s ease;
+  transform-style: preserve-3d;
+}
+.pd-card:hover {
+  transform: translateY(-8px) rotateX(4deg);
+  box-shadow: 0 20px 50px rgba(22,163,74,.15);
+}
+.pd-card .pd-icon {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.pd-card:hover .pd-icon {
+  transform: scale(1.25) rotate(-5deg);
+}
+
+/* About visual card 3D flip on hover */
+.about-visual-card {
+  transform-style: preserve-3d;
+  transition: transform .5s ease;
+}
+.about-visual-card:hover {
+  transform: rotateY(8deg) rotateX(4deg);
+}
+.avc-stat {
+  transition: transform .3s ease;
+}
+.about-visual-card:hover .avc-stat {
+  transform: translateZ(12px);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   INDUSTRY SELECTION PAGE
+   ────────────────────────────────────────────────────────────── */
+.isg-card {
+  transform-style: preserve-3d;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s ease;
+  cursor: pointer;
+}
+.isg-card:hover {
+  transform: translateY(-8px) scale(1.04) rotateY(-3deg);
+  box-shadow: 0 20px 50px rgba(22,163,74,.2), 0 4px 16px rgba(0,0,0,.1);
+}
+.isg-card.selected {
+  transform: translateY(-10px) scale(1.06);
+  box-shadow: 0 24px 60px rgba(22,163,74,.35) !important;
+  border-color: var(--green-400) !important;
+}
+.isg-card .isg-ico {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.isg-card:hover .isg-ico,
+.isg-card.selected .isg-ico {
+  transform: scale(1.2) rotate(-8deg);
+}
+
+/* Floating eco decorations on industry page */
+.ind-sel-wrap::before {
+  content: '🌍';
+  position: fixed; bottom: 12%; right: 8%;
+  font-size: 5rem; opacity: .06;
+  animation: bigIconFloat 8s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.ind-sel-wrap::after {
+  content: '🌿';
+  position: fixed; top: 18%; left: 6%;
+  font-size: 4rem; opacity: .06;
+  animation: bigIconFloat 6s 2s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+@keyframes bigIconFloat {
+  0%,100% { transform: translateY(0) rotate(-5deg); }
+  50%      { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LOGIN PAGE — 3D CARD
+   ────────────────────────────────────────────────────────────── */
+.login-card {
+  transform-style: preserve-3d;
+  animation: loginCardIn .7s .2s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes loginCardIn {
+  from { transform: scale(.9) translateY(30px) rotateX(8deg); opacity: 0; }
+  to   { transform: scale(1) translateY(0) rotateX(0); opacity: 1; }
+}
+
+.lc-role {
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease;
+}
+.lc-role:hover {
+  transform: translateX(4px) scale(1.02);
+  box-shadow: 3px 0 12px rgba(245,166,35,.15);
+}
+.lc-role.active {
+  transform: translateX(6px) scale(1.03);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MAIN APP — SECTION DECORATIONS
+   ────────────────────────────────────────────────────────────── */
+
+/* Section header entrance */
+.app-sec-head {
+  animation: secHeadIn .6s ease both;
+}
+@keyframes secHeadIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Section module accent bar */
+.app-sec::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%;
+  border-radius: 0 3px 3px 0;
+  opacity: .6;
+}
+#policy::before       { background: linear-gradient(to bottom, #d97706, #f59e0b); }
+#dashboard::before    { background: linear-gradient(to bottom, #1d4ed8, #60a5fa); }
+#monitoring::before   { background: linear-gradient(to bottom, #15803d, #4ade80); }
+#esg::before          { background: linear-gradient(to bottom, #7c3aed, #a78bfa); }
+#carbon::before       { background: linear-gradient(to bottom, #1d4ed8, #38bdf8); }
+#sustainability::before{ background: linear-gradient(to bottom, #0d9488, #2dd4bf); }
+#reports::before      { background: linear-gradient(to bottom, #d97706, #fbbf24); }
+#ai-assistant::before { background: linear-gradient(to bottom, #be185d, #f472b6); }
+
+/* KPI cards 3D */
+.kpi-card {
+  transform-style: preserve-3d;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-8px) rotateX(4deg) rotateY(-2deg);
+  box-shadow: 0 20px 50px rgba(0,0,0,.15), 0 4px 16px rgba(22,163,74,.1) !important;
+}
+.kpi-card .kpi-ico {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.kpi-card:hover .kpi-ico {
+  transform: scale(1.2) rotate(-6deg);
+}
+.kpi-card .kpi-info strong {
+  display: block;
+  transition: transform .2s ease, color .2s ease;
+}
+.kpi-card:hover .kpi-info strong {
+  transform: scale(1.06);
+  color: var(--green-700, #15803d);
+}
+
+/* Param cards 3D */
+.param-card {
+  transform-style: preserve-3d;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s ease;
+}
+.param-card:hover {
+  transform: translateY(-6px) rotateX(3deg);
+  box-shadow: 0 16px 40px rgba(0,0,0,.12), 0 4px 12px rgba(22,163,74,.08) !important;
+}
+.pc-ico {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.param-card:hover .pc-ico {
+  transform: scale(1.18) rotate(-8deg);
+}
+
+/* Policy cards 3D */
+.policy-card {
+  transform-style: preserve-3d;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.policy-card:hover {
+  transform: translateY(-6px) rotateX(3deg);
+  box-shadow: 0 20px 50px rgba(0,0,0,.1), 0 4px 16px rgba(22,163,74,.1) !important;
+}
+.pol-ico {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.policy-card:hover .pol-ico {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* Report cards 3D */
+.report-card {
+  transform-style: preserve-3d;
+  transition: transform .28s ease, box-shadow .28s ease;
+}
+.report-card:hover {
+  transform: translateY(-7px) rotateX(2deg) rotateY(2deg);
+  box-shadow: 0 20px 50px rgba(0,0,0,.14), 4px 0 16px rgba(217,119,6,.1) !important;
+}
+.report-card .report-icon {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.report-card:hover .report-icon {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+/* Month tracker cells */
+.mc {
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
+}
+.mc:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,.1);
+}
+.mc.approved:hover { box-shadow: 0 8px 20px rgba(22,163,74,.2); }
+.mc.pending:hover  { box-shadow: 0 8px 20px rgba(217,119,6,.2); }
+
+/* AI insights cards */
+.ins-item {
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.ins-item:hover {
+  transform: translateX(6px);
+  box-shadow: -3px 0 0 var(--green-400), 0 4px 16px rgba(0,0,0,.06);
+}
+
+/* Score ring 3D float */
+.score-ring-wrap, .esg-ring-wrap {
+  animation: ringFloat 5s ease-in-out infinite;
+}
+@keyframes ringFloat {
+  0%,100% { transform: translateY(0) rotateY(0); }
+  50%      { transform: translateY(-6px) rotateY(5deg); }
+}
+
+/* Sidebar link hover 3D */
+.sb-link {
+  transition: transform .2s ease, background .2s ease, border-left-color .2s ease;
+}
+.sb-link:hover {
+  transform: translateX(5px);
+}
+.sb-link.active {
+  transform: translateX(7px);
+}
+
+/* Wcard hover */
+.wcard, .wform-panel, .white-form-panel {
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.wcard:hover {
+  box-shadow: 0 12px 36px rgba(0,0,0,.1) !important;
+  transform: translateY(-3px);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SECTION CORNER ECO DECORATIONS (injected via JS)
+   ────────────────────────────────────────────────────────────── */
+.sec-eco-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  font-size: 5rem;
+  opacity: .04;
+  animation: secDeco 8s ease-in-out infinite;
+  line-height: 1;
+  user-select: none;
+}
+.sec-eco-deco.tr { top: 12px; right: 16px; }
+.sec-eco-deco.bl { bottom: 16px; left: 20px; }
+.sec-eco-deco.br { bottom: 12px; right: 24px; }
+.sec-eco-deco.tl { top: 16px; left: 24px; }
+@keyframes secDeco {
+  0%,100% { transform: rotate(-5deg) scale(1);   opacity: .04; }
+  50%      { transform: rotate(5deg)  scale(1.05); opacity: .065; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   FLOATING MINI STAT BADGES (dashboard top area)
+   ────────────────────────────────────────────────────────────── */
+.dash-float-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 30px; padding: 6px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .78rem; font-weight: 800;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  animation: dashBadge 4s ease-in-out infinite;
+  white-space: nowrap;
+}
+.dash-float-badge .dfb-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  animation: pulseGreen 1.5s ease infinite;
+}
+@keyframes dashBadge {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes pulseGreen {
+  0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,.4); }
+  50%      { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   3D PERSPECTIVE CONTAINER for card grids
+   ────────────────────────────────────────────────────────────── */
+.perspective-grid {
+  perspective: 1200px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GAUGE BAR SHIMMER
+   ────────────────────────────────────────────────────────────── */
+.g-fill::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.3) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: gaugeShimmer 2.5s ease infinite;
+}
+.g-fill { position: relative; overflow: hidden; }
+@keyframes gaugeShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   ANIMATED MODULE BADGES
+   ────────────────────────────────────────────────────────────── */
+.mod-badge {
+  animation: badgeSlideIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes badgeSlideIn {
+  from { transform: translateX(-20px) scale(.8); opacity: 0; }
+  to   { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SCROLL REVEAL ANIMATION (enhanced)
+   ────────────────────────────────────────────────────────────── */
+.reveal-3d {
+  opacity: 0;
+  transform: perspective(600px) translateY(30px) rotateX(8deg);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.4,0,.2,1);
+}
+.reveal-3d.visible {
+  opacity: 1;
+  transform: perspective(600px) translateY(0) rotateX(0);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   PULSING LIVE INDICATOR
+   ────────────────────────────────────────────────────────────── */
+.live-chip {
+  animation: liveChipPulse 2.5s ease infinite;
+}
+@keyframes liveChipPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,.3); }
+  50%      { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+}
+.alert-chip {
+  animation: alertChipPulse 1.5s ease infinite;
+}
+@keyframes alertChipPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(220,38,38,0); }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   DATA ENTRY BOX — entrance animation
+   ────────────────────────────────────────────────────────────── */
+@keyframes ipfbSlideIn {
+  from { opacity: 0; transform: perspective(800px) translateY(20px) rotateX(6deg); }
+  to   { opacity: 1; transform: perspective(800px) translateY(0) rotateX(0); }
+}
+@keyframes ipfbSlideOut {
+  from { opacity: 1; transform: perspective(800px) translateY(0) rotateX(0); }
+  to   { opacity: 0; transform: perspective(800px) translateY(12px) rotateX(4deg); }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   AI CHAT BUBBLE BOUNCE
+   ────────────────────────────────────────────────────────────── */
+.cm.bot .cm-bubble {
+  animation: bubblePop .4s cubic-bezier(.34,1.56,.64,1) both;
+  transform-origin: bottom left;
+}
+.cm.user .cm-bubble {
+  animation: bubblePopR .4s cubic-bezier(.34,1.56,.64,1) both;
+  transform-origin: bottom right;
+}
+@keyframes bubblePop  { from { transform: scale(.7) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes bubblePopR { from { transform: scale(.7) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+/* ──────────────────────────────────────────────────────────────
+   FLOATING ECO PARTICLES — CSS only (lightweight)
+   ────────────────────────────────────────────────────────────── */
+.css-particle {
+  position: absolute;
+  pointer-events: none;
+  animation: cssParticleDrift linear infinite;
+  z-index: 0;
+  font-size: 1rem;
+  opacity: .08;
+}
+@keyframes cssParticleDrift {
+  0%   { transform: translateY(0) rotate(0deg);    opacity: 0; }
+  10%  { opacity: .1; }
+  90%  { opacity: .08; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LOADER — tree grow + logo pop (enhanced)
+   ────────────────────────────────────────────────────────────── */
+.splash-logo-pill {
+  animation: logoPillIn 1s 3.2s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes logoPillIn {
+  from { transform: scale(0) rotate(-15deg); opacity: 0; filter: blur(8px); }
+  60%  { transform: scale(1.1) rotate(3deg); opacity: 1; filter: blur(0); }
+  to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RESPONSIVE TILT — disable on mobile
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .feat-card:hover, .kpi-card:hover, .param-card:hover,
+  .isg-card:hover, .policy-card:hover, .report-card:hover {
+    transform: translateY(-4px) !important;
+  }
+}

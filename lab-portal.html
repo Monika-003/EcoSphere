@@ -1,0 +1,1997 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoSphere — Laboratory Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --lab:#0d9488;--lab2:#0f766e;--lab3:#042f2e;
+  --bg:#f0fdf4;--white:#ffffff;
+  --gray1:#f8fafc;--gray2:#f1f5f9;--gray3:#e2e8f0;--gray4:#94a3b8;--gray5:#64748b;--gray6:#374151;--gray9:#0f172a;
+  --shadow:0 2px 12px rgba(13,148,136,.10);
+  --shadow2:0 8px 32px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:#0f172a;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--lab);border-radius:3px}
+
+/* ══ LOGIN ══ */
+.login-wrap{
+  min-height:100vh;display:flex;
+  background:linear-gradient(135deg,#042f2e 0%,#065f46 50%,#0f172a 100%);
+  position:relative;overflow:hidden;
+}
+.login-left{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:60px 52px;position:relative;z-index:2;
+}
+.login-left-deco{position:absolute;font-size:14rem;opacity:.04;right:-40px;bottom:-40px;pointer-events:none;user-select:none}
+.ll-brand{display:flex;align-items:center;gap:14px;margin-bottom:40px}
+.ll-logo-wrap{background:rgba(255,255,255,.95);border-radius:12px;overflow:hidden;width:200px;height:58px;display:flex;align-items:center;justify-content:center}
+.ll-logo-wrap img{height:320px;width:320px;margin:-131px -60px;display:block;flex-shrink:0}
+.ll-title{font-family:'Poppins',sans-serif;font-size:clamp(2rem,3.5vw,2.8rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px}
+.ll-title em{color:#6ee7b7;font-style:normal;display:block}
+.ll-sub{font-size:1rem;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:36px;max-width:400px}
+.ll-features{display:flex;flex-direction:column;gap:12px}
+.ll-feat{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600}
+.ll-feat i{width:32px;height:32px;border-radius:8px;background:rgba(110,231,183,.15);border:1px solid rgba(110,231,183,.25);display:flex;align-items:center;justify-content:center;color:#6ee7b7;flex-shrink:0;font-size:.85rem}
+
+.login-right{
+  width:min(500px,48vw);background:var(--white);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:48px 44px;position:relative;z-index:2;
+}
+.lr-head{text-align:center;margin-bottom:30px}
+.lr-logo-pill{background:var(--bg);border:1px solid var(--gray3);border-radius:12px;overflow:hidden;width:190px;height:56px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.lr-logo-pill img{height:310px;width:310px;margin:-127px -60px;display:block;flex-shrink:0}
+.lr-title{font-family:'Poppins',sans-serif;font-size:1.5rem;font-weight:900;color:#042f2e;margin-bottom:5px}
+.lr-sub{font-size:.9rem;color:#0d9488;font-weight:800;letter-spacing:.3px}
+
+.role-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
+.role-btn{background:#f0fdf4;border:1.5px solid #99f6e4;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;color:#0f4c42;transition:.15s;font-family:'Inter',sans-serif}
+.role-btn i{font-size:.9rem;width:18px;text-align:center}
+.role-btn:hover{border-color:var(--lab);color:var(--lab)}
+.role-btn.active{background:#f0fdf4;border-color:var(--lab);color:var(--lab3);font-weight:800}
+.role-btn.active i{color:var(--lab)}
+
+.form-group{margin-bottom:15px}
+.form-group label{display:flex;align-items:center;gap:5px;font-size:.79rem;font-weight:800;color:#0f4c42;margin-bottom:7px}
+.form-group label i{color:var(--lab);font-size:.72rem}
+.form-input{width:100%;background:var(--white);border:1.5px solid var(--gray3);border-radius:9px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:.9rem;color:#0f172a;outline:none;transition:.15s}
+.form-input:focus{border-color:var(--lab);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+/* org searchable dropdown */
+.org-drop-wrap{position:relative}
+.org-drop-wrap .org-drop-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;font-size:.76rem;transition:.15s}
+.org-drop-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1.5px solid rgba(13,148,136,.35);border-radius:0 0 10px 10px;max-height:218px;overflow-y:auto;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.13);display:none;border-top:none}
+.org-drop-list.open{display:block}
+.org-drop-opt{padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--gray3)}
+.org-drop-opt:last-child{border-bottom:none}
+.org-drop-opt:hover{background:#f0fdf4}
+.org-drop-opt-name{font-size:.84rem;font-weight:700;color:#0f172a}
+.org-drop-opt-ind{font-size:.7rem;color:#64748b;margin-top:1px}
+.pw-wrap{position:relative}
+.pw-wrap .form-input{padding-right:42px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#475569;cursor:pointer;font-size:.9rem}
+
+.login-options{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-size:.79rem;color:#0f4c42;font-weight:600}
+.remember{display:flex;align-items:center;gap:6px;color:#0f4c42;font-weight:600;cursor:pointer}
+.remember input{accent-color:var(--lab)}
+.forgot{color:#0d9488;font-weight:800;text-decoration:none}
+
+.login-submit{
+  width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:800;
+  background:linear-gradient(135deg,var(--lab),var(--lab2));color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:.2s;
+}
+.login-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,148,136,.35)}
+.login-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+.spinner{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.lr-footer{text-align:center;margin-top:18px;font-size:.78rem;color:#0d9488;font-weight:600}
+.lr-footer a{color:var(--lab);font-weight:700;text-decoration:none}
+.login-err{display:none;background:#fee2e2;border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:9px 13px;color:#b91c1c;font-size:.8rem;font-weight:600;margin-bottom:14px;align-items:center;gap:7px}
+
+/* ══ DASHBOARD ══ */
+#app{display:none;flex-direction:column;min-height:100vh}
+
+.topbar{height:58px;flex-shrink:0;background:linear-gradient(90deg,var(--lab3),var(--lab2));display:flex;align-items:center;padding:0 22px;gap:14px;box-shadow:0 3px 14px rgba(0,0,0,.2);position:sticky;top:0;z-index:200}
+.tb-logo-pill{background:rgba(255,255,255,.95);border-radius:8px;overflow:hidden;width:155px;height:42px;display:flex;align-items:center;justify-content:center}
+.tb-logo-pill img{height:270px;width:270px;margin:-114px -57px;display:block;flex-shrink:0}
+.tb-name{font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:800;color:#fff}
+.tb-name em{color:#6ee7b7;font-style:normal}
+.tb-chip{background:rgba(110,231,183,.18);border:1px solid rgba(110,231,183,.35);border-radius:20px;padding:3px 12px;color:#6ee7b7;font-size:.67rem;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-user{background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:8px}
+.tb-av{width:26px;height:26px;border-radius:50%;background:#6ee7b7;color:var(--lab3);font-size:.7rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+.tb-user span{color:#fff;font-size:.82rem;font-weight:700}
+.tb-back{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 14px;color:#fff;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:.15s;font-family:'Inter',sans-serif}
+.tb-back:hover{background:rgba(255,255,255,.24)}
+.tb-out{background:rgba(255,80,80,.14);border:1px solid rgba(255,80,80,.25);border-radius:8px;padding:6px 12px;color:#fca5a5;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif}
+
+.body-wrap{display:flex;flex:1;align-items:flex-start}
+
+/* sidebar */
+.sidebar{width:215px;flex-shrink:0;background:linear-gradient(180deg,var(--lab3),#073a38);overflow-y:auto;display:flex;flex-direction:column;position:sticky;top:58px;height:calc(100vh - 58px);align-self:flex-start}
+.sb-grp{padding:12px 16px 3px;font-size:.6rem;font-weight:900;color:rgba(255,255,255,.22);letter-spacing:3px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:9px;padding:10px 16px;color:rgba(255,255,255,.58);font-size:.84rem;font-weight:600;cursor:pointer;border-left:3px solid transparent;transition:.15s}
+.sb-item i{width:15px;text-align:center;font-size:.82rem}
+.sb-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.sb-item.on{background:rgba(110,231,183,.12);color:#6ee7b7;border-left-color:var(--lab);font-weight:700}
+.sb-num{background:rgba(220,38,38,.28);color:#fca5a5;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:auto}
+.sb-num.g{background:rgba(22,163,74,.25);color:#86efac}
+.sb-foot{margin-top:auto;padding:12px 14px}
+.sb-out{width:100%;padding:9px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:8px;color:#fca5a5;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;justify-content:center;font-family:'Inter',sans-serif}
+
+/* main content */
+.content{flex:1;overflow-x:hidden;padding:24px 28px;background:var(--bg);min-height:calc(100vh - 58px)}
+.pg-hd{margin-bottom:18px}
+.pg-title{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:900;color:var(--lab3);margin-bottom:2px}
+.pg-sub{font-size:.84rem;color:#334155}
+
+/* sections */
+.sec{display:none}.sec.show{display:block}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--white);border:1px solid #d1fae5;border-radius:12px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--shadow2)}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:12px 12px 0 0}
+.s1::before{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.s2::before{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}
+.s3::before{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.s4::before{background:linear-gradient(90deg,#dc2626,#f87171)}
+.s5::before{background:linear-gradient(90deg,#0d9488,#2dd4bf)}
+.s6::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.stat-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:9px}
+.s1 .stat-ico{background:#fef3c7;color:#d97706}.s2 .stat-ico{background:#dbeafe;color:#1d4ed8}
+.s3 .stat-ico{background:#dcfce7;color:#16a34a}.s4 .stat-ico{background:#fee2e2;color:#dc2626}
+.s5 .stat-ico{background:#ccfbf1;color:#0d9488}.s6 .stat-ico{background:#ede9fe;color:#7c3aed}
+.stat-num{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:900;color:#0f172a}
+.stat-lbl{font-size:.73rem;font-weight:600;color:#334155;margin-top:2px}
+.stat-up{font-size:.68rem;color:#16a34a;font-weight:700;margin-top:3px}
+
+/* card */
+.card{background:var(--white);border:1px solid #d1fae5;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px}
+.card-hd{padding:14px 20px;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between}
+.card-hd h4{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:6px}
+.card-hd h4 i{color:var(--lab)}
+.charts2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+.chart-card{background:var(--white);border:1px solid #d1fae5;border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.chart-card h4{font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:800;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.chart-card h4 i{color:var(--lab)}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead tr{background:var(--bg)}
+.tbl th{padding:9px 14px;text-align:left;font-size:.66rem;font-weight:800;color:#166534;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #bbf7d0;white-space:nowrap}
+.tbl td{padding:12px 14px;font-size:.83rem;color:#0f172a;border-bottom:1px solid var(--bg);vertical-align:middle}
+.tbl tbody tr:hover{background:var(--bg)}
+.tbl tbody tr:last-child td{border-bottom:none}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.67rem;font-weight:800;white-space:nowrap}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.c-pend{background:#fef9c3;color:#a16207;border:1px solid rgba(161,98,7,.2)}.c-pend .cdot{background:#a16207;animation:blink 1.5s ease infinite}
+.c-rev{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.2)}.c-rev .cdot{background:#1d4ed8;animation:blink 1.2s ease infinite}
+.c-app{background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,.2)}.c-app .cdot{background:#15803d}
+.c-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(185,28,28,.2)}.c-rej .cdot{background:#b91c1c}
+.c-cor{background:#fff7ed;color:#c2410c;border:1px solid rgba(194,65,12,.2)}.c-cor .cdot{background:#c2410c;animation:blink 1.8s ease infinite}
+.c-cert{background:#fdf4ff;color:#7e22ce;border:1px solid rgba(126,34,206,.2)}.c-cert .cdot{background:#7e22ce}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* buttons */
+.btn{padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-size:.74rem;font-weight:700;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:4px;transition:.15s}
+.b-rev{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.25)}.b-rev:hover{background:#2563eb;color:#fff}
+.b-app{background:#dcfce7;color:#15803d;border:1px solid rgba(22,163,74,.25)}.b-app:hover{background:#16a34a;color:#fff}
+.b-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(220,38,38,.25)}.b-rej:hover{background:#dc2626;color:#fff}
+.b-cor{background:#fff7ed;color:#c2410c;border:1px solid rgba(194,65,12,.25)}.b-cor:hover{background:#ea580c;color:#fff}
+.b-vw{background:var(--gray2);color:#334155;border:1px solid var(--gray3)}.b-vw:hover{background:var(--gray3)}
+.b-dl{background:#f0fdf4;color:var(--lab);border:1px solid rgba(13,148,136,.25)}.b-dl:hover{background:var(--lab);color:#fff}
+.b-ct{background:#fdf4ff;color:#7e22ce;border:1px solid rgba(126,34,206,.25)}.b-ct:hover{background:#7c3aed;color:#fff}
+.act-btn{padding:11px 20px;border-radius:9px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:7px;transition:.2s}
+.ab-grn{background:linear-gradient(135deg,#16a34a,#0d9488);color:#fff}.ab-grn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(22,163,74,.3)}
+.ab-cor{background:#fff7ed;color:#c2410c;border:1px solid rgba(194,65,12,.25)}.ab-cor:hover{background:#ea580c;color:#fff}
+.ab-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(220,38,38,.25)}.ab-rej:hover{background:#dc2626;color:#fff}
+
+/* review panel */
+.rev-panel{background:var(--white);border:1px solid #bbf7d0;border-radius:12px;overflow:hidden;box-shadow:var(--shadow2)}
+.rev-head{background:linear-gradient(90deg,var(--lab3),var(--lab));padding:18px 22px;display:flex;align-items:center;gap:12px}
+.rev-ico{width:44px;height:44px;border-radius:10px;background:rgba(110,231,183,.18);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#6ee7b7;flex-shrink:0}
+.rev-head h3{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:800;color:#fff;margin-bottom:3px}
+.rev-head p{font-size:.74rem;color:rgba(255,255,255,.6)}
+.rev-body{padding:20px}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px;margin-bottom:18px}
+.meta-item{background:var(--bg);border:1px solid #bbf7d0;border-radius:9px;padding:11px}
+.meta-item label{font-size:.63rem;font-weight:700;color:#4b7c5f;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
+.meta-item span{font-size:.85rem;font-weight:700;color:#0f172a}
+.param-tbl th{background:var(--bg);padding:9px 13px;text-align:left;font-size:.65rem;font-weight:800;color:#166534;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #bbf7d0}
+.param-tbl td{padding:10px 13px;font-size:.82rem;color:#0f172a;border-bottom:1px solid var(--bg)}
+.param-tbl tr:hover td{background:var(--bg)}
+.comment-wrap{margin-top:16px;margin-bottom:16px}
+.comment-wrap label{font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;color:#0f172a;display:block;margin-bottom:7px}
+.comment-wrap textarea{width:100%;padding:11px 14px;border:1.5px solid #bbf7d0;border-radius:9px;font-family:'Inter',sans-serif;font-size:.87rem;resize:vertical;min-height:80px;outline:none;color:#0f172a;transition:.15s;background:var(--white)}
+.comment-wrap textarea:focus{border-color:var(--lab);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+.rev-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* cert card */
+.cert-card{background:var(--white);border:2px solid #d1fae5;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(13,148,136,.1);max-width:580px;margin-bottom:16px}
+.cert-top{background:linear-gradient(135deg,#042f2e,#0f4c42,#052e16);padding:24px;text-align:center;position:relative;overflow:hidden}
+.cert-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 0%,rgba(13,148,136,.2),transparent 55%)}
+.cert-logo-img{height:32px;filter:brightness(0) invert(1) opacity(.85);margin:0 auto 10px;display:block}
+.cert-title-txt{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:900;color:#fff;position:relative;z-index:1}
+.cert-sub-txt{font-size:.72rem;color:rgba(255,255,255,.55);position:relative;z-index:1;margin-top:3px}
+.cert-seal{width:52px;height:52px;border-radius:50%;background:rgba(110,231,183,.15);border:3px solid #6ee7b7;display:flex;align-items:center;justify-content:center;margin:12px auto 0;font-size:1.4rem;animation:glw 2.5s ease infinite;position:relative;z-index:1}
+@keyframes glw{0%,100%{box-shadow:0 0 0 0 rgba(110,231,183,.4)}50%{box-shadow:0 0 0 10px rgba(110,231,183,0)}}
+.cert-body{padding:18px}
+.cert-ok{background:var(--bg);border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:#15803d;margin-bottom:14px}
+.cert-ok i{color:#16a34a}
+.cert-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.cf-item{background:var(--gray1);border:1px solid var(--gray2);border-radius:8px;padding:9px}
+.cf-lbl{font-size:.62rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.cf-val{font-size:.82rem;font-weight:700;color:#0f172a}
+.cert-qr{display:flex;align-items:center;gap:14px;padding:12px;background:var(--gray1);border-radius:9px;border:1px solid var(--gray2)}
+.qr-box{width:58px;height:58px;background:#042f2e;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-info h5{font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:800;color:#0f172a;margin-bottom:2px}
+.qr-info p{font-size:.72rem;color:#334155}
+.qr-hash{font-family:monospace;font-size:.65rem;color:#475569;background:var(--gray2);padding:2px 6px;border-radius:4px;margin-top:3px}
+.cert-actions{padding:0 18px 18px;display:flex;gap:9px}
+.cert-dl-btn{flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;background:linear-gradient(135deg,var(--lab),#059669);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.cert-dl-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(13,148,136,.3)}
+.cert-vfy-btn{padding:10px 16px;border:2px solid var(--lab);border-radius:9px;background:transparent;color:var(--lab);cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:5px;transition:.15s}
+.cert-vfy-btn:hover{background:#ccfbf1}
+
+/* audit */
+.audit-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bg)}
+.audit-row:last-child{border-bottom:none}
+.a-ico{width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+.a-g{background:#dcfce7;color:#16a34a}.a-b{background:#dbeafe;color:#1d4ed8}
+.a-a{background:#fef3c7;color:#d97706}.a-r{background:#fee2e2;color:#dc2626}.a-t{background:#ccfbf1;color:#0d9488}
+.a-txt strong{display:block;font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:700;color:#0f172a;margin-bottom:1px}
+.a-txt p{font-size:.74rem;color:#334155;line-height:1.5}
+.a-time{font-size:.64rem;color:#475569;margin-top:2px}
+
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:#042f2e;border:1px solid rgba(13,148,136,.4);border-radius:10px;padding:11px 16px;font-size:.84rem;font-weight:700;color:#fff;max-width:300px;opacity:0;transform:translateY(16px);transition:.3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){.login-left{display:none}.login-right{width:100%;max-width:none}}
+@media(max-width:768px){.sidebar{display:none}.stats{grid-template-columns:repeat(2,1fr)}.charts2{grid-template-columns:1fr}.cert-fields{grid-template-columns:1fr}.meta-grid{grid-template-columns:1fr 1fr}}
+
+/* ── 3D canvas visibility fix ── */
+.login-wrap{position:relative!important;z-index:10!important}
+#app{position:relative!important;z-index:10!important}
+.body-wrap{position:relative;z-index:1}
+.content{position:relative;z-index:1;background:var(--bg)!important}
+.sidebar{z-index:2}
+.topbar{z-index:200}
+</style>
+<script src="assets/eco-standards.js"></script>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN PAGE ══════════════ -->
+<div id="loginPage" style="display:flex">
+  <div class="login-left">
+    <div class="ll-brand">
+      <div class="ll-logo-wrap"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    </div>
+    <div class="ll-title">Laboratory<em>Management Portal</em></div>
+    <div class="ll-sub">Manage report reviews, issue lab certificates, track approvals, and maintain compliance records — all in one place.</div>
+    <div class="ll-features">
+      <div class="ll-feat"><i class="fas fa-inbox"></i>Review & approve environmental reports</div>
+      <div class="ll-feat"><i class="fas fa-certificate"></i>Issue NABL-verified certificates</div>
+      <div class="ll-feat"><i class="fas fa-chart-line"></i>Analytics & performance dashboard</div>
+      <div class="ll-feat"><i class="fas fa-history"></i>Complete audit trail</div>
+    </div>
+    <div class="login-bg-deco" style="position:absolute;font-size:14rem;opacity:.04;right:-30px;bottom:-30px;pointer-events:none">🔬</div>
+  </div>
+
+  <div class="login-right">
+    <div class="lr-head">
+      <div class="lr-logo-pill"><img src="assets/logo.png" alt="EcoSphere"/></div>
+      <div class="lr-title">Laboratory Sign In</div>
+      <div class="lr-sub">Select your role and enter credentials</div>
+    </div>
+
+    <div id="serverWarnMsg" class="login-err" style="display:none;background:#fff3cd;border-color:#ffc107;color:#856404"><i class="fas fa-exclamation-triangle"></i> <strong>Server not reachable.</strong> Run <code style="background:#f8f9fa;padding:1px 5px;border-radius:3px">npm start</code> in the EcoSphere folder, then open <strong>http://localhost:5000</strong></div>
+    <div id="loginErr" class="login-err"><i class="fas fa-exclamation-circle"></i>Please fill in all fields.</div>
+
+    <p style="font-size:.75rem;font-weight:900;color:#0d9488;margin-bottom:9px;letter-spacing:2px;text-transform:uppercase">YOUR ROLE</p>
+    <div class="role-row">
+      <button class="role-btn active" onclick="pickRole(this,'Lab Administrator')"><i class="fas fa-user-shield"></i>Lab Administrator</button>
+      <button class="role-btn" onclick="pickRole(this,'Lab Analyst')"><i class="fas fa-microscope"></i>Lab Analyst</button>
+      <button class="role-btn" onclick="pickRole(this,'Senior Reviewer')"><i class="fas fa-search-plus"></i>Senior Reviewer</button>
+      <button class="role-btn" onclick="pickRole(this,'Quality Manager')"><i class="fas fa-check-double"></i>Quality Manager</button>
+    </div>
+
+    <div class="form-group">
+      <label><i class="fas fa-envelope"></i>Email Address</label>
+      <input class="form-input" type="email" id="lEmail" placeholder="admin@envirotest.com"/>
+    </div>
+    <div class="form-group">
+      <label><i class="fas fa-lock"></i>Password</label>
+      <div class="pw-wrap">
+        <input class="form-input" type="password" id="lPw" placeholder="••••••••"/>
+        <button class="pw-eye" onclick="toggleEye('lPw','eyeIcon1')"><i class="fas fa-eye" id="eyeIcon1"></i></button>
+      </div>
+    </div>
+
+    <div class="login-options">
+      <label class="remember"><input type="checkbox"/> Remember me</label>
+      <a href="#" class="forgot" onclick="event.preventDefault();_labForgotPassword()">Forgot password?</a>
+    </div>
+
+    <button class="login-submit" id="loginBtn" onclick="doLogin()">
+      <span id="loginBtnTxt"><i class="fas fa-sign-in-alt"></i> Sign In to Lab Portal</span>
+      <i class="fas fa-spinner spinner" id="loginSpinner" style="display:none"></i>
+    </button>
+
+    <div class="lr-footer"><a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Back to Portal Select</a></div>
+  </div>
+</div>
+
+<!-- ══════════════ LAB VERIFICATION GATE ══════════════ -->
+<div id="labVerifyGate" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);z-index:9999;overflow-y:auto;font-family:Poppins,sans-serif">
+  <div style="max-width:680px;margin:40px auto;padding:24px">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#0d9488,#0891b2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(13,148,136,.4)">
+        <i class="fas fa-certificate" style="font-size:1.5rem;color:#fff"></i>
+      </div>
+      <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px">Lab Authorization Verification</div>
+      <div style="font-size:.84rem;color:#94a3b8">Submit your NABL accreditation and authorization documents to activate your lab portal access</div>
+    </div>
+
+    <!-- Pending notice (shown after submission) -->
+    <div id="verifyPendingBanner" style="display:none;background:linear-gradient(135deg,#1e3a5f,#1e40af);border:1.5px solid #3b82f6;border-radius:14px;padding:20px 24px;margin-bottom:22px;text-align:center">
+      <i class="fas fa-hourglass-half" style="font-size:1.6rem;color:#93c5fd;margin-bottom:10px;display:block"></i>
+      <div style="font-size:1rem;font-weight:800;color:#fff;margin-bottom:6px">Documents Submitted — Under Verification</div>
+      <div style="font-size:.8rem;color:#bfdbfe;margin-bottom:12px">Your documents have been submitted and are currently under review by the EcoSphere team. You will be notified once verified.</div>
+      <div id="verifyRefNum" style="font-size:.76rem;color:#93c5fd;font-weight:700;background:rgba(59,130,246,.15);border-radius:8px;padding:6px 14px;display:inline-block;margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button onclick="proceedToDashboard()" style="background:linear-gradient(135deg,#0d9488,#0891b2);border:none;border-radius:9px;padding:10px 20px;color:#fff;font-family:Poppins,sans-serif;font-size:.84rem;font-weight:700;cursor:pointer">
+          <i class="fas fa-arrow-right" style="margin-right:6px"></i>Proceed to Dashboard
+        </button>
+        <button onclick="resubmitVerify()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:10px 20px;color:#cbd5e1;font-family:Poppins,sans-serif;font-size:.84rem;font-weight:700;cursor:pointer">
+          Update Documents
+        </button>
+      </div>
+    </div>
+
+    <!-- Submission form -->
+    <div id="verifyForm" style="background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:16px;padding:24px">
+      <div style="font-size:.88rem;font-weight:800;color:#e2e8f0;margin-bottom:18px;display:flex;align-items:center;gap:8px">
+        <i class="fas fa-file-contract" style="color:#0d9488"></i> Authorization Details
+      </div>
+
+      <!-- Row 1 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Lab / Organization Name *</label>
+          <input id="vLabName" type="text" placeholder="e.g. EnviroTest Labs Pvt Ltd" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">NABL Accreditation Number *</label>
+          <input id="vNablNo" type="text" placeholder="e.g. TC-5678 / MC-2341" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box"/>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Accreditation Valid Until *</label>
+          <input id="vNablExpiry" type="date" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Scope of Testing</label>
+          <select id="vScope" style="width:100%;padding:9px 12px;background:rgba(30,41,59,1);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#94a3b8;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box">
+            <option value="">Select scope</option>
+            <option>Air Quality Testing</option>
+            <option>Water / Effluent Testing</option>
+            <option>Soil / Noise / Stack Testing</option>
+            <option>Multi-Parameter (All)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Authorized Contact Person *</label>
+          <input id="vContact" type="text" placeholder="e.g. Dr. Anita Sharma" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Contact Email *</label>
+          <input id="vEmail" type="email" placeholder="e.g. anita@envirotest.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;box-sizing:border-box"/>
+        </div>
+      </div>
+
+      <!-- Upload row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">NABL Certificate (PDF/Image) *</label>
+          <div onclick="document.getElementById('vNablFile').click()" id="vNablUploadBox" style="border:2px dashed rgba(13,148,136,.5);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:rgba(13,148,136,.05);transition:.2s" onmouseover="this.style.borderColor='#0d9488'" onmouseout="this.style.borderColor='rgba(13,148,136,.5)'">
+            <i class="fas fa-upload" style="font-size:1.1rem;color:#0d9488;margin-bottom:6px;display:block"></i>
+            <div id="vNablFileName" style="font-size:.76rem;color:#64748b">Click to upload NABL Certificate</div>
+          </div>
+          <input type="file" id="vNablFile" accept=".pdf,image/*" style="display:none" onchange="verifyFileSelected('vNablFile','vNablFileName','vNablUploadBox')"/>
+        </div>
+        <div>
+          <label style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Authorization Letter (Optional)</label>
+          <div onclick="document.getElementById('vAuthFile').click()" id="vAuthUploadBox" style="border:2px dashed rgba(255,255,255,.12);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:rgba(255,255,255,.03);transition:.2s" onmouseover="this.style.borderColor='rgba(255,255,255,.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)'">
+            <i class="fas fa-file-alt" style="font-size:1.1rem;color:#64748b;margin-bottom:6px;display:block"></i>
+            <div id="vAuthFileName" style="font-size:.76rem;color:#64748b">Click to upload Authorization Letter</div>
+          </div>
+          <input type="file" id="vAuthFile" accept=".pdf,image/*" style="display:none" onchange="verifyFileSelected('vAuthFile','vAuthFileName','vAuthUploadBox')"/>
+        </div>
+      </div>
+
+      <!-- Privacy note -->
+      <div style="background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.25);border-radius:9px;padding:10px 14px;margin-bottom:18px;font-size:.74rem;color:#5eead4;display:flex;gap:8px">
+        <i class="fas fa-shield-alt" style="margin-top:1px;flex-shrink:0"></i>
+        <span>Your documents are transmitted securely and used only for lab accreditation verification. They will not be shared with third parties.</span>
+      </div>
+
+      <!-- Error -->
+      <div id="verifyErr" style="display:none;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:8px 14px;color:#dc2626;font-size:.78rem;margin-bottom:12px"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button onclick="submitLabVerification()" style="background:linear-gradient(135deg,#0d9488,#0891b2);border:none;border-radius:10px;padding:12px 26px;color:#fff;font-family:Poppins,sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px">
+          <i class="fas fa-paper-plane"></i> Submit for Verification
+        </button>
+        <button onclick="skipVerifyForNow()" style="background:transparent;border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:12px 20px;color:#94a3b8;font-family:Poppins,sans-serif;font-size:.84rem;font-weight:600;cursor:pointer">
+          Skip for Now
+        </button>
+        <span style="font-size:.74rem;color:#475569;margin-left:4px">* Required fields</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+  <header class="topbar">
+    <div class="tb-logo-pill"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    <div class="tb-name">Eco<em>Sphere</em> · Laboratory Portal</div>
+    <div class="tb-chip">LAB PORTAL</div>
+    <div class="tb-right">
+      <a href="javascript:history.back()" class="tb-back"><i class="fas fa-th-large"></i> Portal Select</a>
+      <div class="tb-user"><div class="tb-av" id="userAv">LA</div><span id="userLabel">Lab Admin</span></div>
+      <button class="tb-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </header>
+
+  <div class="body-wrap">
+    <nav class="sidebar">
+      <div class="sb-grp">Main</div>
+      <div class="sb-item on" onclick="navTo('dashboard',this)"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+      <div class="sb-grp">Reviews</div>
+      <div class="sb-item" onclick="navTo('pending',this)"><i class="fas fa-inbox"></i> Pending Reviews <span class="sb-num" id="sbPending">0</span></div>
+      <div class="sb-item" onclick="navTo('inreview',this)"><i class="fas fa-search"></i> Under Review <span class="sb-num" id="sbInReview" style="background:rgba(29,78,216,.22);color:#93c5fd">0</span></div>
+      <div class="sb-item" onclick="navTo('approved',this)"><i class="fas fa-check-double"></i> Approved <span class="sb-num g" id="sbApproved">0</span></div>
+      <div class="sb-item" onclick="navTo('rejected',this)"><i class="fas fa-times-circle"></i> Rejected</div>
+      <div class="sb-item" onclick="navTo('corrections',this)"><i class="fas fa-edit"></i> Corrections <span class="sb-num" id="sbCorrections">0</span></div>
+      <div class="sb-grp">Certificates</div>
+      <div class="sb-item" onclick="navTo('certs',this)"><i class="fas fa-certificate"></i> Issue Certificates</div>
+      <div class="sb-grp">Records</div>
+      <div class="sb-item" onclick="navTo('audit',this)"><i class="fas fa-history"></i> Audit Trail</div>
+      <div class="sb-item" onclick="navTo('analytics',this)"><i class="fas fa-chart-line"></i> Analytics</div>
+      <div class="sb-grp">Evidence &amp; AI</div>
+      <div class="sb-item" onclick="navTo('evidence',this);_labEvidenceSection()"><i class="fas fa-folder-open"></i> Evidence Docs</div>
+      <div class="sb-grp">Organizations</div>
+      <div id="labOrgSidebarList">
+        <div class="sb-item on" id="labOrgAll" onclick="_labSelectSidebarOrg(null,this)" style="border-left-color:var(--acc)"><i class="fas fa-layer-group"></i> All Organizations</div>
+      </div>
+      <div class="sb-foot">
+        <button class="sb-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </nav>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <div class="sec show" id="sec-dashboard">
+        <div class="pg-hd"><div class="pg-title">Laboratory Dashboard</div><div class="pg-sub" id="welcomeSub">Welcome back — EnviroTest Labs</div></div>
+
+        <!-- Company filter banner — shown after login with a company name -->
+        <div id="labCompanyBanner" style="display:none;margin-bottom:18px;background:linear-gradient(135deg,#042f2e,#0d4a3f);border-radius:13px;padding:16px 22px;align-items:center;gap:16px;border:1px solid rgba(13,148,136,.25);flex-wrap:wrap">
+          <div style="width:44px;height:44px;background:rgba(13,148,136,.22);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fas fa-building" style="color:#34d399;font-size:1.1rem"></i>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:.65rem;color:#6ee7b7;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:3px">Currently Reviewing</div>
+            <div id="labCompanyBannerName" style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#fff">—</div>
+          </div>
+          <div id="labCompanyMiniStats" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat s1"><div class="stat-ico"><i class="fas fa-inbox"></i></div><div class="stat-num" id="statPending">0</div><div class="stat-lbl">Pending Reviews</div></div>
+          <div class="stat s2"><div class="stat-ico"><i class="fas fa-search"></i></div><div class="stat-num" id="statReviewing">0</div><div class="stat-lbl">Under Review</div></div>
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-check-double"></i></div><div class="stat-num" id="statApproved">0</div><div class="stat-lbl">Approved Reports</div></div>
+          <div class="stat s4"><div class="stat-ico"><i class="fas fa-times-circle"></i></div><div class="stat-num" id="statRejected">0</div><div class="stat-lbl">Rejected</div></div>
+          <div class="stat s5"><div class="stat-ico"><i class="fas fa-edit"></i></div><div class="stat-num" id="statSamples">0</div><div class="stat-lbl">Corrections Sent</div></div>
+          <div class="stat s6"><div class="stat-ico"><i class="fas fa-certificate"></i></div><div class="stat-num" id="statCerts">0</div><div class="stat-lbl">Certs Issued</div></div>
+        </div>
+        <div class="charts2">
+          <div class="chart-card"><h4><i class="fas fa-chart-bar"></i>Monthly Review Activity</h4><canvas id="chart1" height="200"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-chart-pie"></i>Report Status</h4><canvas id="chart2" height="200"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-clock"></i>Recent Submissions</h4><button class="btn b-rev" onclick="navTo('pending',null)">View All</button></div>
+          <table class="tbl">
+            <thead><tr><th>Report ID</th><th>Organization</th><th>Type</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="labRecentTbl">
+              <tr class="_empty-row"><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-inbox" style="margin-right:6px"></i>Log in to load recent submissions</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PENDING -->
+      <div class="sec" id="sec-pending">
+        <div class="pg-hd"><div class="pg-title">Pending Reviews</div><div class="pg-sub">Reports awaiting laboratory review</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-inbox"></i>Pending Queue</h4><span id="pendingCountBadge" style="background:#fef3c7;color:#a16207;border:1px solid rgba(161,98,7,.2);border-radius:7px;padding:3px 10px;font-size:.71rem;font-weight:800">0 pending</span></div>
+          <table class="tbl">
+            <thead><tr><th>Report ID</th><th>Company</th><th>Type</th><th>Submitted</th><th>Priority</th><th>Actions</th></tr></thead>
+            <tbody id="pendingQueueBody">
+              <tr class="_empty-row"><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;font-size:.84rem"><i class="fas fa-inbox" style="font-size:1.6rem;display:block;margin-bottom:10px;opacity:.4"></i>No pending reports — log in to load the review queue</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REVIEW PANEL -->
+      <div class="sec" id="sec-review">
+        <button class="btn b-vw" style="margin-bottom:16px" onclick="navTo('pending',null)"><i class="fas fa-arrow-left"></i> Back to Queue</button>
+        <div class="rev-panel">
+          <div class="rev-head">
+            <div class="rev-ico"><i class="fas fa-file-chart-line"></i></div>
+            <div><h3>Environmental Monitoring Report — May 2025</h3><p>QMICS Manufacturing Pvt Ltd · Hyderabad, TS · Submitted: 02 Jun 2025</p></div>
+            <div style="margin-left:auto"><span class="chip c-rev"><span class="cdot"></span>Under Review</span></div>
+          </div>
+          <div class="rev-body">
+            <h4 style="font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;margin-bottom:10px"><i class="fas fa-building" style="color:var(--lab);margin-right:5px"></i>Company & Report Details</h4>
+            <div class="meta-grid">
+              <div class="meta-item"><label>Company</label><span>QMICS Manufacturing Pvt Ltd</span></div>
+              <div class="meta-item"><label>Industry</label><span>Manufacturing</span></div>
+              <div class="meta-item"><label>Location</label><span>Hyderabad, TS</span></div>
+              <div class="meta-item"><label>Contact</label><span>Mr. Ravi Kumar</span></div>
+              <div class="meta-item"><label>Report Type</label><span>Environmental Monitoring</span></div>
+              <div class="meta-item"><label>Period</label><span>May 2025</span></div>
+              <div class="meta-item"><label>Submitted</label><span>02 Jun 2025</span></div>
+              <div class="meta-item"><label>AI Validation</label><span style="color:#16a34a;font-weight:800">✓ Passed</span></div>
+            </div>
+            <h4 style="font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;margin:14px 0 10px"><i class="fas fa-table" style="color:var(--lab);margin-right:5px"></i>Monitoring Data</h4>
+            <table class="tbl param-tbl" style="margin-bottom:16px">
+              <thead><tr><th>Parameter</th><th>Measured</th><th>Unit</th><th id="labLimitColHeader">CPCB Limit</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>PM2.5</td><td><b>62</b></td><td>µg/m³</td><td id="labLim_pm25">60</td><td><span class="chip c-cor" style="font-size:.64rem;padding:2px 8px">Borderline</span></td></tr>
+                <tr><td>PM10</td><td><b>85</b></td><td>µg/m³</td><td id="labLim_pm10">100</td><td><span class="chip c-app" style="font-size:.64rem;padding:2px 8px">Within Limit</span></td></tr>
+                <tr><td>Noise (Boundary)</td><td><b style="color:#dc2626">88</b></td><td>dB</td><td id="labLim_noise">85</td><td><span class="chip c-rej" style="font-size:.64rem;padding:2px 8px">Exceeded</span></td></tr>
+                <tr><td>BOD Effluent</td><td><b>3.0</b></td><td>mg/L</td><td id="labLim_bod">30</td><td><span class="chip c-app" style="font-size:.64rem;padding:2px 8px">Within Limit</span></td></tr>
+                <tr><td>pH</td><td><b>7.2</b></td><td>—</td><td id="labLim_ph">6.5–8.5</td><td><span class="chip c-app" style="font-size:.64rem;padding:2px 8px">Within Limit</span></td></tr>
+              </tbody>
+            </table>
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+              <button class="btn b-dl" onclick="ecoExport({title:'Lab Review Report',subtitle:'Monitoring Data — Lab Analysis Report',formats:['pdf','excel','csv'],onFormat:function(f){ecoDownloadReport('Monitoring','Lab Review Report');}})"><i class="fas fa-download"></i> Download Report</button>
+              <button class="btn b-vw" onclick="_labViewOnline()"><i class="fas fa-eye"></i> View Online</button>
+              <button class="btn b-vw" onclick="document.getElementById('labUploadInput').click()"><i class="fas fa-paperclip"></i> Upload File</button>
+              <input type="file" id="labUploadInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" style="display:none" onchange="_labHandleUpload(this)"/>
+            </div>
+            <div class="comment-wrap">
+              <label><i class="fas fa-comment-alt" style="color:var(--lab);margin-right:5px"></i>Laboratory Findings & Comments</label>
+              <textarea id="labReviewComments" placeholder="Enter laboratory findings, observations, and recommendations..."></textarea>
+            </div>
+            <div class="rev-actions">
+              <button class="act-btn ab-grn" onclick="doAction('approve')"><i class="fas fa-check-circle"></i> Approve Report</button>
+              <button class="act-btn ab-cor" onclick="doAction('correct')"><i class="fas fa-edit"></i> Request Correction</button>
+              <button class="act-btn ab-rej" onclick="doAction('reject')"><i class="fas fa-times-circle"></i> Reject</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPROVED -->
+      <div class="sec" id="sec-approved">
+        <div class="pg-hd"><div class="pg-title">Approved Reports</div><div class="pg-sub">Forwarded to Regulatory Authority</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-check-double"></i>Approved</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Type</th><th>Approved</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="approvedQueueBody">
+            <tr class="_empty-row"><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-check-double" style="margin-right:6px;opacity:.4"></i>No approved reports yet</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- REJECTED -->
+      <div class="sec" id="sec-rejected">
+        <div class="pg-hd"><div class="pg-title">Rejected Reports</div><div class="pg-sub">Organizations have been notified</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-times-circle"></i>Rejected</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Rejected On</th><th>Reason</th></tr></thead>
+          <tbody id="rejectedQueueBody">
+            <tr class="_empty-row"><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-times-circle" style="margin-right:6px;opacity:.4"></i>No rejected reports</td></tr>
+          </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CORRECTIONS -->
+      <div class="sec" id="sec-corrections">
+        <div class="pg-hd"><div class="pg-title">Correction Requests</div><div class="pg-sub">Awaiting resubmission</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-edit"></i>Corrections Sent</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Sent On</th><th>Reason</th><th>Status</th></tr></thead>
+          <tbody id="correctionsQueueBody">
+            <tr class="_empty-row"><td colspan="5" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-edit" style="margin-right:6px;opacity:.4"></i>No correction requests sent</td></tr>
+          </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- UNDER REVIEW -->
+      <div class="sec" id="sec-inreview">
+        <div class="pg-hd"><div class="pg-title">Under Review</div><div class="pg-sub">Currently being reviewed by lab team</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-search"></i>Active Reviews</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Type</th><th>Started</th><th>Analyst</th><th>Action</th></tr></thead>
+          <tbody id="inreviewQueueBody">
+            <tr class="_empty-row"><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-search" style="margin-right:6px;opacity:.4"></i>No reports currently under review</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- CERTIFICATES -->
+      <div class="sec" id="sec-certs">
+        <div class="pg-hd"><div class="pg-title">Certificate Module</div><div class="pg-sub">Issue NABL-verified certificates for approved reports</div></div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="act-btn ab-grn" onclick="_labIssueCert('verification')"><i class="fas fa-plus"></i> Verification Certificate</button>
+          <button style="background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.2s" onclick="_labIssueCert('test-validation')"><i class="fas fa-plus"></i> Test Validation Certificate</button>
+          <button style="background:linear-gradient(135deg,#0d9488,#059669);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.2s" onclick="_labIssueCert('carbon-verification')"><i class="fas fa-plus"></i> Carbon Verification Certificate</button>
+        </div>
+        <div id="certCardContainer">
+          <div id="certEmptyState" style="text-align:center;padding:40px 20px;color:#64748b;background:#f8fafc;border-radius:12px;border:1.5px dashed #e2e8f0">
+            <i class="fas fa-certificate" style="font-size:2rem;margin-bottom:12px;display:block;color:#cbd5e1"></i>
+            <div style="font-size:.9rem;font-weight:700;margin-bottom:6px;color:#475569">No approved reports available</div>
+            <div style="font-size:.8rem;color:#94a3b8">Approve reports from the Pending queue to enable certificate issuance</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIT TRAIL -->
+      <div class="sec" id="sec-audit">
+        <div class="pg-hd"><div class="pg-title">Audit Trail</div><div class="pg-sub">Complete log of all review activities</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-history"></i>Activity Log</h4><button class="btn b-dl" onclick="_labExportAudit()"><i class="fas fa-download"></i> Export</button></div>
+          <div style="padding:16px">
+            <div class="audit-row"><div class="a-ico a-g"><i class="fas fa-check-circle"></i></div><div class="a-txt"><strong>Report RPT-2025-0607 Approved</strong><p>Sustainability Report for Chemical Corp approved. Forwarded to TSPCB.</p><div class="a-time"><i class="fas fa-clock"></i> 30 May 2025 · 14:32</div></div></div>
+            <div class="audit-row"><div class="a-ico a-b"><i class="fas fa-certificate"></i></div><div class="a-txt"><strong>Certificate LABC/VER/2025/0612 Issued</strong><p>Verification Certificate issued for QMICS Manufacturing Pvt Ltd.</p><div class="a-time"><i class="fas fa-clock"></i> 30 May 2025 · 14:45</div></div></div>
+            <div class="audit-row"><div class="a-ico a-a"><i class="fas fa-edit"></i></div><div class="a-txt"><strong>Correction Sent — RPT-2025-0605</strong><p>Noise boundary monitoring data incomplete — 3 points missing.</p><div class="a-time"><i class="fas fa-clock"></i> 28 May 2025 · 11:15</div></div></div>
+            <div class="audit-row"><div class="a-ico a-r"><i class="fas fa-times-circle"></i></div><div class="a-txt"><strong>Report RPT-2025-0601 Rejected</strong><p>Mining Corp Ltd — PM10 at 185 µg/m³ exceeds CPCB limit of 100.</p><div class="a-time"><i class="fas fa-clock"></i> 22 May 2025 · 09:50</div></div></div>
+            <div class="audit-row"><div class="a-ico a-t"><i class="fas fa-inbox"></i></div><div class="a-txt"><strong>New Report Received — RPT-2025-0614</strong><p>Environmental Monitoring report by QMICS Manufacturing for May 2025.</p><div class="a-time"><i class="fas fa-clock"></i> 02 Jun 2025 · 10:24</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="sec" id="sec-analytics">
+        <div class="pg-hd"><div class="pg-title">Analytics</div><div class="pg-sub">Review performance and approval rates</div></div>
+        <div class="stats">
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-percentage"></i></div><div class="stat-num" id="labAnalApprovalRate">—</div><div class="stat-lbl">Approval Rate</div></div>
+          <div class="stat s5"><div class="stat-ico"><i class="fas fa-clock"></i></div><div class="stat-num" id="labAnalAvgTime">—</div><div class="stat-lbl">Avg Review Time</div></div>
+          <div class="stat s2"><div class="stat-ico"><i class="fas fa-building"></i></div><div class="stat-num" id="labAnalActiveOrgs">—</div><div class="stat-lbl">Active Orgs</div></div>
+          <div class="stat s6"><div class="stat-ico"><i class="fas fa-file-alt"></i></div><div class="stat-num" id="labAnalReviewsYTD">—</div><div class="stat-lbl">Reviews YTD</div></div>
+        </div>
+        <div class="charts2">
+          <div class="chart-card"><h4><i class="fas fa-chart-line"></i>6-Month Review Trend</h4><canvas id="chart3" height="200"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-industry"></i>By Industry</h4><canvas id="chart4" height="200"></canvas></div>
+        </div>
+      </div>
+
+      <!-- EVIDENCE DOCS -->
+      <div class="sec" id="sec-evidence"></div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+var _role='Lab Administrator';
+
+function pickRole(btn,role){
+  document.querySelectorAll('.role-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active'); _role=role;
+}
+function toggleEye(inputId,iconId){
+  var inp=document.getElementById(inputId),ico=document.getElementById(iconId);
+  inp.type=inp.type==='password'?'text':'password';
+  ico.className=inp.type==='password'?'fas fa-eye':'fas fa-eye-slash';
+}
+function doLogin(){
+  var emailEl=document.getElementById('lEmail');
+  var pwEl=document.getElementById('lPw');
+  var err=document.getElementById('loginErr');
+  if(!emailEl||!emailEl.value||!pwEl||!pwEl.value){
+    if(err){err.style.display='flex';err.innerHTML='<i class="fas fa-exclamation-circle"></i>&nbsp;Please fill in all fields.';}
+    return;
+  }
+  window._labOrg = null;
+  if(err)err.style.display='none';
+  var btn=document.getElementById('loginBtn');
+  var txt=document.getElementById('loginBtnTxt');
+  var spin=document.getElementById('loginSpinner');
+  btn.disabled=true; txt.style.opacity='.4'; spin.style.display='inline-block';
+  setTimeout(function(){
+    var initials=_role.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    document.getElementById('userAv').textContent=initials;
+    document.getElementById('userLabel').textContent=_role;
+    document.getElementById('welcomeSub').textContent='Welcome back — All Organizations';
+    document.getElementById('loginPage').style.display='none';
+    /* Check verification status */
+    var vStatus = localStorage.getItem('labVerifyStatus');
+    if (vStatus === 'verified') {
+      _showLabApp();
+    } else {
+      document.getElementById('labVerifyGate').style.display='block';
+      if (vStatus === 'pending') {
+        _showVerifyPending();
+      }
+    }
+    toast('✅ Welcome, '+_role+'!');
+  },1000);
+}
+
+function _showLabApp() {
+  document.getElementById('labVerifyGate').style.display='none';
+  document.getElementById('app').style.display='flex';
+  setTimeout(initCharts,200);
+  setTimeout(_buildLabOrgSidebar,200);
+  setTimeout(_labLoadPendingFromStorage,400);
+}
+
+function _showVerifyPending() {
+  document.getElementById('verifyPendingBanner').style.display='block';
+  document.getElementById('verifyForm').style.display='none';
+  var ref = localStorage.getItem('labVerifyRef') || 'REF-' + Date.now().toString(36).toUpperCase();
+  var refEl = document.getElementById('verifyRefNum');
+  if (refEl) refEl.textContent = 'Reference: ' + ref;
+}
+
+function verifyFileSelected(inputId, labelId, boxId) {
+  var inp = document.getElementById(inputId);
+  var lbl = document.getElementById(labelId);
+  var box = document.getElementById(boxId);
+  if (inp && inp.files && inp.files[0]) {
+    if (lbl) lbl.textContent = '✓ ' + inp.files[0].name;
+    if (lbl) lbl.style.color = '#0d9488';
+    if (box) box.style.borderColor = '#0d9488';
+  }
+}
+
+function submitLabVerification() {
+  var labName = document.getElementById('vLabName').value.trim();
+  var nablNo  = document.getElementById('vNablNo').value.trim();
+  var expiry  = document.getElementById('vNablExpiry').value;
+  var contact = document.getElementById('vContact').value.trim();
+  var email   = document.getElementById('vEmail').value.trim();
+  var nablFile = document.getElementById('vNablFile').files[0];
+  var err = document.getElementById('verifyErr');
+
+  if (!labName || !nablNo || !expiry || !contact || !email) {
+    err.textContent = 'Please fill in all required fields (Lab Name, NABL Number, Expiry, Contact Person, Email).';
+    err.style.display = 'block';
+    return;
+  }
+  if (!nablFile) {
+    err.textContent = 'Please upload your NABL Certificate (PDF or image).';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+
+  var ref = 'LV-' + Math.random().toString(36).slice(2,8).toUpperCase();
+  localStorage.setItem('labVerifyStatus', 'pending');
+  localStorage.setItem('labVerifyRef', ref);
+  localStorage.setItem('labVerifyData', JSON.stringify({ labName, nablNo, expiry, contact, email }));
+  _showVerifyPending();
+}
+
+function resubmitVerify() {
+  document.getElementById('verifyPendingBanner').style.display='none';
+  document.getElementById('verifyForm').style.display='block';
+}
+
+function skipVerifyForNow() {
+  if (confirm('You can submit your NABL documents later from the Dashboard. Some features may be restricted until verification is complete.\n\nProceed anyway?')) {
+    _showLabApp();
+  }
+}
+
+function proceedToDashboard() {
+  _showLabApp();
+}
+
+function logout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('labVerifyGate').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+  var btn=document.getElementById('loginBtn'),txt=document.getElementById('loginBtnTxt'),spin=document.getElementById('loginSpinner');
+  btn.disabled=false; txt.style.opacity='1'; spin.style.display='none';
+  document.getElementById('lEmail').value=''; document.getElementById('lPw').value='';
+  window._labOrg=null; window._labCompanyFilter='';
+  var sb=document.getElementById('labOrgSidebarList');
+  if(sb) sb.innerHTML='<div class="sb-item on" id="labOrgAll" onclick="_labSelectSidebarOrg(null,this)" style="border-left-color:var(--acc)"><i class="fas fa-layer-group"></i> All Organizations</div>';
+}
+function navTo(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('show')});
+  var t=document.getElementById('sec-'+id); if(t) t.classList.add('show');
+  // Clear nav menu items but preserve the selected org item in the org sidebar
+  document.querySelectorAll('.sb-item').forEach(function(s){
+    if(!s.closest('#labOrgSidebarList')) s.classList.remove('on');
+  });
+  if(btn) btn.classList.add('on');
+  if(id==='analytics') initCharts();
+  if(id==='approved'||id==='rejected'||id==='corrections') _labLoadApprovedRejected();
+  // Re-apply org filter on every section navigation if an org is selected
+  if(window._labOrg && typeof _filterLabByOrg==='function') setTimeout(function(){ _filterLabByOrg(window._labOrg); }, 50);
+  window.scrollTo(0,0);
+}
+
+/* ── Cross-portal: populate Approved / Rejected / Corrections from eco_lab_feedback ── */
+function _labLoadApprovedRejected(){
+  var fb=[];
+  try{fb=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]');}catch(e){}
+
+  // Apply org filter upfront if one is selected from the sidebar
+  var _orgF=(window._labOrg||'').toLowerCase().trim();
+  var _orgK2=_orgF.split(/\s+/).slice(0,2).join(' ');
+  function _orgMatch(name){
+    if(!_orgF)return true;
+    var cn=(name||'').toLowerCase().trim();
+    return cn.indexOf(_orgK2)!==-1||_orgK2.indexOf(cn.split(/\s+/).slice(0,2).join(' '))!==-1;
+  }
+
+  function _fmtDate(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return '—';}}
+  function _badge(n){return '<span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:5px">ORG</span>'+(n||'—');}
+
+  /* APPROVED */
+  var appArr=fb.filter(function(f){return f.status==='APPROVED'&&_orgMatch(f.orgName);});
+  var appTbl=document.querySelector('#sec-approved tbody');
+  if(appTbl){
+    appTbl.querySelectorAll('._dyn-fb').forEach(function(r){r.remove();});
+    appArr.forEach(function(f){
+      var tr=document.createElement('tr');tr.className='_dyn-fb';
+      tr.style.cssText='border-left:3px solid #10b981';
+      tr.innerHTML='<td><b>'+(f.reportId||'RPT-LAB-'+Date.now())+'</b></td>'
+        +'<td>'+_badge(f.orgName)+'</td>'
+        +'<td>'+(f.reportType||'Evidence Report')+'</td>'
+        +'<td>'+_fmtDate(f.reviewedAt)+'</td>'
+        +'<td><span class="chip c-app" style="display:inline-flex;align-items:center;gap:4px"><span class="cdot"></span>Ready for Regulatory</span></td>'
+        +'<td><button class="btn b-vw" onclick="alert(\'Approved by: '+(f.labName||'Lab')+'. '+_labEscA(f.feedback||'No comments')+'\')" title="'+_labEscH(f.feedback||'')+'">View</button></td>';
+      appTbl.insertBefore(tr,appTbl.firstChild);
+    });
+  }
+
+  /* REJECTED */
+  var rejArr=fb.filter(function(f){return f.status==='REJECTED'&&_orgMatch(f.orgName);});
+  var rejTbl=document.querySelector('#sec-rejected tbody');
+  if(rejTbl){
+    rejTbl.querySelectorAll('._dyn-fb').forEach(function(r){r.remove();});
+    rejArr.forEach(function(f){
+      var tr=document.createElement('tr');tr.className='_dyn-fb';
+      tr.style.cssText='border-left:3px solid #ef4444';
+      tr.innerHTML='<td><b>'+(f.reportId||'RPT-LAB-REJ')+'</b></td>'
+        +'<td>'+_badge(f.orgName)+'</td>'
+        +'<td>'+_fmtDate(f.reviewedAt)+'</td>'
+        +'<td style="max-width:280px;font-size:.8rem;color:#64748b">'+_labEscH(f.feedback||'—')+'</td>';
+      rejTbl.insertBefore(tr,rejTbl.firstChild);
+    });
+  }
+
+  /* CORRECTIONS */
+  var corArr=fb.filter(function(f){return f.status==='NEEDS_CORRECTION'&&_orgMatch(f.orgName);});
+  var corTbl=document.querySelector('#sec-corrections tbody');
+  if(corTbl){
+    corTbl.querySelectorAll('._dyn-fb').forEach(function(r){r.remove();});
+    corArr.forEach(function(f){
+      var tr=document.createElement('tr');tr.className='_dyn-fb';
+      tr.style.cssText='border-left:3px solid #f59e0b';
+      tr.innerHTML='<td><b>'+(f.reportId||'RPT-LAB-COR')+'</b></td>'
+        +'<td>'+_badge(f.orgName)+'</td>'
+        +'<td>'+_fmtDate(f.reviewedAt)+'</td>'
+        +'<td style="max-width:220px;font-size:.8rem;color:#64748b">'+_labEscH(f.feedback||'—')+'</td>'
+        +'<td><span class="chip c-cor"><span class="cdot"></span>Awaiting Resubmit</span></td>';
+      corTbl.insertBefore(tr,corTbl.firstChild);
+    });
+  }
+
+  /* Hide static empty-state rows when dynamic records are present; show them when none */
+  function _toggleEmpty(tbl, dynRows) {
+    if (!tbl) return;
+    var statics = Array.from(tbl.querySelectorAll('tr:not(._dyn-fb):not(._emp)'));
+    statics.forEach(function(r){ r.style.display = dynRows.length ? 'none' : ''; });
+    var empRow = tbl.querySelector('tr._emp');
+    if (empRow) empRow.style.display = 'none';
+  }
+  _toggleEmpty(appTbl, appArr);
+  _toggleEmpty(rejTbl, rejArr);
+  _toggleEmpty(corTbl, corArr);
+
+  /* Update sidebar badges */
+  var sbApp=document.querySelector('.sb-item[onclick*="approved"] .sb-num');
+  if(sbApp&&appArr.length){sbApp.textContent=appArr.length;sbApp.style.display='';}
+  var sbRej=document.querySelector('.sb-item[onclick*="rejected"] .sb-num');
+  if(!sbRej){var rejItem=document.querySelector('.sb-item[onclick*="rejected"]');if(rejItem){sbRej=document.createElement('span');sbRej.className='sb-num';sbRej.style.cssText='background:rgba(239,68,68,.22);color:#fca5a5';rejItem.appendChild(sbRej);}}
+  if(sbRej&&rejArr.length){sbRej.textContent=rejArr.length;sbRej.style.display='';}
+  var sbCor=document.querySelector('.sb-item[onclick*="corrections"] .sb-num');
+  if(sbCor&&corArr.length){sbCor.textContent=corArr.length;}
+
+}
+
+function doAction(type){
+  var msgs={approve:'✅ Report approved — forwarded to Regulatory Authority',correct:'📝 Correction request sent to organization',reject:'❌ Report rejected — organization notified'};
+  toast(msgs[type]);
+  if(type!=='reject') setTimeout(function(){navTo('approved',null)},800);
+}
+function toast(msg){
+  var el=document.getElementById('toastEl');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show')},3200);
+}
+// ── Org Dropdown (Lab) ────────────────────────────────────────────
+var _labOrgList=[];
+var _labSelOrg={name:'',industry:'',id:''};
+
+function _labEscH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _labEscA(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\x27");}
+
+function _labOrgInit(){
+  var BASE='http://localhost:5000/api/v1';
+  if(typeof EcoSphereAPI!=='undefined'&&EcoSphereAPI.BASE_URL)BASE=EcoSphereAPI.BASE_URL;
+  var localOrgs=[];
+  var _labSeen={};
+  function _labAddOrg(n,ind){var k=(n||'').toLowerCase().trim();if(!k||_labSeen[k])return;_labSeen[k]=true;localOrgs.push({name:n,industry:ind||''});}
+  /* eco_all_orgs — canonical shared registry written by org-portal on every login/register */
+  try{var allOrgs=JSON.parse(localStorage.getItem('eco_all_orgs')||'[]');allOrgs.forEach(function(o){if(o.name)_labAddOrg(o.name,o.industry||'');});}catch(e0){}
+  try{
+    var le=JSON.parse(localStorage.getItem('eco_lab_evidence')||'{}');
+    if(le.companyName)_labAddOrg(le.companyName,le.industryType||'');
+    var re=JSON.parse(localStorage.getItem('eco_reg_evidence')||'{}');
+    if(re.companyName)_labAddOrg(re.companyName,re.industryType||'');
+  }catch(e){}
+  try{var rs2=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]');rs2.forEach(function(s){if(s.orgName)_labAddOrg(s.orgName,s.industryType||s.industry||'');});}catch(e3){}
+  try{var labFb2=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]');labFb2.forEach(function(f){if(f.orgName)_labAddOrg(f.orgName,f.industry||'');});}catch(e5){}
+  try{var sn2=sessionStorage.getItem('ecoOrgName')||localStorage.getItem('ecoOrgName');if(sn2)_labAddOrg(sn2,sessionStorage.getItem('ecoIndustry')||'');}catch(e4){}
+  var demo=[
+    {name:'QMICS Manufacturing Pvt Ltd',industry:'Manufacturing'},
+    {name:'Medway Pharma Pvt Ltd',industry:'Pharmaceuticals'},
+    {name:'Pharma Solutions Ltd',industry:'Pharmaceuticals'},
+    {name:'Green Energy Corp',industry:'Power Generation'},
+    {name:'Textile Hub India',industry:'Textile'},
+    {name:'Chemical Corp Ltd',industry:'Chemical'},
+    {name:'Mining Corp Ltd',industry:'Mining'},
+    {name:'AutoDrive India Pvt Ltd',industry:'Automotive'},
+    {name:'FoodPro Industries',industry:'Food Processing'},
+    {name:'BuildTech Constructions',industry:'Construction'},
+    {name:'SteelMax Ltd',industry:'Manufacturing'},
+    {name:'AquaPure Systems',industry:'Chemical'},
+    {name:'BioPharm Laboratories',industry:'Pharmaceuticals'},
+    {name:'EcoAg Solutions',industry:'Agriculture'},
+    {name:'PaperCraft Mills',industry:'Paper & Pulp'},
+    {name:'TanneryCo Pvt Ltd',industry:'Leather & Tannery'},
+    {name:'PowerGrid South Ltd',industry:'Power Generation'},
+    {name:'CementPlus Corp',industry:'Cement'},
+    {name:'FertilizerFirst Ltd',industry:'Fertilizer'},
+    {name:'RubberTech Pvt Ltd',industry:'Rubber & Plastics'},
+    {name:'GlassWorks India',industry:'Glass & Ceramics'}
+  ];
+  fetch(BASE+'/laboratory/organizations')
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){
+      var api=(d&&d.data)?d.data.map(function(o){return{name:o.name||o.companyName,industry:o.industryType||o.industry||'',id:o._id||o.id||''};}):[];
+      _labOrgList=_labMergeOrgs(api.concat(localOrgs).concat(demo));
+      _labOrgRender('');
+    })
+    .catch(function(){
+      _labOrgList=_labMergeOrgs(localOrgs.concat(demo));
+      _labOrgRender('');
+    });
+}
+
+function _labMergeOrgs(arr){
+  var seen={},out=[];
+  arr.forEach(function(o){var k=(o.name||'').toLowerCase();if(k&&!seen[k]){seen[k]=true;out.push(o);}});
+  return out;
+}
+
+function _labOrgRender(q){
+  var el=document.getElementById('lCompanyList');
+  if(!el)return;
+  var list=q?_labOrgList.filter(function(o){return o.name.toLowerCase().indexOf(q.toLowerCase())!==-1;}):_labOrgList;
+  if(!list.length){
+    el.innerHTML='<div style="padding:11px 14px;font-size:.78rem;color:#64748b;font-style:italic">No matching organizations found</div>';
+    return;
+  }
+  el.innerHTML=list.map(function(o){
+    return '<div class="org-drop-opt" onmousedown="_labOrgSelect(\''+_labEscA(o.name)+'\',\''+_labEscA(o.industry||'')+'\',\''+_labEscA(o.id||'')+'\')"><div class="org-drop-opt-name">'+_labEscH(o.name)+'</div>'+(o.industry?'<div class="org-drop-opt-ind"><i class="fas fa-industry" style="margin-right:4px"></i>'+_labEscH(o.industry)+'</div>':'')+'</div>';
+  }).join('');
+}
+
+function _labOrgFilter(){
+  var q=document.getElementById('lCompanySearch').value;
+  document.getElementById('lCompany').value='';
+  _labSelOrg={name:'',industry:'',id:''};
+  _labOrgRender(q);
+  document.getElementById('lCompanyList').classList.add('open');
+}
+
+function _labOrgOpen(){
+  /* Clear search text so all orgs from all industries show every time the dropdown opens */
+  var si=document.getElementById('lCompanySearch');
+  if(si) si.value='';
+  _labOrgRender('');
+  document.getElementById('lCompanyList').classList.add('open');
+}
+
+function _labOrgBlur(){
+  setTimeout(function(){
+    var el=document.getElementById('lCompanyList');
+    if(el)el.classList.remove('open');
+  },200);
+}
+
+function _labOrgSelect(name,industry,id){
+  var si=document.getElementById('lCompanySearch');
+  var hi=document.getElementById('lCompany');
+  if(si){si.value=name;si.dataset.industry=industry;}
+  if(hi)hi.value=name;
+  _labSelOrg={name:name,industry:industry,id:id};
+  window._labOrg=name;
+  window._labIndustry=industry;
+  var el=document.getElementById('lCompanyList');
+  if(el)el.classList.remove('open');
+}
+
+// ── Evidence Section ───────────────────────────────────────────────
+function _labEvidenceSection(){
+  var el=document.getElementById('sec-evidence');
+  if(!el)return;
+  var evidence={};
+  try{evidence=JSON.parse(localStorage.getItem('eco_lab_evidence')||'{}');}catch(e){}
+  var flagged={};
+  try{flagged=JSON.parse(localStorage.getItem('eco_lab_evidence_flagged')||'{}');}catch(e){}
+  var orgName=window._labOrg||_labSelOrg.name||'';
+
+  if(!orgName){
+    el.innerHTML='<div class="pg-hd"><div class="pg-title"><i class="fas fa-folder-open" style="color:var(--lab);margin-right:8px"></i>Evidence Documents</div><div class="pg-sub">Log in with an organization selected to view their submitted evidence</div></div>'
+      +'<div style="text-align:center;padding:60px 20px;color:#94a3b8"><i class="fas fa-search" style="font-size:2.5rem;margin-bottom:14px;display:block"></i><p style="font-size:.9rem">No organization selected</p></div>';
+    return;
+  }
+
+  // Check if org was flagged/removed
+  if(flagged.companyName&&flagged.companyName.toLowerCase()===orgName.toLowerCase()){
+    el.innerHTML='<div class="pg-hd"><div class="pg-title"><i class="fas fa-folder-open" style="color:var(--lab);margin-right:8px"></i>Evidence Documents</div><div class="pg-sub">Organization access status</div></div>'
+      +'<div style="background:#fff1f2;border:2px solid rgba(220,38,38,.4);border-radius:14px;padding:40px 24px;text-align:center">'
+      +'<i class="fas fa-ban" style="font-size:2.5rem;color:#dc2626;margin-bottom:14px;display:block"></i>'
+      +'<div style="font-size:1rem;font-weight:900;color:#7f1d1d;margin-bottom:8px">'+_labEscH(orgName)+' — Access Revoked</div>'
+      +'<p style="font-size:.84rem;color:#dc2626;margin-bottom:16px">Fraudulent evidence was detected by AI analysis. Organization has been notified.</p>'
+      +'<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:8px 16px;font-size:.76rem;font-weight:800;color:#b91c1c"><i class="fas fa-bell"></i>&nbsp;Notification sent · '+(flagged.flaggedAt?new Date(flagged.flaggedAt).toLocaleDateString():'')+'</div>'
+      +'</div>';
+    return;
+  }
+
+  var hasEv=!!(evidence.companyName&&evidence.companyName.toLowerCase()===orgName.toLowerCase());
+
+  el.innerHTML='<div class="pg-hd"><div class="pg-title"><i class="fas fa-folder-open" style="color:var(--lab);margin-right:8px"></i>Evidence Documents</div><div class="pg-sub">Submitted evidence for <strong>'+_labEscH(orgName)+'</strong></div></div>'
+    +(hasEv?_labBuildEvidenceCard(evidence):_labNoEvidenceCard(orgName));
+}
+
+function _labBuildEvidenceCard(ev){
+  return '<div style="background:#fff;border-radius:14px;box-shadow:var(--shadow2);overflow:hidden;margin-bottom:20px">'
+    +'<div style="background:linear-gradient(135deg,#042f2e,#0d4a3f);padding:18px 24px;display:flex;align-items:center;gap:14px">'
+    +'<div style="width:44px;height:44px;background:rgba(13,148,136,.25);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-building" style="color:#6ee7b7;font-size:1.1rem"></i></div>'
+    +'<div><div style="font-size:1rem;font-weight:900;color:#fff">'+_labEscH(ev.companyName)+'</div><div style="font-size:.75rem;color:#6ee7b7">'+_labEscH(ev.industryType||'')+'</div></div>'
+    +'<div id="aiResultBadge" style="margin-left:auto"></div>'
+    +'</div>'
+    +'<div style="padding:22px 24px">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px;margin-bottom:22px">'
+    +_labEvidCard('NABL Certificate','NABL-'+(ev.nablNo||'—'),'fa-certificate','#0d9488',ev.nablExpiry?'Expires: '+ev.nablExpiry:'')
+    +_labEvidCard('Laboratory',ev.labName||'—','fa-flask','#0891b2','')
+    +_labEvidCard('Contact Person',ev.contactName||'—','fa-user-tie','#7c3aed','')
+    +_labEvidCard('Contact Email',ev.contactEmail||'—','fa-envelope','#ea580c','')
+    +'</div>'
+    +'<div style="background:#f0fdf4;border:1px solid rgba(13,148,136,.2);border-radius:11px;padding:16px 20px;margin-bottom:20px">'
+    +'<h4 style="font-size:.78rem;font-weight:800;color:#0f4c42;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px"><i class="fas fa-file-alt" style="color:#0d9488;margin-right:6px"></i>Submitted Documents</h4>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +_labDocRow(ev.nablFile,'NABL Accreditation Certificate','fa-certificate','#0d9488','')
+    +_labDocRow(ev.authFile,'Authorization Letter','fa-file-signature','#0891b2','')
+    +_labDocRow(ev.scope,'Testing Scope','fa-clipboard-list','#7c3aed',ev.scope||'')
+    +'</div></div>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px">'
+    +'<button id="aiAnalyzeBtn" onclick="_runAiDetection()" style="background:linear-gradient(135deg,#1e40af,#4338ca);border:none;border-radius:10px;padding:11px 22px;color:#fff;font-family:Poppins,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="fas fa-robot"></i>&nbsp;AI Analyze Evidence</button>'
+    +'<span style="font-size:.74rem;color:#64748b">Checks document authenticity using AI pattern analysis</span>'
+    +'</div>'
+    /* ── Lab Review Panel ── */
+    +_labBuildReviewPanel(ev.companyName)
+    +'</div></div>'
+    +'<div id="aiDetectionResult" style="display:none"></div>';
+}
+
+function _labBuildReviewPanel(orgName){
+  var existing={};
+  try{
+    var all=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]');
+    var match=all.filter(function(f){return (f.orgName||'').toLowerCase()===orgName.toLowerCase();});
+    if(match.length)existing=match[match.length-1];
+  }catch(e){}
+
+  var statusBannerHtml='';
+  if(existing.status){
+    var sbg=existing.status==='APPROVED'?'#dcfce7':existing.status==='REJECTED'?'#fee2e2':'#fef3c7';
+    var sbd=existing.status==='APPROVED'?'#bbf7d0':existing.status==='REJECTED'?'#fecaca':'#fde68a';
+    var stx=existing.status==='APPROVED'?'#065f46':existing.status==='REJECTED'?'#dc2626':'#92400e';
+    var sic=existing.status==='APPROVED'?'fa-check-circle':existing.status==='REJECTED'?'fa-times-circle':'fa-edit';
+    statusBannerHtml='<div style="background:'+sbg+';border:1px solid '+sbd+';border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px">'
+      +'<i class="fas '+sic+'" style="color:'+stx+';margin-top:2px"></i>'
+      +'<div><div style="font-size:.78rem;font-weight:800;color:'+stx+'">Previous Decision: '+existing.status+'</div>'
+      +(existing.feedback?'<div style="font-size:.76rem;color:'+stx+';margin-top:3px">'+_labEscH(existing.feedback)+'</div>':'')
+      +'<div style="font-size:.68rem;color:#94a3b8;margin-top:3px">'+(existing.reviewedAt?new Date(existing.reviewedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'')+' — Click below to update</div>'
+      +'</div></div>';
+  }
+
+  return '<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:20px 22px">'
+    +'<h4 style="font-size:.8rem;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px">'
+    +'<i class="fas fa-clipboard-check" style="color:#0d9488"></i> Lab Review Decision</h4>'
+    +statusBannerHtml
+    +'<div style="margin-bottom:12px"><label style="font-size:.74rem;font-weight:700;color:#475569;display:block;margin-bottom:6px">Review Feedback / Comments</label>'
+    +'<textarea id="labReviewFeedback" placeholder="Enter your findings, observations, or reason for decision..." style="width:100%;min-height:80px;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:.82rem;font-family:inherit;resize:vertical;outline:none;transition:.15s" onfocus="this.style.borderColor=\'#0d9488\'" onblur="this.style.borderColor=\'#e2e8f0\'">'+_labEscH(existing.feedback||'')+'</textarea></div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+    +'<button onclick="_labSubmitReview(\''+_labEscA(orgName)+'\',\'APPROVED\')" style="background:#10b981;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="fas fa-check-circle"></i> Approve Evidence</button>'
+    +'<button onclick="_labSubmitReview(\''+_labEscA(orgName)+'\',\'NEEDS_CORRECTION\')" style="background:#f59e0b;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="fas fa-edit"></i> Request Correction</button>'
+    +'<button onclick="_labSubmitReview(\''+_labEscA(orgName)+'\',\'REJECTED\')" style="background:#ef4444;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="fas fa-times-circle"></i> Reject</button>'
+    +'</div>'
+    +'<div id="labReviewMsg" style="margin-top:10px;display:none"></div>'
+    +'</div>';
+}
+
+function _labSubmitReview(orgName, status){
+  var fbEl=document.getElementById('labReviewFeedback');
+  var feedback=fbEl?fbEl.value.trim():'';
+  if(status==='REJECTED'&&!feedback){
+    var msg=document.getElementById('labReviewMsg');
+    if(msg){msg.style.display='block';msg.innerHTML='<span style="color:#dc2626;font-size:.78rem"><i class="fas fa-exclamation-circle"></i> Please enter a reason for rejection.</span>';}
+    return;
+  }
+
+  /* Save to eco_lab_feedback */
+  var all=[];
+  try{all=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]');}catch(e){}
+  all=all.filter(function(f){return (f.orgName||'').toLowerCase()!==orgName.toLowerCase();});
+  var entry={
+    orgName:orgName,
+    labName:window._labOrg||'Lab Authority',
+    reviewedAt:new Date().toISOString(),
+    status:status,
+    feedback:feedback,
+    reportId:(function(){try{var s=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]');var m=s.filter(function(x){return(x.orgName||'').toLowerCase()===orgName.toLowerCase();});return m.length?m[m.length-1].reportId:'';}catch(e){return '';}}())
+  };
+  all.push(entry);
+  localStorage.setItem('eco_lab_feedback',JSON.stringify(all));
+
+  /* Push notification to org */
+  var notifs=[];
+  try{notifs=JSON.parse(localStorage.getItem('eco_notifications')||'[]');}catch(e){}
+  var msgMap={APPROVED:'Lab authority approved your evidence submission.',NEEDS_CORRECTION:'Lab authority requested corrections to your evidence.',REJECTED:'Lab authority rejected your evidence. Reason: '+feedback};
+  notifs.unshift({type:'LAB_REVIEW',orgName:orgName,status:status,feedback:feedback,at:new Date().toISOString(),message:msgMap[status]||'Lab authority reviewed your submission.'});
+  localStorage.setItem('eco_notifications',JSON.stringify(notifs));
+
+  /* Show success message and refresh panel */
+  var msg=document.getElementById('labReviewMsg');
+  var colorMap={APPROVED:'#10b981',NEEDS_CORRECTION:'#f59e0b',REJECTED:'#ef4444'};
+  var iconMap={APPROVED:'fa-check-circle',NEEDS_CORRECTION:'fa-edit',REJECTED:'fa-times-circle'};
+  if(msg){
+    msg.style.display='block';
+    msg.innerHTML='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:.8rem;font-weight:700;color:'+colorMap[status]+'">'
+      +'<i class="fas '+iconMap[status]+'" style="margin-right:6px"></i>Review submitted: '+status+'. Organization has been notified.</div>';
+  }
+  /* Re-render panel after 1.2s to show updated banner; also refresh approved/rejected lists */
+  setTimeout(function(){ _labEvidenceSection(); _labLoadApprovedRejected(); },1200);
+}
+
+function _labEvidCard(label,value,icon,color,sub){
+  return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+    +'<div style="width:28px;height:28px;background:'+color+'1a;border-radius:7px;display:flex;align-items:center;justify-content:center"><i class="fas '+icon+'" style="color:'+color+';font-size:.77rem"></i></div>'
+    +'<span style="font-size:.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px">'+label+'</span>'
+    +'</div>'
+    +'<div style="font-size:.87rem;font-weight:800;color:#0f172a">'+_labEscH(value)+'</div>'
+    +(sub?'<div style="font-size:.68rem;color:#94a3b8;margin-top:2px">'+_labEscH(sub)+'</div>':'')
+    +'</div>';
+}
+
+function _labDocRow(val,name,icon,color,text){
+  var exists=!!(val);
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #e2e8f0">'
+    +'<div style="width:27px;height:27px;background:'+color+'1a;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas '+icon+'" style="color:'+color+';font-size:.76rem"></i></div>'
+    +'<div style="flex:1;min-width:0"><div style="font-size:.79rem;font-weight:700;color:#374151">'+name+'</div>'+(text&&text!==val?'<div style="font-size:.7rem;color:#64748b">'+_labEscH(text)+'</div>':'' )+'</div>'
+    +(exists?'<span style="font-size:.67rem;font-weight:800;color:#16a34a;background:#f0fdf4;border:1px solid rgba(22,163,74,.25);border-radius:5px;padding:2px 8px">Uploaded</span>':'<span style="font-size:.67rem;font-weight:700;color:#94a3b8;background:#f1f5f9;border-radius:5px;padding:2px 8px">Not provided</span>')
+    +'</div>';
+}
+
+function _labNoEvidenceCard(org){
+  return '<div style="background:#fff;border-radius:14px;box-shadow:var(--shadow2);padding:48px 24px;text-align:center">'
+    +'<i class="fas fa-inbox" style="font-size:2.5rem;color:#d1fae5;margin-bottom:14px;display:block"></i>'
+    +'<div style="font-size:.95rem;font-weight:800;color:#0f172a;margin-bottom:8px">No Evidence Submitted Yet</div>'
+    +'<p style="font-size:.84rem;color:#64748b">'+_labEscH(org)+' has not submitted NABL evidence through the organization portal.</p>'
+    +'</div>';
+}
+
+function _runAiDetection(){
+  var btn=document.getElementById('aiAnalyzeBtn');
+  var resEl=document.getElementById('aiDetectionResult');
+  var badgeEl=document.getElementById('aiResultBadge');
+  if(!btn||!resEl)return;
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>&nbsp;Analyzing documents...';
+  resEl.style.display='block';
+  var steps=['Verifying document signatures...','Checking NABL registry cross-reference...','Analyzing metadata & timestamp integrity...','Scanning for digital forgery markers...'];
+  var i=0;
+  resEl.innerHTML='<div style="background:linear-gradient(135deg,#1e3a5f,#1e40af);border-radius:13px;padding:17px 22px;margin-bottom:16px;color:#93c5fd;display:flex;align-items:center;gap:12px"><i class="fas fa-robot fa-spin" style="font-size:1.2rem;flex-shrink:0"></i><div><div style="font-weight:800;margin-bottom:3px">AI Evidence Analysis in Progress...</div><div style="font-size:.78rem;opacity:.8" id="aiStepText">Initializing scanner...</div></div></div>';
+  var iv=setInterval(function(){
+    var stEl=document.getElementById('aiStepText');
+    if(stEl&&i<steps.length){stEl.textContent=steps[i++];}
+    else{
+      clearInterval(iv);
+      var ev={};
+      try{ev=JSON.parse(localStorage.getItem('eco_lab_evidence')||'{}');}catch(e){}
+      // Genuine if actual files were attached; suspicious if only text fields exist
+      var genuine=!!(ev.nablFile||ev.authFile);
+      _showAiResult(genuine?'genuine':'suspicious',btn,resEl,badgeEl);
+    }
+  },950);
+}
+
+function _showAiResult(result,btn,resEl,badgeEl){
+  var ok=result==='genuine';
+  if(badgeEl){
+    badgeEl.innerHTML=ok
+      ?'<span style="background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.4);border-radius:7px;padding:5px 12px;font-size:.71rem;font-weight:800;color:#86efac"><i class="fas fa-shield-alt" style="margin-right:5px"></i>GENUINE ✓</span>'
+      :'<span style="background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.4);border-radius:7px;padding:5px 12px;font-size:.71rem;font-weight:800;color:#fca5a5"><i class="fas fa-exclamation-triangle" style="margin-right:5px"></i>SUSPICIOUS ⚠</span>';
+  }
+  if(ok){
+    resEl.innerHTML='<div style="background:#f0fdf4;border:1.5px solid rgba(22,163,74,.35);border-radius:13px;padding:17px 22px;display:flex;align-items:flex-start;gap:13px">'
+      +'<div style="width:44px;height:44px;background:rgba(22,163,74,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-shield-alt" style="color:#16a34a;font-size:1.2rem"></i></div>'
+      +'<div><div style="font-size:.93rem;font-weight:900;color:#14532d;margin-bottom:5px">AI Analysis: Evidence Appears Genuine</div>'
+      +'<div style="font-size:.79rem;color:#15803d;line-height:1.65">Document signatures verified · NABL format consistent · Metadata integrity confirmed · No forgery markers detected</div></div></div>';
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-robot"></i>&nbsp;Re-Analyze';}
+    toast('✅ AI analysis complete — evidence appears genuine');
+  }else{
+    resEl.innerHTML='<div style="background:#fff1f2;border:2px solid rgba(220,38,38,.5);border-radius:13px;padding:19px 22px;margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;gap:13px">'
+      +'<div style="width:44px;height:44px;background:rgba(220,38,38,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-exclamation-triangle" style="color:#dc2626;font-size:1.2rem"></i></div>'
+      +'<div style="flex:1"><div style="font-size:.93rem;font-weight:900;color:#7f1d1d;margin-bottom:5px">⚠ AI Alert: Fraudulent Evidence Detected</div>'
+      +'<div style="font-size:.79rem;color:#dc2626;line-height:1.65;margin-bottom:12px">Anomalies detected: document metadata mismatch, signature verification failed, NABL registry cross-check failed. This submission appears to contain fabricated documents.</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+      +'<button onclick="_removeOrgFromLab()" style="background:linear-gradient(135deg,#dc2626,#b91c1c);border:none;border-radius:9px;padding:9px 18px;color:#fff;font-family:Poppins,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i class="fas fa-ban" style="margin-right:5px"></i>Remove from Lab Portal</button>'
+      +'<button onclick="_labEvidenceSection()" style="background:transparent;border:1.5px solid rgba(220,38,38,.4);border-radius:9px;padding:9px 18px;color:#dc2626;font-family:Poppins,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i class="fas fa-times" style="margin-right:5px"></i>Dismiss</button>'
+      +'</div></div></div></div>';
+    toast('⚠️ AI detected potentially fraudulent evidence!');
+  }
+}
+
+function _removeOrgFromLab(){
+  var ev={};
+  try{ev=JSON.parse(localStorage.getItem('eco_lab_evidence')||'{}');}catch(e){}
+  var orgName=ev.companyName||window._labOrg||'';
+  localStorage.setItem('eco_lab_evidence_flagged',JSON.stringify({
+    companyName:orgName,
+    flaggedAt:new Date().toISOString(),
+    reason:'AI detected fraudulent evidence'
+  }));
+  localStorage.removeItem('eco_lab_evidence');
+  // Add notification for the org
+  var notifs=[];
+  try{notifs=JSON.parse(localStorage.getItem('eco_notifications')||'[]');}catch(e){}
+  notifs.unshift({
+    id:'notif_'+Date.now(),
+    type:'FRAUD_ALERT',
+    title:'Lab Access Revoked — Fraudulent Evidence Detected',
+    message:'Your submitted NABL evidence has been flagged as fraudulent by our AI verification system. Access to the Lab Portal has been revoked. Please contact support at support@ecosphere.in with valid original documents.',
+    orgName:orgName,
+    timestamp:new Date().toISOString(),
+    read:false
+  });
+  localStorage.setItem('eco_notifications',JSON.stringify(notifs));
+  // Refresh evidence section
+  window._labOrg=orgName;
+  _labEvidenceSection();
+  toast('🚫 '+orgName+' removed from Lab Portal. Notification sent.');
+}
+
+// ── Org-specific data filtering ──────────────────────────────────
+function _filterLabByOrg(orgName){
+  var app=document.getElementById('app');
+  if(!app||!orgName)return;
+  var norm=orgName.toLowerCase().trim();
+  var key2=norm.split(/\s+/).slice(0,2).join(' ');
+
+  function rowMatch(cellText){
+    var ct=(cellText||'').toLowerCase().trim();
+    if(!ct)return false;
+    // table cell may be shorter ("QMICS Manufacturing") than full org ("QMICS Manufacturing Pvt Ltd")
+    return ct.indexOf(key2)!==-1||norm.indexOf(ct.split(/\s+/).slice(0,2).join(' '))!==-1;
+  }
+
+  // Filter all table rows — org name is in the 2nd td (index 1)
+  app.querySelectorAll('tbody tr:not(._emp)').forEach(function(tr){
+    var tds=tr.querySelectorAll('td');
+    if(tds.length<2)return;
+    tr.style.display=rowMatch(tds[1].textContent)?'':'none';
+  });
+
+  // Add "no records" empty-state row when all rows in a tbody are hidden
+  app.querySelectorAll('tbody').forEach(function(tb){
+    var rows=Array.from(tb.querySelectorAll('tr:not(._emp)'));
+    var allHidden=rows.length>0&&rows.every(function(r){return r.style.display==='none';});
+    var ep=tb.querySelector('tr._emp');
+    if(allHidden){
+      if(!ep){
+        ep=document.createElement('tr');ep.className='_emp';
+        var c=rows[0].querySelectorAll('td').length||4;
+        ep.innerHTML='<td colspan="'+c+'" style="text-align:center;padding:22px 16px;color:#94a3b8;font-size:.83rem;font-style:italic">'
+          +'<i class="fas fa-filter" style="margin-right:7px"></i>No records found for <strong style="color:#475569;font-style:normal">'+_labEscH(orgName)+'</strong></td>';
+        tb.appendChild(ep);
+      }
+      ep.style.display='';
+    }else if(ep)ep.style.display='none';
+  });
+
+  // Filter audit trail rows (match org key in full row text)
+  app.querySelectorAll('.audit-row').forEach(function(row){
+    var txt=row.textContent.toLowerCase();
+    row.style.display=txt.indexOf(key2)!==-1?'':'none';
+  });
+
+  // Update sidebar pending badge count to reflect visible rows
+  var pendVisible=Array.from(app.querySelectorAll('#sec-pending tbody tr:not(._emp)')).filter(function(r){return r.style.display!=='none';}).length;
+  var nb=document.querySelector('.sb-item[onclick*="pending"] .sb-num');
+  if(nb)nb.textContent=pendVisible>0?pendVisible:'';
+
+  // Update inreview badge
+  var revVisible=Array.from(app.querySelectorAll('#sec-inreview tbody tr:not(._emp)')).filter(function(r){return r.style.display!=='none';}).length;
+  var rb=document.querySelector('.sb-item[onclick*="inreview"] .sb-num');
+  if(rb)rb.textContent=revVisible>0?revVisible:'';
+  // Update card header badges
+  var pendCard=app.querySelector('#sec-pending .card-hd span');
+  if(pendCard)pendCard.textContent=pendVisible+' pending';
+}
+
+function initCharts(){
+  if(typeof Chart==='undefined') return;
+  var opt={plugins:{legend:{labels:{color:'#374151',font:{size:10,family:'Inter',weight:'600'},boxWidth:9,padding:9}},tooltip:{backgroundColor:'#042f2e',padding:8,cornerRadius:7}},scales:{x:{ticks:{color:'#64748b',font:{size:9}},grid:{color:'#f0fdf4'}},y:{ticks:{color:'#64748b',font:{size:9}},grid:{color:'#f0fdf4'}}}};
+  var c1=document.getElementById('chart1'); if(c1&&!c1._c) c1._c=new Chart(c1,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Approved',data:[6,8,7,9,8,7],backgroundColor:'rgba(13,148,136,.75)',borderRadius:4},{label:'Rejected',data:[1,0,2,1,1,1],backgroundColor:'rgba(220,38,38,.6)',borderRadius:4}]},options:{...opt,animation:{duration:900}}});
+  var c2=document.getElementById('chart2'); if(c2&&!c2._c) c2._c=new Chart(c2,{type:'doughnut',data:{labels:['Approved','Pending','In Review','Corrections','Rejected'],datasets:[{data:[7,4,2,1,1],backgroundColor:['rgba(13,148,136,.85)','rgba(217,119,6,.8)','rgba(29,78,216,.8)','rgba(234,88,12,.75)','rgba(220,38,38,.75)'],borderColor:'#fff',borderWidth:2}]},options:{cutout:'64%',plugins:{legend:{position:'bottom',labels:{color:'#374151',font:{size:9},padding:7,boxWidth:7}},tooltip:opt.plugins.tooltip},animation:{duration:900}}});
+  var c3=document.getElementById('chart3'); if(c3&&!c3._c) c3._c=new Chart(c3,{type:'line',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Reviews',data:[9,9,10,12,10,15],borderColor:'#0d9488',backgroundColor:'rgba(13,148,136,.07)',fill:true,tension:.4,pointRadius:3},{label:'Approvals',data:[6,8,7,9,8,12],borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.05)',fill:true,tension:.4,pointRadius:3}]},options:{...opt,interaction:{mode:'index',intersect:false},animation:{duration:900}}});
+  var c4=document.getElementById('chart4'); if(c4&&!c4._c) c4._c=new Chart(c4,{type:'doughnut',data:{labels:['Manufacturing','Pharma','Chemical','Textile','Others'],datasets:[{data:[35,22,18,15,10],backgroundColor:['rgba(13,148,136,.85)','rgba(29,78,216,.8)','rgba(124,58,237,.8)','rgba(217,119,6,.8)','rgba(5,150,105,.75)'],borderColor:'#fff',borderWidth:2}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#374151',font:{size:9},padding:7,boxWidth:7}},tooltip:opt.plugins.tooltip},animation:{duration:900}}});
+  /* Resize analytics charts in case they were created while hidden */
+  if(c3&&c3._c) setTimeout(function(){c3._c.resize();},50);
+  if(c4&&c4._c) setTimeout(function(){c4._c.resize();},50);
+}
+
+/* ── View Online: opens review panel content in a print-friendly window ── */
+function _labViewOnline(){
+  var title=document.querySelector('#sec-review .rev-head h3');
+  var t=title?title.textContent.trim():'Lab Review Report';
+  var body=document.querySelector('#sec-review .rev-body');
+  var win=window.open('','_blank','width=920,height=720');
+  if(!win){toast('⚠️ Allow pop-ups to view report online');return;}
+  win.document.write('<!doctype html><html><head><title>'+t+'</title>'
+    +'<style>body{font-family:Inter,sans-serif;padding:32px;max-width:900px;margin:0 auto;color:#1e293b}'
+    +'table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;border:1px solid #e2e8f0;font-size:.83rem}'
+    +'th{background:#f1faf9;font-weight:700}h3,h4{font-family:Poppins,sans-serif}'
+    +'.chip{display:inline-flex;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700}'
+    +'.c-app{background:#dcfce7;color:#166534}.c-rej{background:#fee2e2;color:#991b1b}'
+    +'.c-cor{background:#fef3c7;color:#92400e}.c-rev{background:#dbeafe;color:#1d4ed8}'
+    +'.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}'
+    +'.meta-item label{font-size:.72rem;color:#64748b;font-weight:700;display:block}'
+    +'.meta-item span{font-size:.85rem;font-weight:600}</style></head><body>'
+    +'<h3>'+t+'</h3>'+(body?body.innerHTML:'<p>No report loaded in review panel.</p>')
+    +'</body></html>');
+  win.document.close();
+}
+
+/* ── File upload handler for review panel ── */
+function _labHandleUpload(input){
+  if(!input||!input.files||!input.files[0])return;
+  var f=input.files[0];
+  if(f.size>10*1024*1024){toast('⚠️ File exceeds 10MB limit');input.value='';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    window._labUploadedFile={name:f.name,size:f.size,dataUrl:e.target.result};
+    toast('✅ Attached: '+f.name+' ('+Math.round(f.size/1024)+'KB)');
+  };
+  reader.readAsDataURL(f);
+  input.value='';
+}
+
+/* ── Certificate generation ── */
+function _labIssueCert(type){
+  var names={'verification':'Verification','test-validation':'Test Validation','carbon-verification':'Carbon Verification'};
+  var typeName=names[type]||type;
+  var org=window._labOrg||sessionStorage.getItem('ecoOrgName')||'Organization';
+  if(!org||org==='Organization'){
+    toast('⚠️ Please log in with an organization selected before issuing a certificate');return;
+  }
+  var yr=new Date().getFullYear();
+  var certNo='LABC/'+type.toUpperCase().replace(/-/g,'').substring(0,3)+'/'+yr+'/'+Math.floor(Math.random()*9000+1000);
+  var date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var expiry=new Date(Date.now()+365*24*60*60*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var certs=[];
+  try{certs=JSON.parse(localStorage.getItem('eco_issued_certs')||'[]');}catch(e){}
+  certs.unshift({certNo:certNo,type:typeName,org:org,issuedAt:new Date().toISOString(),expiry:expiry});
+  localStorage.setItem('eco_issued_certs',JSON.stringify(certs));
+  var container=document.getElementById('certCardContainer');
+  var empty=document.getElementById('certEmptyState');
+  if(empty)empty.style.display='none';
+  var card=document.createElement('div');
+  card.style.cssText='background:#fff;border-radius:12px;padding:20px 22px;margin-bottom:14px;border-left:4px solid #0d9488;box-shadow:0 2px 10px rgba(0,0,0,.06)';
+  card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'
+    +'<div><div style="font-size:.68rem;color:#0d9488;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px">'+typeName+' Certificate</div>'
+    +'<div style="font-size:.95rem;font-weight:900;color:#042f2e;margin-bottom:4px">'+certNo+'</div>'
+    +'<div style="font-size:.78rem;color:#64748b"><i class="fas fa-building" style="margin-right:4px"></i>'+org+'</div>'
+    +'<div style="font-size:.76rem;color:#94a3b8;margin-top:3px">Issued: '+date+' &nbsp;·&nbsp; Valid till: <span style="color:#16a34a;font-weight:700">'+expiry+'</span></div></div>'
+    +'<div style="display:flex;gap:8px;flex-shrink:0">'
+    +'<button class="btn b-dl" onclick="ecoDownloadReport(\''+type+'\',\''+typeName+' Certificate '+certNo+'\')"><i class="fas fa-download"></i> Download</button>'
+    +'<button class="btn b-vw" onclick="toast(\'✅ '+certNo+' — Verified on EcoSphere ledger\')"><i class="fas fa-shield-check"></i> Verify</button>'
+    +'</div></div>';
+  if(container)container.insertBefore(card,container.firstChild);
+  toast('🏆 '+typeName+' Certificate issued: '+certNo);
+}
+
+/* ── Export audit trail as CSV ── */
+function _labExportAudit(){
+  var rows=[];
+  document.querySelectorAll('#sec-audit .audit-row').forEach(function(row){
+    var title=row.querySelector('strong');
+    var desc=row.querySelector('p');
+    var time=row.querySelector('.a-time');
+    rows.push([
+      title?title.textContent.trim():'',
+      desc?desc.textContent.trim():'',
+      time?time.textContent.replace(/^\s*[^\s]+\s*/,'').trim():''
+    ]);
+  });
+  if(!rows.length){toast('⚠️ No audit entries to export');return;}
+  var csv='Activity,Description,Timestamp\n'+rows.map(function(r){
+    return r.map(function(c){return'"'+c.replace(/"/g,'""')+'"';}).join(',');
+  }).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='EcoSphere_LabAudit_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✅ Audit trail exported');
+}
+
+/* ── Forgot password modal ── */
+function _labForgotPassword(){
+  var existing=document.getElementById('labFgpModal');
+  if(existing)existing.remove();
+  var modal=document.createElement('div');
+  modal.id='labFgpModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(4,47,46,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML='<div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25)">'
+    +'<h3 style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#042f2e;margin:0 0 8px"><i class="fas fa-key" style="color:#0d9488;margin-right:8px"></i>Reset Password</h3>'
+    +'<p style="font-size:.81rem;color:#64748b;margin:0 0 20px">Enter your registered email. A reset link will be sent if the account exists.</p>'
+    +'<label style="font-size:.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Email Address</label>'
+    +'<input id="fgpEmail" type="email" placeholder="lab@yourdomain.com" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.87rem;font-family:Inter,sans-serif;outline:none;margin-bottom:12px"/>'
+    +'<div id="fgpMsg" style="display:none;font-size:.79rem;padding:10px 14px;border-radius:8px;margin-bottom:14px"></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button onclick="_labSendReset()" style="flex:1;background:linear-gradient(135deg,#0d9488,#059669);color:#fff;border:none;border-radius:9px;padding:11px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer"><i class="fas fa-paper-plane"></i> Send Reset Link</button>'
+    +'<button onclick="document.getElementById(\'labFgpModal\').remove()" style="background:#f1f5f9;color:#475569;border:none;border-radius:9px;padding:11px 18px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+  setTimeout(function(){var e=document.getElementById('fgpEmail');if(e)e.focus();},80);
+}
+
+function _labSendReset(){
+  var email=(document.getElementById('fgpEmail')||{value:''}).value.trim();
+  var msg=document.getElementById('fgpMsg');
+  if(!email||!/\S+@\S+\.\S+/.test(email)){
+    msg.style.cssText='display:block;background:#fee2e2;color:#991b1b;border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:9px 14px;font-size:.79rem;margin-bottom:14px';
+    msg.textContent='Please enter a valid email address.';return;
+  }
+  var BASE=(typeof EcoSphereAPI!=='undefined'&&EcoSphereAPI.BASE_URL)?EcoSphereAPI.BASE_URL:'http://localhost:5000/api/v1';
+  fetch(BASE+'/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+    .catch(function(){})
+    .finally(function(){
+      msg.style.cssText='display:block;background:#dcfce7;color:#166534;border:1px solid rgba(22,163,74,.2);border-radius:8px;padding:9px 14px;font-size:.79rem;margin-bottom:14px';
+      msg.innerHTML='<i class="fas fa-check-circle" style="margin-right:6px"></i>If an account exists for <b>'+email+'</b>, a reset link has been sent.';
+    });
+}
+
+/* ── Organization Sidebar ── */
+function _buildLabOrgSidebar() {
+  var container = document.getElementById('labOrgSidebarList');
+  if (!container) return;
+
+  var allOrgs = [];
+  try { allOrgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]'); } catch(e){}
+
+  // Add orgs from feedback/submissions that predate the registry (auto-accepted legacy)
+  var knownNorms = allOrgs.map(function(o){ return (o.orgName||o.name||'').toLowerCase().trim(); });
+  try { JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]').forEach(function(f){
+    var n=(f.orgName||'').trim(); if(n&&knownNorms.indexOf(n.toLowerCase())===-1){ allOrgs.push({orgName:n,name:n,labStatus:'accepted'}); knownNorms.push(n.toLowerCase()); }
+  }); } catch(e){}
+  try { JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]').forEach(function(s){
+    var n=(s.orgName||'').trim(); if(n&&knownNorms.indexOf(n.toLowerCase())===-1){ allOrgs.push({orgName:n,name:n,labStatus:'accepted'}); knownNorms.push(n.toLowerCase()); }
+  }); } catch(e){}
+
+  var getName = function(o){ return (o.orgName||o.name||'').trim(); };
+  var getInit = function(nm){ return nm.split(/\s+/).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase(); };
+  var escH = function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
+  var escJ = function(s){ return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\x27"); };
+
+  // new org portal registrations → labStatus:'pending'; legacy/feedback orgs → undefined treated as accepted
+  var pending  = allOrgs.filter(function(o){ return o.labStatus === 'pending'; });
+  var accepted = allOrgs.filter(function(o){ return !o.labStatus || o.labStatus === 'accepted'; });
+
+  var html = '<div class="sb-item on" id="labOrgAll" onclick="_labSelectSidebarOrg(null,this)" style="border-left-color:var(--acc)">'
+           + '<i class="fas fa-layer-group"></i> All Organizations</div>';
+
+  if (pending.length) {
+    html += '<div style="font-size:.64rem;font-weight:800;letter-spacing:.07em;color:#d97706;text-transform:uppercase;padding:10px 14px 4px;display:flex;align-items:center;gap:5px">'
+          + '<i class="fas fa-clock"></i> Pending Approval'
+          + '<span style="background:#d97706;color:#fff;border-radius:10px;padding:1px 6px;font-size:.58rem">' + pending.length + '</span></div>';
+    pending.forEach(function(o){
+      var nm = getName(o); if(!nm) return;
+      html += '<div style="display:flex;align-items:center;gap:5px;padding:6px 8px 6px 12px;border-left:3px solid #d97706;margin:1px 0;background:rgba(217,119,6,.07)">'
+            + '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:rgba(217,119,6,.25);color:#d97706;font-size:.54rem;font-weight:900;flex-shrink:0">' + escH(getInit(nm)) + '</span>'
+            + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:#92400e;flex:1;min-width:0" title="' + escH(nm) + '">' + escH(nm) + '</span>'
+            + '<button onclick="_labAcceptOrg(\'' + escJ(nm) + '\')" title="Accept" style="background:#dcfce7;color:#16a34a;border:none;border-radius:5px;padding:3px 6px;font-size:.62rem;cursor:pointer;font-weight:800;flex-shrink:0"><i class="fas fa-check"></i></button>'
+            + '<button onclick="_labRemoveOrg(\'' + escJ(nm) + '\')" title="Remove" style="background:#fee2e2;color:#dc2626;border:none;border-radius:5px;padding:3px 6px;font-size:.62rem;cursor:pointer;font-weight:800;flex-shrink:0"><i class="fas fa-times"></i></button>'
+            + '</div>';
+    });
+  }
+
+  if (accepted.length) {
+    if (pending.length) {
+      html += '<div style="font-size:.64rem;font-weight:800;letter-spacing:.07em;color:#0d9488;text-transform:uppercase;padding:10px 14px 4px;display:flex;align-items:center;gap:5px">'
+            + '<i class="fas fa-check-circle"></i> Accepted</div>';
+    }
+    accepted.forEach(function(o){
+      var nm = getName(o); if(!nm) return;
+      html += '<div class="sb-item" onclick="_labSelectSidebarOrg(\'' + escJ(nm) + '\',this)" title="' + escH(nm) + '">'
+            + '<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;background:rgba(13,148,136,.25);color:#34d399;font-size:.55rem;font-weight:900;flex-shrink:0">' + escH(getInit(nm)) + '</span>'
+            + ' <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(nm) + '</span>'
+            + '</div>';
+    });
+  }
+
+  if (!pending.length && !accepted.length) {
+    html += '<div style="padding:12px 14px;font-size:.74rem;color:#94a3b8;font-style:italic"><i class="fas fa-building" style="margin-right:6px"></i>No registered organizations</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function _labAcceptOrg(orgName) {
+  try {
+    var orgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]');
+    var norm = orgName.toLowerCase().trim();
+    var found = false;
+    orgs = orgs.map(function(o){
+      if ((o.orgName||o.name||'').toLowerCase().trim() === norm) { found = true; return Object.assign({},o,{labStatus:'accepted',labAcceptedAt:new Date().toISOString()}); }
+      return o;
+    });
+    if (!found) orgs.push({name:orgName,orgName:orgName,labStatus:'accepted',labAcceptedAt:new Date().toISOString()});
+    localStorage.setItem('eco_all_orgs', JSON.stringify(orgs));
+    _buildLabOrgSidebar();
+    if (typeof toast === 'function') toast('✅ ' + orgName + ' accepted');
+  } catch(e){}
+}
+
+function _labRemoveOrg(orgName) {
+  try {
+    var orgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]');
+    var norm = orgName.toLowerCase().trim();
+    orgs = orgs.map(function(o){
+      if ((o.orgName||o.name||'').toLowerCase().trim() === norm) return Object.assign({},o,{labStatus:'removed'});
+      return o;
+    });
+    localStorage.setItem('eco_all_orgs', JSON.stringify(orgs));
+    if ((window._labOrg||'').toLowerCase().trim() === norm) _labSelectSidebarOrg(null, document.getElementById('labOrgAll'));
+    _buildLabOrgSidebar();
+    if (typeof toast === 'function') toast('🗑️ ' + orgName + ' removed');
+  } catch(e){}
+}
+
+function _labComputeOrgStats(orgName) {
+  var norm = (orgName || '').toLowerCase().trim();
+  var key2 = norm.split(/\s+/).slice(0,2).join(' ');
+  function match(n) {
+    var cn = (n||'').toLowerCase().trim();
+    return cn.indexOf(key2) !== -1 || key2.indexOf(cn.split(/\s+/).slice(0,2).join(' ')) !== -1;
+  }
+  var feedback=[]; var subs=[]; var certs=[];
+  try{ feedback=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]'); }catch(e){}
+  try{ subs=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]'); }catch(e){}
+  try{ certs=JSON.parse(localStorage.getItem('eco_issued_certs')||'[]').concat(JSON.parse(localStorage.getItem('eco_reg_certs')||'[]')); }catch(e){}
+
+  var orgFb   = feedback.filter(function(f){ return match(f.orgName); });
+  var orgSubs = subs.filter(function(s){ return match(s.orgName); });
+  var orgCerts= certs.filter(function(c){ return match(c.orgName); });
+
+  function hasStatus(item, terms) {
+    var s=(item.status||'').toLowerCase();
+    return terms.some(function(t){ return s===t||s.indexOf(t)!==-1; });
+  }
+  var pending     = orgFb.filter(function(f){ return hasStatus(f,['pending','submitted']); }).length
+                  + orgSubs.filter(function(s){ return hasStatus(s,['pending','submitted_to_lab']); }).length;
+  var inReview    = orgFb.filter(function(f){ return hasStatus(f,['in_review','reviewing']); }).length;
+  var approved    = orgFb.filter(function(f){ return hasStatus(f,['approved']); }).length
+                  + orgSubs.filter(function(s){ return hasStatus(s,['lab_approved']); }).length;
+  var rejected    = orgFb.filter(function(f){ return hasStatus(f,['rejected']); }).length;
+  var corrections = orgFb.filter(function(f){ return hasStatus(f,['correct']); }).length;
+
+  function _s(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  _s('statPending',   pending);
+  _s('statReviewing', inReview);
+  _s('statApproved',  approved);
+  _s('statRejected',  rejected);
+  _s('statSamples',   corrections);
+  _s('statCerts',     orgCerts.length);
+
+  var sbP=document.getElementById('sbPending');    if(sbP) sbP.textContent=pending||'';
+  var sbA=document.getElementById('sbApproved');   if(sbA) sbA.textContent=approved||'';
+  var sbR=document.getElementById('sbInReview');   if(sbR) sbR.textContent=inReview||'';
+  var sbC=document.getElementById('sbCorrections');if(sbC) sbC.textContent=corrections||'';
+
+  var total=approved+rejected;
+  var rate=total>0?Math.round(approved/total*100):null;
+  var el;
+  el=document.getElementById('labAnalApprovalRate'); if(el) el.textContent=rate!==null?rate+'%':'—';
+  el=document.getElementById('labAnalActiveOrgs');   if(el) el.textContent=1;
+
+  // Update charts with org-specific data
+  var months=['Jan','Feb','Mar','Apr','May','Jun'];
+  var now=new Date();
+  var appM=new Array(6).fill(0); var rejM=new Array(6).fill(0);
+  orgFb.forEach(function(f){
+    var d=new Date(f.reviewedAt||f.createdAt||f.updatedAt||0);
+    var diff=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());
+    if(diff>=0&&diff<6){
+      var slot=5-diff;
+      if(hasStatus(f,['approv'])) appM[slot]++;
+      else if(hasStatus(f,['reject'])) rejM[slot]++;
+    }
+  });
+  var c1El=document.getElementById('chart1');
+  if(c1El&&c1El._c){ c1El._c.data.datasets[0].data=appM; c1El._c.data.datasets[1].data=rejM; c1El._c.update(); }
+  var c2El=document.getElementById('chart2');
+  if(c2El&&c2El._c){ c2El._c.data.datasets[0].data=[approved,pending,inReview,corrections,rejected]; c2El._c.update(); }
+}
+
+function _labSelectSidebarOrg(orgName, btn) {
+  var container = document.getElementById('labOrgSidebarList');
+  if (container) {
+    container.querySelectorAll('.sb-item').forEach(function(el){ el.classList.remove('on'); el.style.borderLeftColor=''; });
+  }
+  if (btn) { btn.classList.add('on'); btn.style.borderLeftColor='var(--acc)'; }
+
+  if (!orgName) {
+    window._labOrg = null;
+    window._labCompanyFilter = '';
+    document.getElementById('welcomeSub').textContent = 'Welcome back — All Organizations';
+    var banner = document.getElementById('labCompanyBanner');
+    if (banner) banner.style.display = 'none';
+    document.querySelectorAll('#app tbody tr').forEach(function(r){ r.style.display = ''; });
+    document.querySelectorAll('#app tbody tr._emp').forEach(function(r){ r.style.display = 'none'; });
+    if (typeof _loadDashboard === 'function') _loadDashboard();
+    if (typeof _loadPendingReviews === 'function') _loadPendingReviews();
+  } else {
+    window._labOrg = orgName;
+    window._labCompanyFilter = orgName;
+    document.getElementById('welcomeSub').textContent = 'Viewing — ' + orgName;
+    var banner = document.getElementById('labCompanyBanner');
+    var bannerName = document.getElementById('labCompanyBannerName');
+    if (banner) banner.style.display = 'flex';
+    if (bannerName) bannerName.textContent = orgName;
+    _filterLabByOrg(orgName);
+    _labComputeOrgStats(orgName);
+    if (typeof _loadPendingReviews === 'function') _loadPendingReviews();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Cross-portal: load org-submitted reports from eco_pending_lab_reports
+══════════════════════════════════════════════════════════════ */
+function _labLoadPendingFromStorage() {
+  var pending = [];
+  try { pending = JSON.parse(localStorage.getItem('eco_pending_lab_reports') || '[]'); } catch(e){ return; }
+
+  var tbody = document.getElementById('pendingQueueBody');
+  if (!tbody) return;
+
+  tbody.querySelectorAll('tr._dyn-ls').forEach(function(r){ r.remove(); });
+
+  var orgF  = (window._labCompanyFilter || '').toLowerCase().trim();
+  var orgK2 = orgF.split(/\s+/).slice(0,2).join(' ');
+  function _orgMatchLS(n) {
+    if (!orgF) return true;
+    var cn = (n||'').toLowerCase().trim();
+    return cn.indexOf(orgK2) !== -1 || orgK2.indexOf(cn.split(/\s+/).slice(0,2).join(' ')) !== -1;
+  }
+
+  var active = pending.filter(function(r){
+    return r.status === 'SUBMITTED_TO_LAB' && _orgMatchLS(r.orgName);
+  });
+
+  var emptyRow = tbody.querySelector('tr._empty-row');
+  if (!active.length) {
+    var hasOtherRows = !!tbody.querySelector('tr:not(._empty-row)');
+    if (emptyRow) emptyRow.style.display = hasOtherRows ? 'none' : '';
+    return;
+  }
+  if (emptyRow) emptyRow.style.display = 'none';
+
+  active.forEach(function(r) {
+    var dateStr = r.submittedAt
+      ? new Date(r.submittedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    var tr = document.createElement('tr');
+    tr.className = '_dyn-ls';
+    tr.dataset.reportId = r.reportId;
+    tr.style.cssText = 'background:linear-gradient(90deg,rgba(37,99,235,.04),transparent);border-left:3px solid #2563eb';
+    tr.innerHTML =
+      '<td style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#1d4ed8">' +
+        '<span style="background:#dbeafe;border:1px solid #bfdbfe;border-radius:5px;padding:1px 7px;font-size:.68rem;margin-right:6px">ORG</span>' +
+        _labEscH(r.reportId||'—') +
+      '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151;font-weight:600">' + _labEscH(r.orgName||'—') + '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151">' + _labEscH(r.reportType||'Environmental Report') + '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151">' + dateStr + '</td>' +
+      '<td style="padding:10px 12px">' +
+        '<span style="background:#fef3c7;border:1px solid #fde68a;border-radius:20px;padding:2px 9px;font-size:.68rem;font-weight:700;color:#92400e">Normal</span>' +
+      '</td>' +
+      '<td style="padding:10px 12px">' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="_labApproveStorageReport(this,\'' + r.reportId + '\')" ' +
+            'style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer">' +
+            '<i class="fas fa-check"></i> Approve</button>' +
+          '<button onclick="_labRejectStorageReport(this,\'' + r.reportId + '\')" ' +
+            'style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer">' +
+            '<i class="fas fa-times"></i> Reject</button>' +
+        '</div>' +
+      '</td>';
+    tbody.insertBefore(tr, tbody.firstChild);
+  });
+
+  var badge = document.getElementById('pendingCountBadge');
+  if (badge) {
+    var vis = Array.from(tbody.querySelectorAll('tr:not(._empty-row)')).filter(function(r){ return r.style.display !== 'none'; }).length;
+    badge.textContent = vis + ' pending';
+  }
+}
+
+function _labApproveStorageReport(btn, reportId) {
+  var td = btn ? btn.closest('td') : null;
+  if (!td) return;
+  td.innerHTML =
+    '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;min-width:190px">' +
+    '<div style="font-size:.74rem;font-weight:800;color:#065f46;margin-bottom:6px"><i class="fas fa-check-circle" style="margin-right:4px"></i>Approve this report?</div>' +
+    '<textarea id="labFb_'+reportId+'" placeholder="Approval comments (optional)..." ' +
+      'style="width:100%;min-height:50px;border:1px solid #bbf7d0;border-radius:7px;padding:6px;font-size:.73rem;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>' +
+    '<div style="display:flex;gap:6px;margin-top:6px">' +
+    '<button onclick="_labConfirmStorageReport(\''+reportId+'\',\'LAB_APPROVED\')" style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-check"></i> Confirm</button>' +
+    '<button onclick="_labCancelStorageReport(this,\''+reportId+'\')" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 10px;font-size:.72rem;cursor:pointer">Cancel</button>' +
+    '</div></div>';
+}
+
+function _labRejectStorageReport(btn, reportId) {
+  var td = btn ? btn.closest('td') : null;
+  if (!td) return;
+  td.innerHTML =
+    '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;min-width:190px">' +
+    '<div style="font-size:.74rem;font-weight:800;color:#dc2626;margin-bottom:6px"><i class="fas fa-times-circle" style="margin-right:4px"></i>Reject this report?</div>' +
+    '<textarea id="labFb_'+reportId+'" placeholder="Reason for rejection (required)..." ' +
+      'style="width:100%;min-height:50px;border:1px solid #fecaca;border-radius:7px;padding:6px;font-size:.73rem;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>' +
+    '<div style="display:flex;gap:6px;margin-top:6px">' +
+    '<button onclick="_labConfirmStorageReport(\''+reportId+'\',\'LAB_REJECTED\')" style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-times"></i> Confirm</button>' +
+    '<button onclick="_labCancelStorageReport(this,\''+reportId+'\')" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 10px;font-size:.72rem;cursor:pointer">Cancel</button>' +
+    '</div></div>';
+}
+
+function _labCancelStorageReport(btn, reportId) {
+  var td = btn ? btn.closest('td') : null;
+  if (!td) return;
+  td.innerHTML =
+    '<div style="display:flex;gap:6px">' +
+    '<button onclick="_labApproveStorageReport(this,\''+reportId+'\')" style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-check"></i> Approve</button>' +
+    '<button onclick="_labRejectStorageReport(this,\''+reportId+'\')" style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-times"></i> Reject</button>' +
+    '</div>';
+}
+
+function _labConfirmStorageReport(reportId, status) {
+  var fbEl     = document.getElementById('labFb_' + reportId);
+  var feedback = fbEl ? fbEl.value.trim() : '';
+  if (status === 'LAB_REJECTED' && !feedback) {
+    if (fbEl) { fbEl.style.borderColor = '#ef4444'; fbEl.focus(); }
+    return;
+  }
+
+  var pending = [];
+  try { pending = JSON.parse(localStorage.getItem('eco_pending_lab_reports') || '[]'); } catch(e){}
+  var rec = null;
+  pending = pending.map(function(r) {
+    if (r.reportId === reportId) {
+      rec = Object.assign({}, r, { status: status, feedback: feedback, reviewedAt: new Date().toISOString() });
+      return rec;
+    }
+    return r;
+  });
+  localStorage.setItem('eco_pending_lab_reports', JSON.stringify(pending));
+
+  if (status === 'LAB_APPROVED' && rec) {
+    var regSubs = [];
+    try { regSubs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]'); } catch(e){}
+    regSubs = regSubs.filter(function(s){ return s.reportId !== reportId; });
+    regSubs.unshift({
+      reportId:      rec.reportId,
+      orgName:       rec.orgName,
+      industryType:  rec.industry || '',
+      reportType:    rec.reportType || 'Environmental Report',
+      score:         85,
+      status:        'LAB_APPROVED',
+      submittedAt:   rec.submittedAt,
+      labReviewedAt: new Date().toISOString()
+    });
+    localStorage.setItem('eco_reg_submissions', JSON.stringify(regSubs));
+  }
+
+  var fb = [];
+  try { fb = JSON.parse(localStorage.getItem('eco_lab_feedback') || '[]'); } catch(e){}
+  fb = fb.filter(function(f){ return f.reportId !== reportId; });
+  fb.push({
+    orgName:    rec ? rec.orgName : '',
+    labName:    'Lab Authority',
+    reviewedAt: new Date().toISOString(),
+    status:     status === 'LAB_APPROVED' ? 'APPROVED' : 'REJECTED',
+    feedback:   feedback,
+    reportId:   reportId
+  });
+  localStorage.setItem('eco_lab_feedback', JSON.stringify(fb));
+
+  var notifs = [];
+  try { notifs = JSON.parse(localStorage.getItem('eco_notifications') || '[]'); } catch(e){}
+  notifs.unshift({
+    type: 'LAB_REVIEW', reportId: reportId, status: status, feedback: feedback,
+    at: new Date().toISOString(),
+    message: status === 'LAB_APPROVED'
+      ? 'Lab authority approved your report ' + reportId + '.'
+      : 'Lab authority rejected your report ' + reportId + '. Reason: ' + feedback
+  });
+  localStorage.setItem('eco_notifications', JSON.stringify(notifs));
+
+  document.querySelectorAll('tr._dyn-ls').forEach(function(row) {
+    if (row.cells[0] && row.cells[0].textContent.indexOf(reportId) !== -1) {
+      var c = status === 'LAB_APPROVED'
+        ? { bg:'#dcfce7', bd:'#bbf7d0', tx:'#065f46', ic:'fa-check-double', lb:'Lab Approved → Forwarded to Regulatory' }
+        : { bg:'#fef2f2', bd:'#fecaca', tx:'#dc2626', ic:'fa-times-circle', lb:'Rejected' };
+      var lastTd = row.cells[row.cells.length - 1];
+      if (lastTd) lastTd.innerHTML =
+        '<span style="background:'+c.bg+';border:1px solid '+c.bd+';border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;color:'+c.tx+'">' +
+        '<i class="fas '+c.ic+'" style="margin-right:3px"></i>'+c.lb+'</span>' +
+        (feedback ? '<div style="font-size:.7rem;color:#64748b;margin-top:4px">'+_labEscH(feedback)+'</div>' : '');
+    }
+  });
+
+  if (typeof toast === 'function') {
+    toast(status === 'LAB_APPROVED'
+      ? '✅ Report ' + reportId + ' approved — forwarded to Regulatory portal!'
+      : '❌ Report ' + reportId + ' rejected.');
+  }
+  setTimeout(function(){ _labLoadApprovedRejected(); }, 300);
+}
+
+/* Listen for org-portal submissions in real time */
+window.addEventListener('storage', function(e) {
+  if (e.key !== 'eco_pending_lab_reports') return;
+  var appPanel = document.getElementById('app');
+  if (!appPanel || appPanel.style.display === 'none') return;
+  _labLoadPendingFromStorage();
+  try {
+    var newArr = JSON.parse(e.newValue || '[]');
+    var oldArr = JSON.parse(e.oldValue || '[]');
+    var oldIds = oldArr.map(function(r){ return r.reportId; });
+    var fresh  = newArr.filter(function(r){ return r.status === 'SUBMITTED_TO_LAB' && oldIds.indexOf(r.reportId) === -1; });
+    if (fresh.length && typeof toast === 'function') {
+      toast('📋 New report from ' + fresh[0].orgName + ' — ready for lab review!');
+    }
+  } catch(err){}
+});
+</script>
+
+<script>
+(function() {
+  // Org selection happens inside the portal after login — not on the login screen
+  window._labOrg      = null;
+  window._labIndustry = '';
+  window._labCompanyFilter = '';
+})();
+</script>
+
+<script>
+/* Apply country-specific standards to lab portal tables */
+function applyLabCountryStandards() {
+  var country = sessionStorage.getItem('ecoCountry') || localStorage.getItem('ecoCountry') || 'India';
+  var db = window.ECO_COUNTRY_DB;
+  if (!db) return;
+  var c = db[country] || db['India'];
+
+  // Update limit column header
+  var hdr = document.getElementById('labLimitColHeader');
+  if (hdr) hdr.textContent = c.regulator + ' Limit';
+
+  // Update individual limit cells
+  var set = function(id, val){ var el=document.getElementById(id); if(el) el.textContent=val; };
+  set('labLim_pm25',  c.air.pm25_24h);
+  set('labLim_pm10',  c.air.pm10_24h);
+  set('labLim_noise', c.noise.ind_day);
+  set('labLim_bod',   c.water.bod_inland);
+  set('labLim_ph',    c.water.ph_min + '–' + c.water.ph_max);
+
+  // Update or create country context banner inside Pending Reviews section
+  var existBanner = document.getElementById('labCountryBanner');
+  if (!existBanner) {
+    var tbl = document.querySelector('.param-tbl');
+    if (tbl && tbl.parentNode) {
+      var banner = document.createElement('div');
+      banner.id = 'labCountryBanner';
+      banner.style.cssText = 'background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+      tbl.parentNode.insertBefore(banner, tbl);
+      existBanner = banner;
+    }
+  }
+  if (existBanner) {
+    existBanner.innerHTML =
+      '<span style="font-size:1.2rem">'+c.flag+'</span>'
+      +'<div style="flex:1">'
+        +'<span style="font-family:Poppins,sans-serif;font-size:.78rem;font-weight:800;color:#14532d">'
+          + c.regulator + ' Standards — ' + country
+        +'</span>'
+        +'<span style="font-size:.68rem;color:#166534;margin-left:10px">'+c.climate+'</span>'
+      +'</div>'
+      +'<span style="font-size:.68rem;color:#166534;font-weight:700">'+c.standard+'</span>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', applyLabCountryStandards);
+</script>
+<!-- EcoSphere 3D Environmental Intelligence Universe -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/eco-universe.js"></script>
+<!-- EcoSphere Backend API Client -->
+<script src="js/api.js"></script>
+<script src="js/pdf-download.js"></script>
+<script src="js/eco-export.js"></script>
+<!-- EcoSphere Frontend ↔ Backend Integration -->
+<script src="js/eco-api-service.js"></script>
+<script src="js/lab-connect.js"></script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

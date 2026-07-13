@@ -1,0 +1,309 @@
+      case 6: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-palette"></i> Branding</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Organisation Logo</label>
+      <div id="erb-logo-preview" style="margin-bottom:8px;min-height:80px;display:flex;align-items:center;justify-content:center;border:2px dashed #cbd5e1;border-radius:8px;background:#f8fafc;padding:8px;">
+        <span style="color:#94a3b8;font-size:13px;">No logo uploaded</span>
+      </div>
+      <input type="file" accept="image/*" onchange="erbUploadLogo(event)" style="font-size:13px;">
+    </div>
+    <div class="form-group">
+      <label>Cover / Banner Photo</label>
+      <div id="erb-cover-preview" style="margin-bottom:8px;min-height:80px;display:flex;align-items:center;justify-content:center;border:2px dashed #cbd5e1;border-radius:8px;background:#f8fafc;padding:8px;">
+        <span style="color:#94a3b8;font-size:13px;">No cover photo uploaded</span>
+      </div>
+      <input type="file" accept="image/*" onchange="erbUploadCover(event)" style="font-size:13px;">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Tagline / Slogan</label>
+      <input type="text" data-field="branding_tagline" placeholder="e.g. Committed to a Greener Future" oninput="triggerAutoSave()">
+    </div>
+    <div class="form-group">
+      <label>Report Year</label>
+      <input type="text" data-field="branding_year" placeholder="e.g. 2024" oninput="triggerAutoSave()">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Vision Statement</label>
+    <textarea data-field="branding_vision" rows="3" placeholder="Organisation vision..." oninput="triggerAutoSave()"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Mission Statement</label>
+    <textarea data-field="branding_mission" rows="3" placeholder="Organisation mission..." oninput="triggerAutoSave()"></textarea>
+  </div>
+  <div class="form-group">
+    <label>About the Organisation</label>
+    <textarea data-field="branding_about" rows="4" placeholder="Background, history and overview of the organisation..." oninput="triggerAutoSave()"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Products / Services</label>
+    <textarea data-field="branding_products" rows="3" placeholder="Key products and services offered..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-chart-bar"></i> Key Statistics</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Total Employees</label><input type="text" data-field="stat_employees" placeholder="e.g. 1,250" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Number of Facilities</label><input type="text" data-field="stat_facilities" placeholder="e.g. 4" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Countries of Operation</label><input type="text" data-field="stat_countries" placeholder="e.g. 3" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Years in Operation</label><input type="text" data-field="stat_years" placeholder="e.g. 25" oninput="triggerAutoSave()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Annual Turnover (RM)</label><input type="text" data-field="stat_revenue" placeholder="e.g. 150,000,000" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Product Lines</label><input type="text" data-field="stat_products" placeholder="e.g. 12" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Certifications Held</label><input type="text" data-field="stat_certs" placeholder="e.g. ISO 9001, ISO 14001" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Other Key Metric</label><input type="text" data-field="stat_other" placeholder="e.g. 98% customer retention" oninput="triggerAutoSave()"></div>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-users"></i> Leadership Team</h3>
+  <div id="erb-leaders-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddLeader()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add Leader
+  </button>
+</div>`;
+
+      case 7: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-plus-circle"></i> Add Daily Entry</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="erb-daily-date" oninput="erbDailyAS()">
+    </div>
+    <div class="form-group">
+      <label>Weather Condition</label>
+      <select id="erb-daily-weather" onchange="erbDailyAS()">
+        <option value="">Select...</option>
+        <option>Sunny</option><option>Cloudy</option><option>Rainy</option><option>Stormy</option><option>Hazy</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Workers on Site</label>
+      <input type="number" id="erb-daily-workers" placeholder="0" oninput="erbDailyAS()">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>PM2.5 (µg/m³)</label><input type="number" id="erb-daily-pm25" placeholder="0.00" step="0.01" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>PM10 (µg/m³)</label><input type="number" id="erb-daily-pm10" placeholder="0.00" step="0.01" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>SO₂ (µg/m³)</label><input type="number" id="erb-daily-so2" placeholder="0.00" step="0.01" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>NO₂ (µg/m³)</label><input type="number" id="erb-daily-no2" placeholder="0.00" step="0.01" oninput="erbDailyAS()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Noise Level (dB)</label><input type="number" id="erb-daily-noise" placeholder="0.0" step="0.1" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>Energy Used (kWh)</label><input type="number" id="erb-daily-energy" placeholder="0.0" step="0.1" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>Water Used (m³)</label><input type="number" id="erb-daily-water" placeholder="0.0" step="0.1" oninput="erbDailyAS()"></div>
+    <div class="form-group"><label>Waste Generated (kg)</label><input type="number" id="erb-daily-waste" placeholder="0.0" step="0.1" oninput="erbDailyAS()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Incidents / Near Misses</label>
+      <input type="number" id="erb-daily-incidents" placeholder="0" oninput="erbDailyAS()">
+    </div>
+    <div class="form-group">
+      <label>Site Photo</label>
+      <input type="file" accept="image/*" onchange="erbDailyPhoto(event)" style="font-size:13px;">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Observations / Notes</label>
+    <textarea id="erb-daily-notes" rows="3" placeholder="Any notable observations, compliance checks, corrective actions..." oninput="erbDailyAS()"></textarea>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:8px;">
+    <button type="button" class="btn-primary" onclick="erbSaveDaily()"><i class="fas fa-save"></i> Save Entry</button>
+    <button type="button" class="btn-secondary" onclick="erbClearDaily()"><i class="fas fa-times"></i> Clear</button>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-history"></i> Monitoring Log</h3>
+  <div id="erb-daily-log" style="overflow-x:auto;">
+    <p style="color:#94a3b8;font-size:13px;">No entries yet. Add your first daily entry above.</p>
+  </div>
+</div>`;
+
+      case 8: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-leaf"></i> ESG Strategy</h3>
+  <div class="form-group">
+    <label>Sustainability Strategy Overview</label>
+    <textarea data-field="esg_strategy" rows="4" placeholder="Describe the organisation's overall ESG and sustainability strategy..." oninput="triggerAutoSave()"></textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>ESG Reporting Framework</label>
+      <select data-field="esg_framework" onchange="triggerAutoSave()">
+        <option value="">Select framework...</option>
+        <option>GRI Standards</option><option>TCFD</option><option>SASB</option><option>UN SDGs</option><option>ISO 26000</option><option>Bursa Malaysia Sustainability Framework</option><option>Others</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>SDG Alignment</label>
+      <input type="text" data-field="esg_sdg" placeholder="e.g. SDG 6, 7, 13, 15" oninput="triggerAutoSave()">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Materiality Topics</label>
+    <textarea data-field="esg_materiality" rows="3" placeholder="Key material topics identified through materiality assessment..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-bullseye"></i> ESG Goals & Targets</h3>
+  <div id="erb-goals-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddGoal()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add ESG Goal
+  </button>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-handshake"></i> Stakeholder Engagement</h3>
+  <div id="erb-sh-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddSH()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add Stakeholder Group
+  </button>
+</div>`;
+
+      case 9: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-hand-holding-heart"></i> CSR Overview</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Annual CSR Budget (RM)</label>
+      <input type="text" data-field="csr_budget" placeholder="e.g. 500,000" oninput="triggerAutoSave()">
+    </div>
+    <div class="form-group">
+      <label>Total Beneficiaries</label>
+      <input type="text" data-field="csr_beneficiaries" placeholder="e.g. 2,500" oninput="triggerAutoSave()">
+    </div>
+    <div class="form-group">
+      <label>NGO / Community Partners</label>
+      <input type="text" data-field="csr_ngo" placeholder="e.g. WWF, Red Crescent" oninput="triggerAutoSave()">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>CSR Focus Areas</label>
+    <textarea data-field="csr_focus" rows="3" placeholder="e.g. Education, Environment, Community Health, Disaster Relief..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-list-alt"></i> CSR Programs</h3>
+  <div id="erb-csr-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddCSR()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add Program
+  </button>
+</div>`;
+
+      case 10: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-exclamation-triangle"></i> Risk Register</h3>
+  <p style="font-size:13px;color:#64748b;margin-bottom:12px;">Enter all identified environmental, social, compliance and climate-related risks. Likelihood and Severity rated 1 (Low) to 5 (Critical).</p>
+  <div id="erb-risk-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddRisk()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add Risk
+  </button>
+</div>`;
+
+      case 11: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-certificate"></i> ISO Certifications</h3>
+  <div class="form-row">
+    <div class="form-group"><label>ISO 14001 (Environmental Management)</label><input type="text" data-field="cert_iso14001" placeholder="e.g. Certified since 2018, valid until 2026" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>ISO 9001 (Quality Management)</label><input type="text" data-field="cert_iso9001" placeholder="e.g. Certified since 2015, valid until 2027" oninput="triggerAutoSave()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>ISO 45001 (OHS Management)</label><input type="text" data-field="cert_iso45001" placeholder="e.g. Certified since 2020, valid until 2026" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>ISO 50001 (Energy Management)</label><input type="text" data-field="cert_iso50001" placeholder="e.g. Not yet certified" oninput="triggerAutoSave()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Other Certifications</label><input type="text" data-field="cert_other" placeholder="e.g. OHSAS 18001, Green Building" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Certifying Body</label><input type="text" data-field="cert_body" placeholder="e.g. SIRIM, BSI, DNV" oninput="triggerAutoSave()"></div>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-gavel"></i> Regulatory Compliance</h3>
+  <div class="form-row">
+    <div class="form-group"><label>EIA Approval Status</label><input type="text" data-field="comp_eia_status" placeholder="e.g. Approved, Pending" oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Approval Reference No.</label><input type="text" data-field="comp_eia_ref" placeholder="e.g. DOE/EIA/2024/001" oninput="triggerAutoSave()"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Operating Licence No.</label><input type="text" data-field="comp_licence" placeholder="e.g. Licensed under..." oninput="triggerAutoSave()"></div>
+    <div class="form-group"><label>Last Compliance Audit Date</label><input type="date" data-field="comp_audit_date" onchange="triggerAutoSave()"></div>
+  </div>
+  <div class="form-group">
+    <label>Non-Conformances / Violations</label>
+    <textarea data-field="comp_violations" rows="3" placeholder="List any non-conformances, penalties or violations, or state 'None'..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-file-alt"></i> Company Policies</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_env" onchange="triggerAutoSave()"> Environmental Policy</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_energy" onchange="triggerAutoSave()"> Energy Policy</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_safety" onchange="triggerAutoSave()"> Health & Safety Policy</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_hr" onchange="triggerAutoSave()"> Human Rights Policy</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_csr" onchange="triggerAutoSave()"> CSR / Community Policy</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" data-field="pol_wb" onchange="triggerAutoSave()"> Whistleblower Policy</label>
+  </div>
+  <div class="form-group">
+    <label>Policy Statement Summary</label>
+    <textarea data-field="pol_summary" rows="3" placeholder="Brief summary of company's core policy commitments..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-trophy"></i> Awards & Recognition</h3>
+  <div id="erb-awards-list"></div>
+  <button type="button" class="btn-secondary" onclick="erbAddAward()" style="margin-top:8px;">
+    <i class="fas fa-plus"></i> Add Award
+  </button>
+</div>`;
+
+      case 12: return `
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-check-circle"></i> Data Summary</h3>
+  <div id="erb-review-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px;"></div>
+</div>
+<div class="step-section">
+  <h3 class="step-section-title"><i class="fas fa-cog"></i> Report Settings</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Report Period</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="date" id="rpt-from-date" style="flex:1;">
+        <span style="color:#64748b;font-size:13px;">to</span>
+        <input type="date" id="rpt-to-date" style="flex:1;">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Report Language</label>
+      <select id="rpt-language">
+        <option value="en">English</option>
+        <option value="ms">Bahasa Malaysia</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Executive Summary / Chairman's Message</label>
+    <textarea data-field="rpt_chairman_msg" rows="5" placeholder="Enter the Chairman's or CEO's message for the report. This will appear as a signed letter on its own page..." oninput="triggerAutoSave()"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Recommendations & Future Roadmap</label>
+    <textarea data-field="rpt_recommendations" rows="4" placeholder="Summarise key recommendations and the 3-5 year sustainability roadmap..." oninput="triggerAutoSave()"></textarea>
+  </div>
+</div>
+<div class="step-section" style="text-align:center;padding:30px 20px;">
+  <h3 style="color:#0f172a;font-size:20px;margin-bottom:8px;">Generate Your Report</h3>
+  <p style="color:#64748b;font-size:14px;margin-bottom:24px;">Your ~90-page MSN-style EIA Sustainability Report will be generated using all the data you have entered across all 12 steps.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+    <button type="button" class="btn-primary" onclick="previewReport()" style="padding:14px 28px;font-size:15px;">
+      <i class="fas fa-eye"></i> Preview Report
+    </button>
+    <button type="button" class="btn-secondary" onclick="exportPDF()" style="padding:14px 28px;font-size:15px;">
+      <i class="fas fa-file-pdf"></i> Download PDF
+    </button>
+    <button type="button" class="btn-secondary" onclick="exportWord()" style="padding:14px 28px;font-size:15px;">
+      <i class="fas fa-file-word"></i> Download Word
+    </button>
+  </div>
+</div>`;

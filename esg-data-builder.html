@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ESG Data Builder – QMICS EcoSphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',sans-serif;background:#f0f4f8;color:#0f172a;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#f1f5f9}
+::-webkit-scrollbar-thumb{background:#16a34a;border-radius:3px}
+
+/* ── Header ── */
+.erb-header{
+  background:linear-gradient(135deg,#0a3d2e 0%,#15803d 60%,#16a34a 100%);
+  padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;box-shadow:0 4px 24px rgba(22,163,74,.35);
+}
+.erb-header-left{display:flex;align-items:center;gap:14px}
+.erb-back-btn{
+  background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:9px;padding:7px 14px;font-size:.8rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:all .2s;
+}
+.erb-back-btn:hover{background:rgba(255,255,255,.25)}
+.erb-title{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:9px}
+.erb-title-sub{font-size:.72rem;font-weight:500;color:rgba(255,255,255,.65);margin-top:1px}
+.erb-header-right{display:flex;align-items:center;gap:10px}
+.erb-save-badge{
+  background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.9);border-radius:9px;padding:7px 14px;font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;transition:all .4s;
+}
+.erb-save-badge.saved{background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.6);color:#4ade80}
+.erb-save-btn{
+  background:rgba(255,255,255,.9);color:#0a3d2e;border:none;border-radius:9px;
+  padding:8px 18px;font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;
+}
+.erb-save-btn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.15)}
+
+/* ── Stepper ── */
+.erb-stepper-wrap{
+  background:#fff;border-bottom:2px solid #e2e8f0;overflow-x:auto;white-space:nowrap;
+  padding:0 20px;position:sticky;top:64px;z-index:100;scrollbar-width:thin;
+}
+.erb-stepper{display:inline-flex;align-items:flex-start;gap:0;padding:14px 0 12px;min-width:max-content}
+.erb-step-item{
+  display:flex;flex-direction:column;align-items:center;cursor:pointer;
+  padding:0 12px;position:relative;min-width:96px;
+}
+.erb-step-item:not(:last-child)::after{
+  content:'';position:absolute;top:17px;left:calc(50% + 20px);
+  width:calc(100% - 40px);height:2px;background:#e2e8f0;
+}
+.erb-step-item.done:not(:last-child)::after{background:#16a34a}
+.erb-step-num{
+  width:34px;height:34px;border-radius:50%;border:2.5px solid #e2e8f0;
+  background:#fff;color:#94a3b8;font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
+  position:relative;z-index:1;transition:all .3s;
+}
+.erb-step-item.active .erb-step-num{border-color:#16a34a;background:#16a34a;color:#fff;box-shadow:0 0 0 4px rgba(22,163,74,.18)}
+.erb-step-item.done .erb-step-num{border-color:#16a34a;background:#16a34a;color:#fff}
+.erb-step-label{font-size:.65rem;font-weight:700;color:#94a3b8;text-align:center;max-width:80px;white-space:normal;line-height:1.3}
+.erb-step-item.active .erb-step-label{color:#16a34a}
+.erb-step-item.done .erb-step-label{color:#16a34a}
+
+.erb-progress-bar-wrap{background:#e2e8f0;height:4px}
+.erb-progress-bar{height:4px;background:linear-gradient(90deg,#16a34a,#22c55e);transition:width .5s}
+
+/* ── Main ── */
+.erb-main{max-width:900px;margin:0 auto;padding:28px 20px 120px}
+.erb-step-header{margin-bottom:24px}
+.erb-step-badge{
+  display:inline-flex;align-items:center;gap:7px;background:#dcfce7;color:#16a34a;
+  border-radius:20px;padding:5px 14px;font-size:.75rem;font-weight:800;margin-bottom:12px;
+}
+.erb-step-title{font-family:'Poppins',sans-serif;font-size:1.6rem;font-weight:900;color:#0f172a;margin-bottom:6px}
+.erb-step-desc{font-size:.88rem;color:#64748b;line-height:1.5}
+
+/* ── Cards ── */
+.erb-card{
+  background:#fff;border-radius:16px;padding:24px;margin-bottom:18px;
+  box-shadow:0 2px 12px rgba(0,0,0,.06);border:1.5px solid #f1f5f9;
+}
+.erb-card-title{
+  font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:800;color:#0f172a;
+  margin-bottom:18px;display:flex;align-items:center;gap:9px;
+}
+.erb-card-icon{
+  width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:.85rem;flex-shrink:0;
+}
+.ico-blue{background:#dbeafe;color:#1d4ed8}
+.ico-green{background:#dcfce7;color:#16a34a}
+.ico-orange{background:#ffedd5;color:#ea580c}
+.ico-purple{background:#ede9fe;color:#7c3aed}
+.ico-teal{background:#ccfbf1;color:#0d9488}
+.ico-red{background:#fee2e2;color:#dc2626}
+.ico-yellow{background:#fef9c3;color:#ca8a04}
+.ico-emerald{background:#d1fae5;color:#059669}
+
+/* ── Form elements ── */
+.erb-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:4px}
+.erb-form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px}
+.erb-form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:4px}
+.erb-form-full{margin-bottom:4px}
+.erb-fg{display:flex;flex-direction:column;gap:5px}
+.erb-fg label{font-size:.77rem;font-weight:700;color:#374151}
+.erb-fg input,.erb-fg select,.erb-fg textarea{
+  padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.85rem;
+  font-family:'Inter',sans-serif;color:#0f172a;background:#fafafa;
+  transition:border-color .2s,box-shadow .2s;outline:none;width:100%;
+}
+.erb-fg input:focus,.erb-fg select:focus,.erb-fg textarea:focus{
+  border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.1);background:#fff;
+}
+.erb-fg textarea{resize:vertical;min-height:90px}
+.erb-fg .hint{font-size:.7rem;color:#94a3b8;margin-top:1px}
+
+/* ── KPI Table ── */
+.erb-table{width:100%;border-collapse:collapse}
+.erb-table th{
+  background:#f8fafc;padding:10px 14px;font-size:.75rem;font-weight:700;
+  color:#64748b;text-align:left;border-bottom:2px solid #e2e8f0;white-space:nowrap;
+}
+.erb-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:.82rem;color:#374151;vertical-align:middle}
+.erb-table td input{border:1.5px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:.82rem;background:#fafafa;width:100%;outline:none}
+.erb-table td input:focus{border-color:#16a34a;background:#fff}
+.erb-table-wrap{overflow-x:auto;border-radius:12px;border:1.5px solid #e2e8f0}
+
+/* ── Checkboxes ── */
+.erb-check-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.erb-check-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fafafa;cursor:pointer;transition:all .2s;font-size:.8rem;font-weight:600;color:#374151}
+.erb-check-item:hover{border-color:#16a34a;color:#15803d;background:#f0fdf4}
+.erb-check-item input[type=checkbox]{accent-color:#16a34a;width:15px;height:15px;cursor:pointer}
+.erb-check-item.checked{border-color:#16a34a;background:#f0fdf4;color:#15803d}
+
+/* ── Buttons ── */
+.erb-btn{
+  display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:10px;
+  font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;
+  border:none;transition:all .2s;text-decoration:none;
+}
+.erb-btn-primary{background:#16a34a;color:#fff;box-shadow:0 4px 14px rgba(22,163,74,.25)}
+.erb-btn-primary:hover{background:#15803d;transform:translateY(-1px)}
+.erb-btn-success{background:#0a3d2e;color:#fff}
+.erb-btn-success:hover{background:#052e1c;transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,61,46,.35)}
+.erb-btn-outline{background:#fff;color:#374151;border:1.5px solid #e2e8f0}
+.erb-btn-outline:hover{border-color:#16a34a;color:#16a34a;background:#f0fdf4}
+
+/* ── Bottom Nav ── */
+.erb-bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e2e8f0;
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,.08);
+}
+.erb-step-counter{font-size:.8rem;color:#64748b;font-weight:700}
+.erb-step-counter span{color:#16a34a;font-weight:800}
+
+/* ── Review ── */
+.erb-review-section{background:#f8fafc;border-radius:12px;padding:16px 20px;margin-bottom:14px;border:1.5px solid #e2e8f0}
+.erb-review-title{font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;color:#374151;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.erb-review-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.erb-review-item{display:flex;flex-direction:column;gap:2px}
+.erb-review-label{font-size:.7rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.erb-review-val{font-size:.82rem;color:#1e293b;font-weight:600}
+
+/* ── Generate card ── */
+.erb-generate-card{
+  background:linear-gradient(135deg,#0a3d2e 0%,#15803d 60%,#16a34a 100%);
+  border-radius:18px;padding:36px;text-align:center;color:#fff;margin-top:24px;
+}
+.erb-generate-card h2{font-family:'Poppins',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.erb-generate-card p{font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:28px;line-height:1.6}
+.erb-generate-btn{
+  display:inline-flex;align-items:center;gap:10px;background:#fff;color:#0a3d2e;
+  border:none;border-radius:12px;padding:14px 32px;font-family:'Poppins',sans-serif;
+  font-size:.95rem;font-weight:900;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.2);
+  transition:all .2s;
+}
+.erb-generate-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.28)}
+
+@media(max-width:640px){
+  .erb-form-grid-2,.erb-form-grid-3{grid-template-columns:1fr}
+  .erb-title-sub{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ Header ══ -->
+<header class="erb-header">
+  <div class="erb-header-left">
+    <button class="erb-back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+    <div>
+      <div class="erb-title">
+        <i class="fas fa-leaf"></i> ESG Data Builder
+      </div>
+      <div class="erb-title-sub">Enter sustainability details to generate your report</div>
+    </div>
+  </div>
+  <div class="erb-header-right">
+    <div class="erb-save-badge" id="saveBadge"><i class="fas fa-circle" style="font-size:.5rem"></i> Unsaved</div>
+    <button class="erb-save-btn" onclick="saveDraft()"><i class="fas fa-save"></i> Save Draft</button>
+  </div>
+</header>
+
+<!-- ══ Stepper ══ -->
+<div class="erb-stepper-wrap">
+  <div class="erb-stepper" id="stepper"></div>
+</div>
+<div class="erb-progress-bar-wrap">
+  <div class="erb-progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<!-- ══ Main Content ══ -->
+<main class="erb-main" id="mainContent"></main>
+
+<!-- ══ Bottom Nav ══ -->
+<div class="erb-bottom-nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="erb-btn erb-btn-outline" id="btnPrev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Previous</button>
+  </div>
+  <div class="erb-step-counter">Step <span id="stepNum">1</span> of <span id="stepTotal">6</span></div>
+  <button class="erb-btn erb-btn-primary" id="btnNext" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+</div>
+
+<script>
+var STEPS = [
+  {id:'org',     label:'Org Profile',  icon:'fas fa-building'},
+  {id:'env',     label:'Environmental',icon:'fas fa-leaf'},
+  {id:'social',  label:'Social',       icon:'fas fa-users'},
+  {id:'gov',     label:'Governance',   icon:'fas fa-balance-scale'},
+  {id:'framework',label:'Frameworks',  icon:'fas fa-globe'},
+  {id:'review',  label:'Review',       icon:'fas fa-check-circle'}
+];
+
+var cur = 0;
+var D = {};
+var orgId = '';
+
+window.onload = function(){
+  orgId = localStorage.getItem('eco_org_id') || '';
+  var saved = null;
+  try{ saved = JSON.parse(localStorage.getItem('esg_builder_' + orgId) || 'null'); }catch(e){}
+  if(saved) D = saved;
+  renderStepper();
+  renderStep();
+};
+
+function renderStepper(){
+  var html = '';
+  STEPS.forEach(function(s,i){
+    var cls = i < cur ? 'done' : (i === cur ? 'active' : '');
+    html += '<div class="erb-step-item '+cls+'" onclick="jumpStep('+i+')">'
+      + '<div class="erb-step-num">'+(i < cur ? '<i class="fas fa-check" style="font-size:.7rem"></i>' : (i+1))+'</div>'
+      + '<div class="erb-step-label">'+s.label+'</div></div>';
+  });
+  document.getElementById('stepper').innerHTML = html;
+  document.getElementById('progressBar').style.width = (cur/(STEPS.length-1)*100)+'%';
+  document.getElementById('stepNum').textContent = cur+1;
+  document.getElementById('stepTotal').textContent = STEPS.length;
+  document.getElementById('btnPrev').style.visibility = cur===0?'hidden':'visible';
+  var btn = document.getElementById('btnNext');
+  if(cur === STEPS.length-1){ btn.style.display='none'; } else { btn.style.display=''; btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>'; }
+}
+
+function jumpStep(idx){ collectCurrent(); cur=idx; renderStep(); renderStepper(); }
+
+function nextStep(){ collectCurrent(); saveDraft(); cur++; renderStep(); renderStepper(); scrollTo(0,0); }
+function prevStep(){ collectCurrent(); cur--; renderStep(); renderStepper(); scrollTo(0,0); }
+
+function v(key,def){ return D[key]!==undefined?D[key]:(def||''); }
+function vb(key){ return D[key]===true||D[key]==='true'?'checked':''; }
+
+function collectCurrent(){
+  var fields = document.querySelectorAll('#mainContent input[data-key], #mainContent select[data-key], #mainContent textarea[data-key]');
+  fields.forEach(function(el){
+    if(el.type==='checkbox') D[el.getAttribute('data-key')] = el.checked;
+    else D[el.getAttribute('data-key')] = el.value;
+  });
+}
+
+function saveDraft(){
+  collectCurrent();
+  try{
+    localStorage.setItem('esg_builder_'+orgId, JSON.stringify(D));
+    sessionStorage.setItem('esgWizardData', JSON.stringify(D));
+    var badge = document.getElementById('saveBadge');
+    badge.innerHTML='<i class="fas fa-check-circle" style="font-size:.75rem"></i> Saved';
+    badge.classList.add('saved');
+    setTimeout(function(){ badge.innerHTML='<i class="fas fa-circle" style="font-size:.5rem"></i> Draft'; badge.classList.remove('saved'); },2000);
+  }catch(e){}
+}
+
+function goBack(){
+  collectCurrent(); saveDraft();
+  history.back();
+}
+
+function generateReport(){
+  collectCurrent(); saveDraft();
+  sessionStorage.setItem('esgWizardData', JSON.stringify(D));
+  var url = 'esg-report-generator.html?autoGenerate=1' + (orgId?'&orgId='+encodeURIComponent(orgId):'');
+  window.location.href = url;
+}
+
+/* ══════════════ STEP RENDERERS ══════════════ */
+
+function renderStep(){
+  var mc = document.getElementById('mainContent');
+  switch(cur){
+    case 0: mc.innerHTML = stepOrg(); break;
+    case 1: mc.innerHTML = stepEnv(); break;
+    case 2: mc.innerHTML = stepSocial(); break;
+    case 3: mc.innerHTML = stepGov(); break;
+    case 4: mc.innerHTML = stepFramework(); break;
+    case 5: mc.innerHTML = stepReview(); break;
+  }
+  // re-attach checkbox listeners
+  document.querySelectorAll('#mainContent .erb-check-item').forEach(function(el){
+    var cb = el.querySelector('input[type=checkbox]');
+    if(cb){ cb.addEventListener('change',function(){ el.classList.toggle('checked',cb.checked); }); }
+  });
+}
+
+/* ── Step 1: Org Profile ── */
+function stepOrg(){
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-building"></i> Step 1 of 6</div>'
+    +'<div class="erb-step-title">Organization Profile</div>'
+    +'<div class="erb-step-desc">Enter company details, leadership statements and sustainability vision for the report cover.</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-green"><i class="fas fa-building"></i></div>Company Details</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Organization Name *','text','s1_orgName','Legal entity / brand name')
+    +fg('Industry / Sector *','text','s1_industry','e.g., Pharmaceuticals, FMCG, IT')
+    +fg('CIN / Registration No.','text','s1_cin','Corporate Identity Number')
+    +fg('Reporting Year','text','s1_year','e.g., FY 2024-25')
+    +'</div>'
+    +'<div class="erb-form-grid" style="margin-top:14px">'
+    +fg('Total Employees','number','s1_employees','Headcount as of year-end')
+    +fg('Annual Revenue (₹ Crore)','text','s1_revenue','e.g., 1,250')
+    +fg('Operating Sites / Plants','number','s1_sites','Total number of sites')
+    +fg('Countries of Operation','text','s1_countries','e.g., India, USA, Germany')
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fg('Registered Address','text','s1_address','Full registered office address')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-teal"><i class="fas fa-user-tie"></i></div>Leadership Statements</div>'
+    +'<div class="erb-form-full">'
+    +fgta('MD / CEO Message','s1_ceoStatement','A message from the Managing Director or CEO about sustainability commitments and year\'s achievements…',6)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Board Chairperson Statement','s1_boardStatement','The Board\'s view on ESG governance, oversight, and strategic sustainability priorities…',5)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-purple"><i class="fas fa-star"></i></div>Vision & Key Highlights</div>'
+    +'<div class="erb-form-full">'
+    +fgta('Sustainability Vision Statement','s1_vision','Our vision is to… (one or two sentences)',3)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Key Sustainability Highlights (FY)','s1_highlights','Bullet the top 5–8 achievements of the reporting year, e.g.:\n• Achieved ZLD at all manufacturing sites\n• Reduced Scope 1 GHG by 18%\n• ₹42 Cr CSR investment across 14 districts',5)
+    +'</div>'
+    +'</div>';
+}
+
+/* ── Step 2: Environmental ── */
+function stepEnv(){
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-leaf"></i> Step 2 of 6</div>'
+    +'<div class="erb-step-title">Environmental Performance</div>'
+    +'<div class="erb-step-desc">Enter energy, GHG emissions, water, waste and biodiversity data for the reporting period.</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-yellow"><i class="fas fa-bolt"></i></div>Energy Consumption</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Total Energy Consumed (GJ)','number','s3_energy','Total grid + renewable')
+    +fg('Renewable Energy Share (%)','number','s3_renewShare','% of total energy from renewables')
+    +fg('Energy Intensity','text','s3_energyIntensity','e.g., 1.2 GJ per ₹ Lakh turnover')
+    +fg('Energy Certifications','text','s3_energyCert','e.g., ISO 50001, BEE Star')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-orange"><i class="fas fa-smog"></i></div>GHG Emissions</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Scope 1 Emissions (tCO₂e)','number','s3_scope1','Direct combustion, process emissions')
+    +fg('Scope 2 Emissions (tCO₂e)','number','s3_scope2','Purchased electricity / steam')
+    +fg('Scope 3 Emissions (tCO₂e)','number','s3_scope3','Value chain – supply, travel, logistics')
+    +fg('GHG Intensity','text','s3_ghgIntensity','e.g., 0.45 tCO₂e per unit')
+    +'</div>'
+    +'<div class="erb-form-grid" style="margin-top:14px">'
+    +fg('Scope 1 Sources','text','s3_scope1src','e.g., Stationary combustion, boilers')
+    +fg('Scope 3 Categories','text','s3_scope3cats','e.g., Business travel, supply chain')
+    +fg('GHG Reduction Target','text','s3_ghgTarget','e.g., 30% reduction by 2030 vs 2019')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-teal"><i class="fas fa-tint"></i></div>Water Management</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Total Water Withdrawal (KL)','number','s3_water','From all sources')
+    +fg('Water Recycled / Reused (KL)','number','s3_waterRecycle','Recycled + reused volume')
+    +fg('Water Reduction Target (%)','number','s3_waterTarget','Target % reduction')
+    +fg('Water Intensity','text','s3_waterIntensity','e.g., 2.1 KL per MT of product')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-red"><i class="fas fa-recycle"></i></div>Waste Management</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Total Waste Generated (MT)','number','s3_waste','Hazardous + non-hazardous')
+    +fg('Waste Diverted from Landfill (MT)','number','s3_wasteDiverted','Recycled + composted + recovered')
+    +fg('Waste Diversion Rate (%)','number','s3_wasteDivPct','% of total waste diverted')
+    +fg('Waste Intensity','text','s3_wasteIntensity','e.g., 0.15 MT per unit')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-emerald"><i class="fas fa-tree"></i></div>Biodiversity & Additional Notes</div>'
+    +'<div class="erb-form-full">'
+    +fgta('Biodiversity Commitments','s3_biodiversity','Describe any biodiversity assessments, protected area proximity, species impacts, habitat restoration programs…',4)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-blue"><i class="fas fa-table"></i></div>Environmental KPI Trend (3-Year)</div>'
+    +'<div class="erb-table-wrap"><table class="erb-table">'
+    +'<thead><tr><th>KPI</th><th>Previous Year</th><th>Current Year</th><th>Target</th></tr></thead>'
+    +'<tbody>'
+    +'<tr><td><strong>Total Energy (GJ)</strong></td>'
+    +'<td><input type="number" data-key="m_e1_prev" value="'+v('m_e1_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_e1_curr" value="'+v('m_e1_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_e1_target" value="'+v('m_e1_target')+'" placeholder="e.g., 10% reduction"/></td></tr>'
+    +'<tr><td><strong>GHG Emissions (tCO₂e)</strong></td>'
+    +'<td><input type="number" data-key="m_e2_prev" value="'+v('m_e2_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_e2_curr" value="'+v('m_e2_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_e2_target" value="'+v('m_e2_target')+'" placeholder="e.g., SBTi 1.5°C"/></td></tr>'
+    +'<tr><td><strong>Water Withdrawal (KL)</strong></td>'
+    +'<td><input type="number" data-key="m_e3_prev" value="'+v('m_e3_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_e3_curr" value="'+v('m_e3_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_e3_target" value="'+v('m_e3_target')+'" placeholder="e.g., ZLD by 2027"/></td></tr>'
+    +'</tbody></table></div>'
+    +'</div>';
+}
+
+/* ── Step 3: Social ── */
+function stepSocial(){
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-users"></i> Step 3 of 6</div>'
+    +'<div class="erb-step-title">Social Performance</div>'
+    +'<div class="erb-step-desc">Workforce diversity, occupational health & safety, training, and CSR/community investment data.</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-blue"><i class="fas fa-users"></i></div>Workforce & Diversity</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Total Headcount','number','s4_headcount','As of report year-end')
+    +fg('Women in Workforce (%)','number','s4_womenPct','% of total employees')
+    +fg('Women in Leadership (%)','number','s4_womenLeaders','% of senior/managerial roles')
+    +fg('New Hires (Count)','number','s4_newHires','Total new employees this year')
+    +'</div>'
+    +'<div class="erb-form-grid" style="margin-top:14px">'
+    +fg('Attrition / Turnover (%)','number','s4_turnover','Annual voluntary turnover rate')
+    +fg('Training Hours / Employee','number','s4_trainHours','Average hours per employee')
+    +fg('Equal Pay Policy','select','s4_equalPay','Yes|No',['Yes','No'])
+    +fg('PF Coverage (%)','number','s4_pfCovered','Employees covered by Provident Fund')
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('DEI Initiatives','s4_deiInitiatives','Describe diversity, equity & inclusion programs, gender pay parity measures, inclusive hiring practices…',3)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-red"><i class="fas fa-hard-hat"></i></div>Occupational Health & Safety</div>'
+    +'<div class="erb-form-grid">'
+    +fg('TRIR (per 200,000 hrs)','number','s4_trir','Total Recordable Incident Rate')
+    +fg('LTIR (per 200,000 hrs)','number','s4_ltir','Lost-Time Incident Rate')
+    +fg('Fatalities (count)','number','s4_fatalities','Employee + contractor fatalities')
+    +fg('OHS Certifications','text','s4_ohsCert','e.g., ISO 45001, OHSAS 18001')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-green"><i class="fas fa-hand-holding-heart"></i></div>CSR & Community</div>'
+    +'<div class="erb-form-grid">'
+    +fg('CSR / Social Investment (₹)','text','s4_csr','Total spend in rupees')
+    +fg('CSR Obligation Met (%)','number','s4_csrPct','% of 2% obligation spent')
+    +fg('Beneficiaries Reached','text','s4_beneficiaries','Total direct beneficiaries')
+    +fg('Focus Areas','text','s4_csrFocus','e.g., Education, Health, Livelihood')
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Community Programs Description','s4_community','Describe flagship CSR programs, village development, watershed, healthcare camps, skill building initiatives…',4)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Labour Standards & Rights','s4_laborStandards','Describe child labour policy, forced labour policy, freedom of association, supply chain due diligence…',3)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-blue"><i class="fas fa-table"></i></div>Social KPI Trend (3-Year)</div>'
+    +'<div class="erb-table-wrap"><table class="erb-table">'
+    +'<thead><tr><th>KPI</th><th>Previous Year</th><th>Current Year</th><th>Target</th></tr></thead>'
+    +'<tbody>'
+    +'<tr><td><strong>Training Hours / Employee</strong></td>'
+    +'<td><input type="number" data-key="m_s1_prev" value="'+v('m_s1_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_s1_curr" value="'+v('m_s1_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_s1_target" value="'+v('m_s1_target')+'" placeholder="e.g., 40 hrs"/></td></tr>'
+    +'<tr><td><strong>Safety LTIR</strong></td>'
+    +'<td><input type="number" data-key="m_s2_prev" value="'+v('m_s2_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_s2_curr" value="'+v('m_s2_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_s2_target" value="'+v('m_s2_target')+'" placeholder="e.g., Zero LTI"/></td></tr>'
+    +'</tbody></table></div>'
+    +'</div>';
+}
+
+/* ── Step 4: Governance ── */
+function stepGov(){
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-balance-scale"></i> Step 4 of 6</div>'
+    +'<div class="erb-step-title">Governance Data</div>'
+    +'<div class="erb-step-desc">Board composition, ESG oversight, ethics, anti-corruption, and data security governance.</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-purple"><i class="fas fa-users-cog"></i></div>Board Composition</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Total Board Members','number','s5_boardSize','Number of directors')
+    +fg('Independent Directors (%)','number','s5_boardIndep','% of total board that are independent')
+    +fg('Women on Board (%)','number','s5_boardWomen','% of female directors')
+    +fg('Board Meetings per Year','number','s5_boardMeetings','FY count')
+    +'</div>'
+    +'<div class="erb-form-grid" style="margin-top:14px">'
+    +fg('Board Attendance Rate (%)','number','s5_boardAttend','Average attendance at meetings')
+    +fg('CEO Pay Ratio','text','s5_payRatio','CEO comp vs. median employee')
+    +fg('ESG / Sustainability Committee','text','s5_esgCommittee','Committee name or "Yes / No"')
+    +fg('ESG Compensation Linkage','text','s5_esgComp','e.g., 15% LTI linked to ESG targets')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-teal"><i class="fas fa-shield-alt"></i></div>Ethics & Compliance</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Ethics Violations (count)','number','s5_violations','Confirmed violations in reporting period')
+    +fg('Data Breaches (count)','number','s5_breaches','Reportable data security breaches')
+    +fg('Security Framework','text','s5_secFramework','e.g., ISO 27001, SOC 2')
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Anti-Corruption Policy Summary','s5_anticorr','Describe the anti-bribery & anti-corruption policy, training completion rates, enforcement actions…',3)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Whistleblower / Vigil Mechanism','s5_whistle','Number of complaints received, resolved, pending. Policy overview and channel description…',3)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Code of Conduct & Ethics Summary','s5_ethics','Summary of Code of Business Conduct, annual affirmation rate, training completion…',3)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-blue"><i class="fas fa-table"></i></div>Governance KPI Trend (3-Year)</div>'
+    +'<div class="erb-table-wrap"><table class="erb-table">'
+    +'<thead><tr><th>KPI</th><th>Previous Year</th><th>Current Year</th><th>Target</th></tr></thead>'
+    +'<tbody>'
+    +'<tr><td><strong>Board Independence (%)</strong></td>'
+    +'<td><input type="number" data-key="m_g1_prev" value="'+v('m_g1_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_g1_curr" value="'+v('m_g1_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_g1_target" value="'+v('m_g1_target')+'" placeholder="e.g., ≥50%"/></td></tr>'
+    +'<tr><td><strong>Ethics Training Completion (%)</strong></td>'
+    +'<td><input type="number" data-key="m_g2_prev" value="'+v('m_g2_prev')+'" placeholder="—"/></td>'
+    +'<td><input type="number" data-key="m_g2_curr" value="'+v('m_g2_curr')+'" placeholder="—"/></td>'
+    +'<td><input type="text" data-key="m_g2_target" value="'+v('m_g2_target')+'" placeholder="e.g., 100%"/></td></tr>'
+    +'</tbody></table></div>'
+    +'</div>';
+}
+
+/* ── Step 5: Frameworks ── */
+function stepFramework(){
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-globe"></i> Step 5 of 6</div>'
+    +'<div class="erb-step-title">Frameworks & Reporting Standards</div>'
+    +'<div class="erb-step-desc">Select applicable reporting frameworks, material topics, stakeholder engagement, assurance details, and GRI / SASB index notes.</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-teal"><i class="fas fa-certificate"></i></div>Reporting Frameworks</div>'
+    +'<div style="font-size:.77rem;font-weight:700;color:#374151;margin-bottom:8px">Select all that apply:</div>'
+    +'<div class="erb-check-grid">'
+    +chk('GRI Standards 2021','s2_gri')
+    +chk('SASB Standards','s2_sasb')
+    +chk('TCFD Framework','s2_tcfd')
+    +chk('UN Sustainable Development Goals','s2_sdg')
+    +chk('SEBI BRSR','s2_brsr')
+    +chk('ISO 26000','s2_iso')
+    +chk('CDP Climate Disclosure','s2_cdp')
+    +chk('IIRC Integrated Reporting','s2_iirc')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-green"><i class="fas fa-bullseye"></i></div>Material Topics & Stakeholders</div>'
+    +'<div class="erb-form-full">'
+    +fgta('Material ESG Topics','s2_materialTopics','List the material topics identified through stakeholder engagement, e.g.:\n• Climate change & energy\n• Water stewardship\n• Employee health & safety\n• Corporate governance\n• Supply chain responsibility',4)
+    +'</div>'
+    +'<div class="erb-form-grid" style="margin-top:14px">'
+    +fg('Key Stakeholder Groups','text','s2_stakeholders','e.g., Investors, Employees, Customers, Communities, Regulators')
+    +fg('Engagement Method','text','s2_engagementMethod','e.g., Surveys, Materiality workshops, AGM, Social media')
+    +fg('SDG Goals Aligned','text','s2_sdgGoals','e.g., SDG 3, 7, 8, 12, 13, 17')
+    +fg('Target Year','text','s2_targetYear','e.g., 2030')
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Long-term Sustainability Targets','s2_targets','List the organization\'s 2030 / net-zero targets, e.g.:\n• Net-zero Scope 1+2 by 2035\n• 50% renewable energy by 2027\n• Zero waste to landfill by 2028',4)
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-orange"><i class="fas fa-search"></i></div>External Assurance</div>'
+    +'<div class="erb-form-grid">'
+    +fg('Assurance Provider','text','s7_assurer','Name of the external assurance firm')
+    +fg('Assurance Level','select','s7_assuranceLevel','',['Limited Assurance','Reasonable Assurance','Not Assured'])
+    +fg('Assurance Standard','text','s7_assuranceStd','e.g., ISAE 3000, AA1000AS')
+    +fg('Assurance Scope','text','s7_assuranceScope','e.g., All owned & operated facilities')
+    +'</div>'
+    +'</div>'
+
+    +'<div class="erb-card">'
+    +'<div class="erb-card-title"><div class="erb-card-icon ico-purple"><i class="fas fa-list-ol"></i></div>GRI / SASB Index Notes</div>'
+    +'<div class="erb-form-full">'
+    +fgta('GRI Content Index Notes','s7_griIndex','Note GRI Standards applied, omissions, and deviations…',4)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('SASB Topic Metrics','s7_sasbTopics','SASB industry-specific metrics and codes applicable to this organization…',3)
+    +'</div>'
+    +'<div class="erb-form-full" style="margin-top:14px">'
+    +fgta('Glossary / Definitions','s7_glossary','Key terms and definitions used in this report…',3)
+    +'</div>'
+    +'</div>';
+}
+
+/* ── Step 6: Review ── */
+function stepReview(){
+  collectCurrent();
+  var rd = function(k,def){ return D[k]||def||'<span style="color:#cbd5e1">Not entered</span>'; };
+  var frameworks = ['GRI Standards 2021','SASB','TCFD','UN SDGs','SEBI BRSR','ISO 26000'].filter(function(f,i){
+    var keys=['s2_gri','s2_sasb','s2_tcfd','s2_sdg','s2_brsr','s2_iso'];
+    return D[keys[i]]===true||D[keys[i]]==='true';
+  });
+  return '<div class="erb-step-header">'
+    +'<div class="erb-step-badge"><i class="fas fa-check-circle"></i> Step 6 of 6</div>'
+    +'<div class="erb-step-title">Review & Generate</div>'
+    +'<div class="erb-step-desc">Review your entered data below, then click Generate to produce the Sustainability Report PDF.</div>'
+    +'</div>'
+
+    +'<div class="erb-review-section">'
+    +'<div class="erb-review-title"><span><i class="fas fa-building" style="color:#16a34a;margin-right:7px"></i>Organization Profile</span>'
+    +'<button class="erb-btn erb-btn-outline" style="font-size:.72rem;padding:5px 12px" onclick="jumpStep(0)"><i class="fas fa-edit"></i> Edit</button></div>'
+    +'<div class="erb-review-grid">'
+    +'<div class="erb-review-item"><div class="erb-review-label">Org Name</div><div class="erb-review-val">'+rd('s1_orgName')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Industry</div><div class="erb-review-val">'+rd('s1_industry')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Employees</div><div class="erb-review-val">'+rd('s1_employees')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Revenue (₹ Cr)</div><div class="erb-review-val">'+rd('s1_revenue')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Sites</div><div class="erb-review-val">'+rd('s1_sites')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Reporting Year</div><div class="erb-review-val">'+rd('s1_year','FY 2024-25')+'</div></div>'
+    +'</div></div>'
+
+    +'<div class="erb-review-section">'
+    +'<div class="erb-review-title"><span><i class="fas fa-leaf" style="color:#16a34a;margin-right:7px"></i>Environmental</span>'
+    +'<button class="erb-btn erb-btn-outline" style="font-size:.72rem;padding:5px 12px" onclick="jumpStep(1)"><i class="fas fa-edit"></i> Edit</button></div>'
+    +'<div class="erb-review-grid">'
+    +'<div class="erb-review-item"><div class="erb-review-label">Total Energy (GJ)</div><div class="erb-review-val">'+rd('s3_energy')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Renewable Share %</div><div class="erb-review-val">'+rd('s3_renewShare')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Scope 1 (tCO₂e)</div><div class="erb-review-val">'+rd('s3_scope1')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Scope 2 (tCO₂e)</div><div class="erb-review-val">'+rd('s3_scope2')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Water Withdrawal (KL)</div><div class="erb-review-val">'+rd('s3_water')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Waste Generated (MT)</div><div class="erb-review-val">'+rd('s3_waste')+'</div></div>'
+    +'</div></div>'
+
+    +'<div class="erb-review-section">'
+    +'<div class="erb-review-title"><span><i class="fas fa-users" style="color:#16a34a;margin-right:7px"></i>Social</span>'
+    +'<button class="erb-btn erb-btn-outline" style="font-size:.72rem;padding:5px 12px" onclick="jumpStep(2)"><i class="fas fa-edit"></i> Edit</button></div>'
+    +'<div class="erb-review-grid">'
+    +'<div class="erb-review-item"><div class="erb-review-label">Headcount</div><div class="erb-review-val">'+rd('s4_headcount')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Women %</div><div class="erb-review-val">'+rd('s4_womenPct')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">TRIR</div><div class="erb-review-val">'+rd('s4_trir')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">LTIR</div><div class="erb-review-val">'+rd('s4_ltir')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">CSR Investment</div><div class="erb-review-val">'+rd('s4_csr')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Training Hrs/Employee</div><div class="erb-review-val">'+rd('s4_trainHours')+'</div></div>'
+    +'</div></div>'
+
+    +'<div class="erb-review-section">'
+    +'<div class="erb-review-title"><span><i class="fas fa-balance-scale" style="color:#16a34a;margin-right:7px"></i>Governance</span>'
+    +'<button class="erb-btn erb-btn-outline" style="font-size:.72rem;padding:5px 12px" onclick="jumpStep(3)"><i class="fas fa-edit"></i> Edit</button></div>'
+    +'<div class="erb-review-grid">'
+    +'<div class="erb-review-item"><div class="erb-review-label">Board Size</div><div class="erb-review-val">'+rd('s5_boardSize')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Board Independence %</div><div class="erb-review-val">'+rd('s5_boardIndep')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Women on Board %</div><div class="erb-review-val">'+rd('s5_boardWomen')+'</div></div>'
+    +'<div class="erb-review-item"><div class="erb-review-label">Ethics Violations</div><div class="erb-review-val">'+rd('s5_violations','0')+'</div></div>'
+    +'</div></div>'
+
+    +'<div class="erb-review-section">'
+    +'<div class="erb-review-title"><span><i class="fas fa-globe" style="color:#16a34a;margin-right:7px"></i>Frameworks</span>'
+    +'<button class="erb-btn erb-btn-outline" style="font-size:.72rem;padding:5px 12px" onclick="jumpStep(4)"><i class="fas fa-edit"></i> Edit</button></div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:8px">'
+    +(frameworks.length ? frameworks.map(function(f){ return '<span style="background:#dcfce7;color:#15803d;border:1px solid #86efac;border-radius:16px;padding:4px 12px;font-size:.75rem;font-weight:700">'+f+'</span>'; }).join('') : '<span style="color:#94a3b8;font-size:.8rem">No frameworks selected</span>')
+    +'</div></div>'
+
+    +'<div class="erb-generate-card">'
+    +'<div style="width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:1.8rem">🌿</div>'
+    +'<h2>Generate Sustainability Report</h2>'
+    +'<p>Your data has been saved. Click below to generate a professional PDF Sustainability Report aligned with GRI 2021, SEBI BRSR, TCFD, SASB and UN SDGs.</p>'
+    +'<button class="erb-generate-btn" onclick="generateReport()">'
+    +'<i class="fas fa-file-pdf" style="font-size:1.1rem"></i> Generate PDF Sustainability Report'
+    +'</button>'
+    +'</div>';
+}
+
+/* ── Helper: form field ── */
+function fg(label, type, key, placeholder, opts){
+  var id = 'f_'+key;
+  if(type==='select'){
+    var options = (opts||[]).map(function(o){ return '<option value="'+o+'"'+(v(key)===o?' selected':'')+'>'+o+'</option>'; }).join('');
+    return '<div class="erb-fg"><label for="'+id+'">'+label+'</label>'
+      +'<select id="'+id+'" data-key="'+key+'">'+options+'</select></div>';
+  }
+  return '<div class="erb-fg"><label for="'+id+'">'+label+'</label>'
+    +'<input id="'+id+'" type="'+type+'" data-key="'+key+'" value="'+esc(v(key))+'" placeholder="'+placeholder+'"/></div>';
+}
+
+function fgta(label, key, placeholder, rows){
+  var id = 'f_'+key;
+  return '<div class="erb-fg"><label for="'+id+'">'+label+'</label>'
+    +'<textarea id="'+id+'" data-key="'+key+'" rows="'+(rows||4)+'" placeholder="'+placeholder+'">'+esc(v(key))+'</textarea></div>';
+}
+
+function chk(label, key){
+  var checked = D[key]===true||D[key]==='true';
+  return '<label class="erb-check-item'+(checked?' checked':'')+'">'
+    +'<input type="checkbox" data-key="'+key+'"'+(checked?' checked':'')+'> '+label+'</label>';
+}
+
+function esc(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

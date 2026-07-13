@@ -1,0 +1,1687 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sustainability Report Builder — EcoSphere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;min-height:100vh}
+:root{--red:#B01020;--yellow:#E8C317;--teal:#1a7a6e;--cyan:#0ea5e9;--dark:#0f172a;--mid:#1e3a5f;--green:#16a34a}
+
+/* TOPBAR */
+.topbar{background:linear-gradient(90deg,var(--dark),var(--mid));padding:0 28px;height:58px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+.topbar-back{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 13px;color:#fff;font-family:Poppins,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:background .15s}
+.topbar-back:hover{background:rgba(255,255,255,.22)}
+.topbar-title{font-family:Poppins,sans-serif;font-weight:900;font-size:1.05rem;color:#fff;display:flex;align-items:center;gap:8px}
+.topbar-sub{font-size:.7rem;color:rgba(255,255,255,.6);margin-left:4px;font-weight:400}
+.topbar-save{margin-left:auto;font-size:.7rem;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:5px}
+.save-dot{width:7px;height:7px;border-radius:50%;background:#22c55e}
+
+/* STEP BAR */
+.step-bar{background:#fff;border-bottom:1.5px solid #e2e8f0;padding:14px 28px;display:flex;align-items:center;gap:0;overflow-x:auto;position:sticky;top:58px;z-index:99;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.step-item{display:flex;align-items:center;gap:0;flex-shrink:0}
+.step-dot{width:32px;height:32px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;color:#94a3b8;font-family:Poppins,sans-serif;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;flex-shrink:0}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.step-dot.active{background:linear-gradient(135deg,var(--red),#dc2626);border-color:var(--red);color:#fff;box-shadow:0 3px 10px rgba(176,16,32,.35)}
+.step-label{font-family:Poppins,sans-serif;font-size:.65rem;font-weight:700;color:#94a3b8;margin-left:6px;white-space:nowrap}
+.step-label.active{color:var(--red)}
+.step-label.done{color:var(--green)}
+.step-line{width:24px;height:2px;background:#e2e8f0;flex-shrink:0}
+.step-line.done{background:var(--green)}
+
+/* MAIN LAYOUT */
+.main{display:flex;min-height:calc(100vh - 58px - 62px)}
+.sidebar-nav{width:220px;background:#fff;border-right:1.5px solid #e2e8f0;padding:18px 0;flex-shrink:0;position:sticky;top:120px;height:calc(100vh - 120px);overflow-y:auto}
+.sidebar-nav .nav-section{font-family:Poppins,sans-serif;font-size:.6rem;font-weight:800;color:#94a3b8;letter-spacing:.08em;padding:10px 18px 4px;text-transform:uppercase}
+.sidebar-nav .nav-item{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;font-family:Poppins,sans-serif;font-size:.73rem;font-weight:600;color:#475569;border-left:3px solid transparent;transition:.15s}
+.sidebar-nav .nav-item:hover{background:#f8fafc;color:#0f172a}
+.sidebar-nav .nav-item.active{color:var(--red);background:#fff5f5;border-left-color:var(--red)}
+.sidebar-nav .nav-item i{width:16px;text-align:center;font-size:.75rem}
+.content-area{flex:1;padding:28px 32px;max-width:900px}
+
+/* STEP PANELS */
+.step-panel{display:none}
+.step-panel.active{display:block}
+.step-heading{font-family:Poppins,sans-serif;font-size:1.15rem;font-weight:900;color:#0f172a;margin-bottom:4px}
+.step-sub{font-size:.78rem;color:#64748b;margin-bottom:22px;line-height:1.5}
+
+/* CARDS */
+.card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px 22px;margin-bottom:18px}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #f1f5f9}
+.card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem}
+.card-title{font-family:Poppins,sans-serif;font-size:.88rem;font-weight:800;color:#0f172a}
+.card-desc{font-size:.7rem;color:#64748b;margin-top:1px}
+
+/* FORM FIELDS */
+.field-row{display:grid;gap:14px;margin-bottom:14px}
+.field-row.cols-2{grid-template-columns:1fr 1fr}
+.field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.field-row.cols-1{grid-template-columns:1fr}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-label{font-family:Poppins,sans-serif;font-size:.68rem;font-weight:700;color:#374151}
+.field-hint{font-size:.62rem;color:#94a3b8;margin-top:1px}
+.field-input{padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:Inter,sans-serif;font-size:.8rem;color:#1e293b;background:#fafafa;transition:border .15s;width:100%}
+.field-input:focus{outline:none;border-color:var(--red);background:#fff}
+.field-input::placeholder{color:#b0bec5}
+textarea.field-input{resize:vertical;min-height:80px;line-height:1.5}
+select.field-input{cursor:pointer}
+
+/* IMAGE UPLOAD */
+.img-upload-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;position:relative;background:#f8fafc}
+.img-upload-zone:hover{border-color:var(--red);background:#fff5f5}
+.img-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-zone i{font-size:1.6rem;color:#94a3b8;display:block;margin-bottom:6px}
+.img-upload-zone .up-label{font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#64748b}
+.img-upload-zone .up-sub{font-size:.65rem;color:#94a3b8;margin-top:2px}
+.img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;display:none}
+
+/* LEADER CARD */
+.leader-card{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:14px;position:relative}
+.leader-card .remove-btn{position:absolute;top:10px;right:10px;background:#fee2e2;border:none;color:#dc2626;border-radius:6px;padding:4px 8px;font-size:.65rem;font-weight:700;cursor:pointer;font-family:Poppins,sans-serif}
+.leader-photo-area{width:80px;height:80px;border-radius:10px;border:2px dashed #cbd5e1;overflow:hidden;position:relative;flex-shrink:0;background:#f1f5f9;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.leader-photo-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.leader-photo-area img{width:100%;height:100%;object-fit:cover;display:none}
+.leader-photo-area i{color:#94a3b8;font-size:1.4rem}
+
+/* DAILY LOG SECTION */
+.daily-bar{background:linear-gradient(90deg,#f0fdf4,#fff);border:1.5px solid #86efac;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.daily-date-input{padding:7px 10px;border:1.5px solid #86efac;border-radius:7px;font-family:Poppins,sans-serif;font-size:.78rem;font-weight:700;color:#0f172a;cursor:pointer;background:#fff}
+.daily-btn{padding:7px 14px;border-radius:7px;border:none;font-family:Poppins,sans-serif;font-size:.73rem;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:5px}
+.daily-btn.primary{background:var(--green);color:#fff}
+.daily-btn.secondary{background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0}
+.daily-btn:hover{opacity:.88}
+.daily-toast{font-size:.7rem;color:var(--green);font-weight:700;margin-left:auto;display:none}
+
+/* HISTORY TABLE */
+.history-table{width:100%;border-collapse:collapse;font-size:.72rem}
+.history-table th{background:#0f172a;color:#fff;font-family:Poppins,sans-serif;font-size:.65rem;font-weight:700;padding:7px 10px;text-align:left}
+.history-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:#374151;font-family:Inter,sans-serif}
+.history-table tr:hover td{background:#f8fafc}
+.history-table .edit-link{color:var(--red);cursor:pointer;font-weight:700;text-decoration:none}
+
+/* CUSTOM SECTION CARDS */
+.custom-section-card{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:14px;position:relative}
+.custom-section-card .remove-btn{position:absolute;top:10px;right:10px;background:#fee2e2;border:none;color:#dc2626;border-radius:6px;padding:4px 8px;font-size:.65rem;font-weight:700;cursor:pointer;font-family:Poppins,sans-serif}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;flex:1}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#4ade80);border-radius:20px;transition:width .4s}
+
+/* REVIEW CARDS */
+.review-section{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:14px}
+.review-section-title{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.review-kpi{display:flex;flex-direction:column;gap:2px}
+.review-kpi .k-val{font-family:Poppins,sans-serif;font-size:1.2rem;font-weight:900;color:var(--red)}
+.review-kpi .k-label{font-size:.65rem;color:#64748b;font-weight:600}
+
+/* BOTTOM NAV BAR */
+.bottom-nav{background:#fff;border-top:1.5px solid #e2e8f0;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:98}
+.nav-btn{padding:9px 22px;border-radius:9px;border:none;font-family:Poppins,sans-serif;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+.nav-btn.prev{background:#f1f5f9;color:#374151}
+.nav-btn.prev:hover{background:#e2e8f0}
+.nav-btn.next{background:linear-gradient(90deg,var(--red),#dc2626);color:#fff;box-shadow:0 3px 10px rgba(176,16,32,.25)}
+.nav-btn.next:hover{box-shadow:0 5px 16px rgba(176,16,32,.38)}
+.nav-btn.generate{background:linear-gradient(90deg,var(--green),#15803d);color:#fff;box-shadow:0 3px 10px rgba(22,163,74,.25);padding:10px 26px;font-size:.82rem}
+.step-counter{font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#64748b}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:24px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:Poppins,sans-serif;font-size:.95rem;font-weight:800;color:#0f172a;margin-bottom:14px}
+
+/* PREVIEW MODAL */
+.preview-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;flex-direction:column}
+.preview-modal.open{display:flex}
+.preview-topbar{background:#0f172a;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.preview-content{flex:1;overflow-y:auto;padding:24px;display:flex;justify-content:center}
+#previewFrame{background:#fff;width:210mm;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+
+/* ADD BUTTON */
+.add-btn{display:flex;align-items:center;gap:7px;background:#f0fdf4;border:1.5px dashed #86efac;border-radius:9px;padding:9px 16px;color:var(--green);font-family:Poppins,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px}
+.add-btn:hover{background:#dcfce7}
+
+/* SECTION DIVIDER BADGE */
+.section-divider-badge{background:linear-gradient(90deg,#7f1d1d,var(--red));color:#fff;border-radius:8px;padding:6px 14px;font-family:Poppins,sans-serif;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px}
+
+/* EXPORT BUTTONS */
+.export-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.export-btn{padding:12px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;text-align:center;transition:.15s;font-family:Poppins,sans-serif}
+.export-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.export-btn i{display:block;font-size:1.4rem;margin-bottom:5px}
+.export-btn .eb-label{font-size:.7rem;font-weight:800;color:#374151}
+.export-btn .eb-ext{font-size:.62rem;color:#64748b}
+
+@media(max-width:768px){
+  .sidebar-nav{display:none}
+  .field-row.cols-2,.field-row.cols-3{grid-template-columns:1fr}
+  .content-area{padding:16px}
+  .export-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="org-portal.html" class="topbar-back"><i class="fas fa-arrow-left"></i> EIA Section</a>
+  <div class="topbar-title">
+    <i class="fas fa-leaf" style="color:#4ade80"></i>
+    Sustainability Report Builder
+    <span class="topbar-sub">GRI · SASB · UNGC · MoEFCC</span>
+  </div>
+  <div class="topbar-save" id="saveIndicator">
+    <div class="save-dot" id="saveDot" style="background:#94a3b8"></div>
+    <span id="saveText">Not saved</span>
+  </div>
+</div>
+
+<!-- STEP PROGRESS BAR -->
+<div class="step-bar" id="stepBar">
+  <!-- generated by JS -->
+</div>
+
+<div style="display:flex;flex-direction:column;min-height:calc(100vh - 120px)">
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section">Report Sections</div>
+    <div class="nav-item active" onclick="goStep(1)" id="snav1"><i class="fas fa-building"></i> Report Identity</div>
+    <div class="nav-item" onclick="goStep(2)" id="snav2"><i class="fas fa-users"></i> Leadership Team</div>
+    <div class="nav-item" onclick="goStep(3)" id="snav3"><i class="fas fa-info-circle"></i> Company Profile</div>
+    <div class="nav-section">Daily Data</div>
+    <div class="nav-item" onclick="goStep(4)" id="snav4"><i class="fas fa-leaf"></i> Environmental</div>
+    <div class="nav-item" onclick="goStep(5)" id="snav5"><i class="fas fa-users-cog"></i> Social</div>
+    <div class="nav-section">Governance</div>
+    <div class="nav-item" onclick="goStep(6)" id="snav6"><i class="fas fa-balance-scale"></i> Governance</div>
+    <div class="nav-item" onclick="goStep(7)" id="snav7"><i class="fas fa-bullseye"></i> ESG Targets</div>
+    <div class="nav-section">Finalize</div>
+    <div class="nav-item" onclick="goStep(8)" id="snav8"><i class="fas fa-images"></i> Gallery & Sections</div>
+    <div class="nav-item" onclick="goStep(9)" id="snav9"><i class="fas fa-file-pdf"></i> Review & Generate</div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+
+  <!-- ═══ STEP 1: REPORT IDENTITY ═══ -->
+  <div class="step-panel active" id="step1">
+    <div class="step-heading">Report Identity & Cover</div>
+    <div class="step-sub">Enter your organization details and upload the cover photo for the report.</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fff5f5;color:var(--red)"><i class="fas fa-building"></i></div>
+        <div><div class="card-title">Organization Details</div><div class="card-desc">Basic information appearing on cover page and throughout the report</div></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Organization / Company Name *</label><input class="field-input" id="s1_orgName" placeholder="e.g. MSN Laboratories Pvt. Ltd." oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Report Title *</label><input class="field-input" id="s1_reportTitle" placeholder="e.g. Sustainability Report 2024" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Report Tagline / Theme *</label><input class="field-input" id="s1_tagline" placeholder='e.g. Deepening the Connect' oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Reporting Year / Period *</label><input class="field-input" id="s1_year" placeholder="e.g. FY 2023-24" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">CIN / Registration No.</label><input class="field-input" id="s1_cin" placeholder="e.g. U24230TG2004PTC042947" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Website</label><input class="field-input" id="s1_website" placeholder="e.g. www.msnlabs.com" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-1">
+        <div class="field-group"><label class="field-label">Registered Address</label><textarea class="field-input" id="s1_address" rows="2" placeholder="Full registered address..." oninput="autoSave()"></textarea></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Industry / Sector</label><input class="field-input" id="s1_industry" placeholder="e.g. Pharmaceutical Manufacturing" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Stock Exchange (if listed)</label><input class="field-input" id="s1_stock" placeholder="e.g. BSE · NSE" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Reporting Frameworks Used</label><input class="field-input" id="s1_frameworks" placeholder="e.g. GRI 2021, SASB, SEBI BRSR, UNGC" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Assurance Provider (if any)</label><input class="field-input" id="s1_assurance" placeholder="e.g. DNV GL" oninput="autoSave()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fffbeb;color:#d97706"><i class="fas fa-image"></i></div>
+        <div><div class="card-title">Cover & Logo Images</div><div class="card-desc">Cover photo appears full-page on the report cover. Logo appears on every page header.</div></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group">
+          <label class="field-label">Cover Photo *</label>
+          <div class="img-upload-zone" onclick="document.getElementById('inp_coverPhoto').click()">
+            <input type="file" id="inp_coverPhoto" accept="image/*" style="display:none" onchange="handleImgUpload('inp_coverPhoto','prev_coverPhoto','s1_coverPhoto')">
+            <i class="fas fa-camera"></i>
+            <div class="up-label">Upload Cover Photo</div>
+            <div class="up-sub">Full-page background for cover. JPG/PNG, landscape preferred</div>
+            <img id="prev_coverPhoto" class="img-preview">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Company Logo *</label>
+          <div class="img-upload-zone" onclick="document.getElementById('inp_logo').click()">
+            <input type="file" id="inp_logo" accept="image/*" style="display:none" onchange="handleImgUpload('inp_logo','prev_logo','s1_logo')">
+            <i class="fas fa-award"></i>
+            <div class="up-label">Upload Logo</div>
+            <div class="up-sub">Appears on every page header. PNG with transparent bg preferred</div>
+            <img id="prev_logo" class="img-preview">
+          </div>
+        </div>
+      </div>
+      <div class="field-row cols-1">
+        <div class="field-group">
+          <label class="field-label">Molecule / Brand Graphic (optional)</label>
+          <div class="img-upload-zone" onclick="document.getElementById('inp_molecule').click()" style="padding:12px">
+            <input type="file" id="inp_molecule" accept="image/*" style="display:none" onchange="handleImgUpload('inp_molecule','prev_molecule','s1_molecule')">
+            <i class="fas fa-atom" style="font-size:1.1rem"></i>
+            <div class="up-label" style="font-size:.67rem">Brand / decorative graphic for cover corners</div>
+            <img id="prev_molecule" class="img-preview" style="max-height:80px">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2: LEADERSHIP TEAM ═══ -->
+  <div class="step-panel" id="step2">
+    <div class="step-heading">Leadership Team</div>
+    <div class="step-sub">Add messages from your MD, CEO, sustainability head. Each leader gets a dedicated page in the report with their photo and message.</div>
+
+    <div id="leadersContainer">
+      <!-- Leaders added dynamically -->
+    </div>
+    <button class="add-btn" onclick="addLeader()"><i class="fas fa-plus-circle"></i> Add Leader / Message</button>
+  </div>
+
+  <!-- ═══ STEP 3: COMPANY PROFILE ═══ -->
+  <div class="step-panel" id="step3">
+    <div class="step-heading">Company Profile</div>
+    <div class="step-sub">Describe your company, operations, and key facts. This generates the "About Us" section with a full-page photo divider.</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-image"></i></div>
+        <div><div class="card-title">Section Photo</div><div class="card-desc">This photo is used as the full-page section divider before "About Us" content</div></div>
+      </div>
+      <div class="img-upload-zone" onclick="document.getElementById('inp_aboutPhoto').click()">
+        <input type="file" id="inp_aboutPhoto" accept="image/*" style="display:none" onchange="handleImgUpload('inp_aboutPhoto','prev_aboutPhoto','s3_aboutPhoto')">
+        <i class="fas fa-building"></i>
+        <div class="up-label">Upload Company / Facility Photo</div>
+        <div class="up-sub">Full-page dark-overlay divider. Landscape, high-res recommended</div>
+        <img id="prev_aboutPhoto" class="img-preview">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#eff6ff;color:#1d4ed8"><i class="fas fa-info-circle"></i></div>
+        <div><div class="card-title">About the Organization</div></div>
+      </div>
+      <div class="field-row cols-1">
+        <div class="field-group"><label class="field-label">Company Overview / History *</label><textarea class="field-input" id="s3_overview" rows="5" placeholder="Describe your company, founding year, mission, values and what makes you unique..." oninput="autoSave()"></textarea></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Founded Year</label><input class="field-input" id="s3_founded" placeholder="e.g. 2004" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Headquarters Location</label><input class="field-input" id="s3_hq" placeholder="e.g. Hyderabad, Telangana" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">No. of Manufacturing Facilities</label><input class="field-input" id="s3_facilities" placeholder="e.g. 12" type="number" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Total Employees</label><input class="field-input" id="s3_employees" placeholder="e.g. 8500" type="number" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Countries Present</label><input class="field-input" id="s3_countries" placeholder="e.g. 100+" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Products / Services</label><textarea class="field-input" id="s3_products" rows="3" placeholder="e.g. Active Pharmaceutical Ingredients, Finished Dosage Forms..." oninput="autoSave()"></textarea></div>
+        <div class="field-group"><label class="field-label">Key Markets / Export Regions</label><textarea class="field-input" id="s3_markets" rows="3" placeholder="e.g. USA, EU, Japan, India domestic..." oninput="autoSave()"></textarea></div>
+      </div>
+      <div class="field-row cols-1">
+        <div class="field-group"><label class="field-label">Key Achievements / Awards</label><textarea class="field-input" id="s3_awards" rows="3" placeholder="e.g. US FDA approved, WHO-GMP, ISO 9001:2015 certified..." oninput="autoSave()"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-images"></i></div>
+        <div><div class="card-title">Company Photo Gallery (2-3 photos for "About" section)</div></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group">
+          <div class="img-upload-zone" style="padding:12px" onclick="document.getElementById('inp_cg1').click()">
+            <input type="file" id="inp_cg1" accept="image/*" style="display:none" onchange="handleImgUpload('inp_cg1','prev_cg1','s3_gallery1')">
+            <i class="fas fa-image" style="font-size:1.1rem"></i><div class="up-label" style="font-size:.65rem">Gallery Photo 1</div>
+            <img id="prev_cg1" class="img-preview" style="max-height:90px">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="img-upload-zone" style="padding:12px" onclick="document.getElementById('inp_cg2').click()">
+            <input type="file" id="inp_cg2" accept="image/*" style="display:none" onchange="handleImgUpload('inp_cg2','prev_cg2','s3_gallery2')">
+            <i class="fas fa-image" style="font-size:1.1rem"></i><div class="up-label" style="font-size:.65rem">Gallery Photo 2</div>
+            <img id="prev_cg2" class="img-preview" style="max-height:90px">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="img-upload-zone" style="padding:12px" onclick="document.getElementById('inp_cg3').click()">
+            <input type="file" id="inp_cg3" accept="image/*" style="display:none" onchange="handleImgUpload('inp_cg3','prev_cg3','s3_gallery3')">
+            <i class="fas fa-image" style="font-size:1.1rem"></i><div class="up-label" style="font-size:.65rem">Gallery Photo 3</div>
+            <img id="prev_cg3" class="img-preview" style="max-height:90px">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: ENVIRONMENTAL DATA ═══ -->
+  <div class="step-panel" id="step4">
+    <div class="step-heading">Environmental Data — Daily Entry</div>
+    <div class="step-sub">Log your daily/monthly environmental metrics. Each entry is saved by date and compiled into the report's environmental chapter.</div>
+
+    <div class="daily-bar">
+      <i class="fas fa-calendar-day" style="color:var(--green);font-size:.9rem"></i>
+      <span style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151">Entry Date:</span>
+      <input type="date" class="daily-date-input" id="envDate" onchange="loadEnvEntry(this.value)">
+      <button class="daily-btn secondary" onclick="setEnvToday()"><i class="fas fa-calendar-check"></i> Today</button>
+      <button class="daily-btn primary" onclick="saveEnvEntry()"><i class="fas fa-save"></i> Save Entry</button>
+      <button class="daily-btn secondary" onclick="showEnvHistory()"><i class="fas fa-history"></i> History</button>
+      <span class="daily-toast" id="envToast">✓ Saved!</span>
+    </div>
+
+    <!-- ENV HISTORY (hidden) -->
+    <div id="envHistoryPanel" style="display:none;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-family:Poppins,sans-serif;font-size:.8rem;font-weight:800">Environmental Data History</span>
+        <button onclick="document.getElementById('envHistoryPanel').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:.75rem;color:#64748b">✕ Close</button>
+      </div>
+      <div id="envHistoryTable"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fffbeb;color:#d97706"><i class="fas fa-bolt"></i></div>
+        <div><div class="card-title">Energy Management</div><div class="card-desc">GRI 302 — Electricity, fuel, renewables (TJ / kWh)</div></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Electricity — Non-Renewable (TJ)</label><input class="field-input" id="e_elecNR" type="number" step="0.01" placeholder="e.g. 682.63" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 682.63 TJ</span></div>
+        <div class="field-group"><label class="field-label">Electricity — Renewable (TJ)</label><input class="field-input" id="e_elecR" type="number" step="0.01" placeholder="e.g. 22.62" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 22.62 TJ</span></div>
+        <div class="field-group"><label class="field-label">Total Electricity (TJ) — Auto</label><input class="field-input" id="e_elecTotal" type="number" step="0.01" placeholder="auto-calc" readonly style="background:#f8fafc"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Total Fuel Consumption (TJ)</label><input class="field-input" id="e_fuel" type="number" step="0.01" placeholder="e.g. 1103.03" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 1,103.03 TJ</span></div>
+        <div class="field-group"><label class="field-label">Solar Energy Generated (kWh)</label><input class="field-input" id="e_solar" type="number" step="0.01" placeholder="e.g. 6283000" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Total Energy Consumed (TJ)</label><input class="field-input" id="e_totalEnergy" type="number" step="0.01" placeholder="auto-calc" readonly style="background:#f8fafc"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Renewable Energy Share (%)</label><input class="field-input" id="e_renPct" type="number" step="0.01" placeholder="e.g. 2.5" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Energy Intensity (TJ / INR Mn)</label><input class="field-input" id="e_intensity" type="number" step="0.0001" placeholder="e.g. 0.0247" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 0.0247</span></div>
+        <div class="field-group"><label class="field-label">Revenue (INR Million) — for intensity</label><input class="field-input" id="e_revenue" type="number" step="0.01" placeholder="e.g. 73000" oninput="autoSave()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fef2f2;color:var(--red)"><i class="fas fa-smog"></i></div>
+        <div><div class="card-title">GHG Emissions</div><div class="card-desc">GRI 305 — Scope 1, 2, 3 in tCO₂e; air pollutants in kg</div></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Scope 1 Emissions (tCO₂e)</label><input class="field-input" id="e_scope1" type="number" step="0.01" placeholder="e.g. 76274.97" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 76,274.97</span></div>
+        <div class="field-group"><label class="field-label">Scope 2 Emissions (tCO₂e)</label><input class="field-input" id="e_scope2" type="number" step="0.01" placeholder="e.g. 131454.39" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 1,31,454.39</span></div>
+        <div class="field-group"><label class="field-label">Total Scope 1+2 (tCO₂e)</label><input class="field-input" id="e_scope12" type="number" step="0.01" placeholder="auto" readonly style="background:#f8fafc"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Scope 3 — Business Travel (tCO₂e)</label><input class="field-input" id="e_s3travel" type="number" step="0.01" placeholder="e.g. 1567.96" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Scope 3 — Employee Commute (tCO₂e)</label><input class="field-input" id="e_s3commute" type="number" step="0.01" placeholder="e.g. 2340" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Scope 3 — Upstream Transport (tCO₂e)</label><input class="field-input" id="e_s3upstream" type="number" step="0.01" placeholder="e.g. 5200" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Total Scope 3 (tCO₂e)</label><input class="field-input" id="e_scope3total" type="number" step="0.01" placeholder="e.g. 9108" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">GHG Intensity (tCO₂e / INR Mn)</label><input class="field-input" id="e_ghgIntensity" type="number" step="0.0001" placeholder="e.g. 0.0045" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">NOx Emissions (kg)</label><input class="field-input" id="e_nox" type="number" step="0.1" placeholder="e.g. 45230" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">SOx Emissions (kg)</label><input class="field-input" id="e_sox" type="number" step="0.1" placeholder="e.g. 12400" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">PM Emissions (kg)</label><input class="field-input" id="e_pm" type="number" step="0.1" placeholder="e.g. 8900" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">VOC Emissions (kg)</label><input class="field-input" id="e_voc" type="number" step="0.1" placeholder="e.g. 3200" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">HAP Emissions (kg)</label><input class="field-input" id="e_hap" type="number" step="0.1" placeholder="e.g. 1100" oninput="autoSave()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#eff6ff;color:#1d4ed8"><i class="fas fa-tint"></i></div>
+        <div><div class="card-title">Water & Effluent</div><div class="card-desc">GRI 303 — Withdrawal, consumption, recycled (ML)</div></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Surface Water Withdrawal (ML)</label><input class="field-input" id="e_wSurface" type="number" step="0.01" placeholder="e.g. 120.5" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Groundwater Withdrawal (ML)</label><input class="field-input" id="e_wGround" type="number" step="0.01" placeholder="e.g. 2340.2" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 2,340.2 ML</span></div>
+        <div class="field-group"><label class="field-label">Third-Party / Municipal (ML)</label><input class="field-input" id="e_w3rd" type="number" step="0.01" placeholder="e.g. 45.3" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Total Water Withdrawal (ML)</label><input class="field-input" id="e_wTotal" type="number" step="0.01" placeholder="auto" readonly style="background:#f8fafc"></div>
+        <div class="field-group"><label class="field-label">Total Water Consumption (ML)</label><input class="field-input" id="e_wConsume" type="number" step="0.01" placeholder="e.g. 2150" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 2,150.3 ML</span></div>
+        <div class="field-group"><label class="field-label">Wastewater Generated (ML)</label><input class="field-input" id="e_wwGen" type="number" step="0.01" placeholder="e.g. 890" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">ZLD Treated & Recycled (ML)</label><input class="field-input" id="e_zld" type="number" step="0.01" placeholder="e.g. 810" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Rainwater Harvested (ML)</label><input class="field-input" id="e_rain" type="number" step="0.01" placeholder="e.g. 45.8" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Water Intensity (ML / INR Mn)</label><input class="field-input" id="e_wIntensity" type="number" step="0.0001" placeholder="e.g. 0.0295" oninput="autoSave()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-recycle"></i></div>
+        <div><div class="card-title">Waste Management</div><div class="card-desc">GRI 306 — Hazardous, non-hazardous, e-waste, biomedical (MT)</div></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Hazardous Waste Generated (MT)</label><input class="field-input" id="e_hazWaste" type="number" step="0.01" placeholder="e.g. 2847" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 2,847 MT</span></div>
+        <div class="field-group"><label class="field-label">Non-Hazardous Waste (MT)</label><input class="field-input" id="e_nhWaste" type="number" step="0.01" placeholder="e.g. 4120" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">E-Waste (MT)</label><input class="field-input" id="e_eWaste" type="number" step="0.01" placeholder="e.g. 12.4" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-3">
+        <div class="field-group"><label class="field-label">Biomedical Waste (MT)</label><input class="field-input" id="e_bioWaste" type="number" step="0.01" placeholder="e.g. 5.2" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Waste Recycled / Recovered (MT)</label><input class="field-input" id="e_wasteRecycled" type="number" step="0.01" placeholder="e.g. 3800" oninput="autoSave()"></div>
+        <div class="field-group"><label class="field-label">Waste Intensity (MT / INR Mn)</label><input class="field-input" id="e_wasteIntensity" type="number" step="0.0001" placeholder="e.g. 0.0095" oninput="autoSave()"></div>
+      </div>
+      <div class="field-row cols-2">
+        <div class="field-group"><label class="field-label">Disposal Method — Hazardous</label><select class="field-input" id="e_hazDisposal" onchange="autoSave()"><option value="">Select</option><option>Incineration</option><option>CETP / TSDF</option><option>Co-processing in cement kiln</option><option>Landfill (authorized)</option><option>Recycled / Recovered</option></select></div>
+        <div class="field-group"><label class="field-label">Trees Planted This Period</label><input class="field-input" id="e_trees" type="number" placeholder="e.g. 12500" oninput="autoSave()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-image"></i></div>
+        <div><div class="card-title">Environmental Section Photo</div><div class="card-desc">Full-page section divider image for the Environmental chapter</div></div>
+      </div>
+      <div class="img-upload-zone" onclick="document.getElementById('inp_envPhoto').click()">
+        <input type="file" id="inp_envPhoto" accept="image/*" style="display:none" onchange="handleImgUpload('inp_envPhoto','prev_envPhoto','s4_envPhoto')">
+        <i class="fas fa-leaf"></i>
+        <div class="up-label">Upload Environmental Section Photo</div>
+        <div class="up-sub">e.g. solar panels, green facility, nature — used as full-page divider with dark overlay</div>
+        <img id="prev_envPhoto" class="img-preview">
+      </div>
+    </div>
+  </div>
+
+  </div><!-- end content-area -->
+</div><!-- end main -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn prev" id="prevBtn" onclick="goStep(currentStep-1)" style="visibility:hidden"><i class="fas fa-arrow-left"></i> Previous</button>
+  <span class="step-counter" id="stepCounter">Step 1 of 9</span>
+  <button class="nav-btn next" id="nextBtn" onclick="goStep(currentStep+1)">Next <i class="fas fa-arrow-right"></i></button>
+</div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="preview-modal" id="previewModal">
+  <div class="preview-topbar">
+    <span style="color:#fff;font-family:Poppins,sans-serif;font-size:.85rem;font-weight:700"><i class="fas fa-eye" style="margin-right:7px"></i>Report Preview</span>
+    <button onclick="closePreview()" style="margin-left:auto;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:7px;padding:6px 14px;cursor:pointer;font-family:Poppins,sans-serif;font-size:.73rem;font-weight:700">✕ Close</button>
+    <button onclick="generatePDF()" style="background:var(--red);border:none;color:#fff;border-radius:7px;padding:6px 14px;cursor:pointer;font-family:Poppins,sans-serif;font-size:.73rem;font-weight:700;margin-left:8px"><i class="fas fa-file-pdf" style="margin-right:5px"></i>Download PDF</button>
+  </div>
+  <div class="preview-content">
+    <div id="previewFrame"></div>
+  </div>
+</div>
+
+<!-- ═══ STEP 5: SOCIAL DATA (injected into content-area via JS) ═══ -->
+<!-- ═══ STEP 6-9 panels appended by JS below content-area ═══ -->
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-box" style="max-width:800px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="modal-title">Daily Entry History Log</div>
+      <button onclick="closeHistoryModal()" style="background:none;border:none;cursor:pointer;font-size:1rem;color:#64748b">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input type="date" id="histFrom" class="field-input" style="width:auto;flex:1">
+      <input type="date" id="histTo" class="field-input" style="width:auto;flex:1">
+      <button onclick="filterHistory()" class="daily-btn primary">Filter</button>
+      <button onclick="downloadDailyLog('excel')" class="daily-btn secondary" style="color:var(--green);border-color:var(--green)"><i class="fas fa-file-excel"></i> Excel</button>
+      <button onclick="downloadDailyLog('csv')" class="daily-btn secondary" style="color:var(--teal);border-color:var(--teal)"><i class="fas fa-file-csv"></i> CSV</button>
+    </div>
+    <div style="overflow-x:auto" id="historyTableWrap"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// STEP 5–9 HTML injected into content-area
+// ══════════════════════════════════════════════
+document.querySelector('.content-area').insertAdjacentHTML('beforeend', `
+<!-- ═══ STEP 5: SOCIAL DATA ═══ -->
+<div class="step-panel" id="step5">
+  <div class="step-heading">Social Data — Daily Entry</div>
+  <div class="step-sub">Log workforce, training and OHS safety metrics. Saved by date, compiled into the Social chapter of your report.</div>
+  <div class="daily-bar">
+    <i class="fas fa-calendar-day" style="color:#7c3aed;font-size:.9rem"></i>
+    <span style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151">Entry Date:</span>
+    <input type="date" class="daily-date-input" id="socDate" onchange="loadSocEntry(this.value)">
+    <button class="daily-btn secondary" onclick="setSocToday()"><i class="fas fa-calendar-check"></i> Today</button>
+    <button class="daily-btn primary" style="background:#7c3aed" onclick="saveSocEntry()"><i class="fas fa-save"></i> Save Entry</button>
+    <span class="daily-toast" id="socToast">✓ Saved!</span>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#f5f3ff;color:#7c3aed"><i class="fas fa-users"></i></div>
+      <div><div class="card-title">Workforce</div><div class="card-desc">GRI 401/405 — Headcount, diversity, turnover</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Total Permanent Employees</label><input class="field-input" id="s_permEmp" type="number" placeholder="e.g. 8523" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 8,523</span></div>
+      <div class="field-group"><label class="field-label">Contract / Temporary Workers</label><input class="field-input" id="s_contractEmp" type="number" placeholder="e.g. 3200" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Total Workforce</label><input class="field-input" id="s_totalEmp" type="number" placeholder="auto" readonly style="background:#f8fafc"></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Women Employees (No.)</label><input class="field-input" id="s_womenEmp" type="number" placeholder="e.g. 1240" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Women (% of workforce)</label><input class="field-input" id="s_womenPct" type="number" step="0.1" placeholder="e.g. 14.6" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 14.6%</span></div>
+      <div class="field-group"><label class="field-label">Women in Leadership (%)</label><input class="field-input" id="s_womenLead" type="number" step="0.1" placeholder="e.g. 22" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">New Hires — Male</label><input class="field-input" id="s_newHireM" type="number" placeholder="e.g. 820" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">New Hires — Female</label><input class="field-input" id="s_newHireF" type="number" placeholder="e.g. 210" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Employee Turnover Rate (%)</label><input class="field-input" id="s_turnover" type="number" step="0.1" placeholder="e.g. 12.4" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Employees on Parental Leave (M/F)</label><input class="field-input" id="s_parentalLeave" placeholder="e.g. 45M / 28F" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Return-to-work Rate (%)</label><input class="field-input" id="s_returnRate" type="number" step="0.1" placeholder="e.g. 94" oninput="autoSave()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#eff6ff;color:#1d4ed8"><i class="fas fa-graduation-cap"></i></div>
+      <div><div class="card-title">Training & Development</div><div class="card-desc">GRI 404 — Training hours, types, spend</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Total Training Hours — Employees</label><input class="field-input" id="s_trainHrsEmp" type="number" placeholder="e.g. 285000" oninput="autoSave()"><span class="field-hint">MSN FY23-24: ~285,000 hrs</span></div>
+      <div class="field-group"><label class="field-label">Total Training Hours — Workers</label><input class="field-input" id="s_trainHrsWrk" type="number" placeholder="e.g. 125000" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Avg Training Hours / Employee</label><input class="field-input" id="s_trainAvg" type="number" step="0.1" placeholder="e.g. 33.5" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 33.5 hrs</span></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">GMP / Regulatory Training Hours</label><input class="field-input" id="s_trainGMP" type="number" placeholder="e.g. 95000" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Safety Training Hours</label><input class="field-input" id="s_trainSafety" type="number" placeholder="e.g. 68000" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Leadership & L&D Hours</label><input class="field-input" id="s_trainLD" type="number" placeholder="e.g. 42000" oninput="autoSave()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fff7ed;color:#c2410c"><i class="fas fa-hard-hat"></i></div>
+      <div><div class="card-title">OHS & Safety</div><div class="card-desc">GRI 403 — Injuries, fatalities, LTI, hours worked</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Fatalities — Employees</label><input class="field-input" id="s_fatalEmp" type="number" placeholder="e.g. 0" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Fatalities — Contract Workers</label><input class="field-input" id="s_fatalCon" type="number" placeholder="e.g. 0" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">High-Consequence Injuries</label><input class="field-input" id="s_hci" type="number" placeholder="e.g. 2" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Lost Time Injuries (LTI)</label><input class="field-input" id="s_lti" type="number" placeholder="e.g. 8" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">First Aid Cases</label><input class="field-input" id="s_fac" type="number" placeholder="e.g. 45" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Man-Days Lost</label><input class="field-input" id="s_manDays" type="number" placeholder="e.g. 120" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Total Hours Worked (Million hrs)</label><input class="field-input" id="s_hoursWorked" type="number" step="0.01" placeholder="e.g. 18.4" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">LTIFR (LTI Frequency Rate)</label><input class="field-input" id="s_ltifr" type="number" step="0.01" placeholder="auto or enter" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Near-Miss Incidents</label><input class="field-input" id="s_nearMiss" type="number" placeholder="e.g. 210" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Safety Audits Conducted</label><input class="field-input" id="s_safetyAudits" type="number" placeholder="e.g. 48" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">CSR Spend (INR Lakhs)</label><input class="field-input" id="s_csrSpend" type="number" step="0.01" placeholder="e.g. 425.6" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 425.6 Lakhs</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#f5f3ff;color:#7c3aed"><i class="fas fa-image"></i></div>
+      <div><div class="card-title">Social Section Photo</div><div class="card-desc">Full-page section divider image for the Social chapter</div></div>
+    </div>
+    <div class="img-upload-zone" onclick="document.getElementById('inp_socPhoto').click()">
+      <input type="file" id="inp_socPhoto" accept="image/*" style="display:none" onchange="handleImgUpload('inp_socPhoto','prev_socPhoto','s5_socPhoto')">
+      <i class="fas fa-users"></i>
+      <div class="up-label">Upload Social / People Photo</div>
+      <div class="up-sub">e.g. employees, training, community — full-page divider</div>
+      <img id="prev_socPhoto" class="img-preview">
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STEP 6: GOVERNANCE ═══ -->
+<div class="step-panel" id="step6">
+  <div class="step-heading">Governance & Ethics</div>
+  <div class="step-sub">Board composition, ethics, supply chain and certifications. Generates the Governance chapter of your report.</div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-balance-scale"></i></div>
+      <div><div class="card-title">Board Composition</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Total Board Members</label><input class="field-input" id="g_boardTotal" type="number" placeholder="e.g. 9" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Independent Directors (%)</label><input class="field-input" id="g_indepPct" type="number" step="0.1" placeholder="e.g. 55" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Women Directors (%)</label><input class="field-input" id="g_womenDir" type="number" step="0.1" placeholder="e.g. 22" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Board Meeting Frequency</label><input class="field-input" id="g_boardMeetings" placeholder="e.g. Quarterly (4/year)" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">ESG / Sustainability Committee</label><select class="field-input" id="g_esgCommittee" onchange="autoSave()"><option value="">Select</option><option>Yes — Board-level ESG Committee</option><option>Yes — Management Sustainability Team</option><option>No — Being constituted</option></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fee2e2;color:var(--red)"><i class="fas fa-shield-alt"></i></div>
+      <div><div class="card-title">Ethics & Compliance</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Confirmed Corruption Cases</label><input class="field-input" id="g_corruption" type="number" placeholder="e.g. 0" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Non-Compliance Incidents</label><input class="field-input" id="g_nonComp" type="number" placeholder="e.g. 0" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Whistleblower Reports Received</label><input class="field-input" id="g_whistle" type="number" placeholder="e.g. 3" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Anti-Bribery Policy</label><select class="field-input" id="g_abPolicy" onchange="autoSave()"><option value="">Select</option><option>Yes — Implemented</option><option>In Progress</option><option>No</option></select></div>
+      <div class="field-group"><label class="field-label">Human Rights Policy</label><select class="field-input" id="g_hrPolicy" onchange="autoSave()"><option value="">Select</option><option>Yes — Implemented</option><option>In Progress</option><option>No</option></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-truck"></i></div>
+      <div><div class="card-title">Supply Chain</div></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Total Suppliers</label><input class="field-input" id="g_suppTotal" type="number" placeholder="e.g. 1240" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Local Suppliers (within India)</label><input class="field-input" id="g_suppLocal" type="number" placeholder="e.g. 980" oninput="autoSave()"><span class="field-hint">MSN FY23-24: 980</span></div>
+      <div class="field-group"><label class="field-label">Local Procurement Spend (%)</label><input class="field-input" id="g_suppLocalPct" type="number" step="0.1" placeholder="e.g. 79.5" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Suppliers w/ Code of Conduct (%)</label><input class="field-input" id="g_suppCoC" type="number" step="0.1" placeholder="e.g. 68" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Supplier ESG Audits Conducted</label><input class="field-input" id="g_suppAudits" type="number" placeholder="e.g. 45" oninput="autoSave()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#eff6ff;color:#1d4ed8"><i class="fas fa-certificate"></i></div>
+      <div><div class="card-title">Certifications & Standards</div></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">ISO 14001 (Environmental)</label><select class="field-input" id="g_iso14001" onchange="autoSave()"><option value="">Select</option><option>Certified</option><option>In progress</option><option>Not certified</option></select></div>
+      <div class="field-group"><label class="field-label">ISO 45001 (OHS)</label><select class="field-input" id="g_iso45001" onchange="autoSave()"><option value="">Select</option><option>Certified</option><option>In progress</option><option>Not certified</option></select></div>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">ISO 9001 (Quality)</label><select class="field-input" id="g_iso9001" onchange="autoSave()"><option value="">Select</option><option>Certified</option><option>In progress</option><option>Not certified</option></select></div>
+      <div class="field-group"><label class="field-label">Other Certifications</label><input class="field-input" id="g_otherCerts" placeholder="e.g. US FDA, WHO-GMP, REACH" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-1">
+      <div class="field-group"><label class="field-label">Governance Section Photo</label>
+        <div class="img-upload-zone" style="padding:12px" onclick="document.getElementById('inp_govPhoto').click()">
+          <input type="file" id="inp_govPhoto" accept="image/*" style="display:none" onchange="handleImgUpload('inp_govPhoto','prev_govPhoto','s6_govPhoto')">
+          <i class="fas fa-balance-scale" style="font-size:1.1rem"></i><div class="up-label" style="font-size:.67rem">Governance section divider photo</div>
+          <img id="prev_govPhoto" class="img-preview" style="max-height:100px">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STEP 7: ESG TARGETS ═══ -->
+<div class="step-panel" id="step7">
+  <div class="step-heading">ESG Targets & Progress</div>
+  <div class="step-sub">Track your sustainability commitments and current progress. Each target appears as a visual progress bar in the report.</div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#f0fdf4;color:var(--green)"><i class="fas fa-bullseye"></i></div>
+      <div><div class="card-title">Core ESG Targets</div><div class="card-desc">Based on MSN Laboratories 2030/2045 roadmap</div></div>
+    </div>
+    <div id="targetsContainer">
+      <div class="field-row cols-1" style="background:#f8fafc;border-radius:9px;padding:12px;margin-bottom:10px">
+        <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151;margin-bottom:8px">🌱 Net-Zero Emissions</div>
+        <div class="field-row cols-3">
+          <div class="field-group"><label class="field-label">Target Year</label><input class="field-input" id="t_nzYear" placeholder="e.g. 2045" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Current Status</label><input class="field-input" id="t_nzStatus" placeholder="e.g. 15% reduction achieved" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Progress (%)</label><input class="field-input" id="t_nzProgress" type="number" min="0" max="100" placeholder="e.g. 15" oninput="autoSave()"></div>
+        </div>
+      </div>
+      <div class="field-row cols-1" style="background:#f8fafc;border-radius:9px;padding:12px;margin-bottom:10px">
+        <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151;margin-bottom:8px">⚡ Renewable Energy Target</div>
+        <div class="field-row cols-3">
+          <div class="field-group"><label class="field-label">Target % by Year</label><input class="field-input" id="t_reTarget" placeholder="e.g. 25% by 2030" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Current Renewable %</label><input class="field-input" id="t_reCurrent" type="number" step="0.1" placeholder="e.g. 2.5" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Progress (%)</label><input class="field-input" id="t_reProgress" type="number" min="0" max="100" placeholder="e.g. 10" oninput="autoSave()"></div>
+        </div>
+      </div>
+      <div class="field-row cols-1" style="background:#f8fafc;border-radius:9px;padding:12px;margin-bottom:10px">
+        <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151;margin-bottom:8px">💧 Water Reduction Target</div>
+        <div class="field-row cols-3">
+          <div class="field-group"><label class="field-label">Reduction Target</label><input class="field-input" id="t_wrTarget" placeholder="e.g. 33% reduction by 2030" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Current Reduction Achieved</label><input class="field-input" id="t_wrCurrent" placeholder="e.g. 8.2% reduction" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Progress (%)</label><input class="field-input" id="t_wrProgress" type="number" min="0" max="100" placeholder="e.g. 25" oninput="autoSave()"></div>
+        </div>
+      </div>
+      <div class="field-row cols-1" style="background:#f8fafc;border-radius:9px;padding:12px;margin-bottom:10px">
+        <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151;margin-bottom:8px">♻️ Waste Diversion Target</div>
+        <div class="field-row cols-3">
+          <div class="field-group"><label class="field-label">Target</label><input class="field-input" id="t_wdTarget" placeholder="e.g. Zero waste to landfill by 2030" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Current Status</label><input class="field-input" id="t_wdCurrent" placeholder="e.g. 78% diverted from landfill" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Progress (%)</label><input class="field-input" id="t_wdProgress" type="number" min="0" max="100" placeholder="e.g. 78" oninput="autoSave()"></div>
+        </div>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addCustomTarget()"><i class="fas fa-plus-circle"></i> Add Custom Target</button>
+  </div>
+</div>
+
+<!-- ═══ STEP 8: GALLERY & CUSTOM SECTIONS ═══ -->
+<div class="step-panel" id="step8">
+  <div class="step-heading">Gallery & Custom Sections</div>
+  <div class="step-sub">Add any extra topics (CSR, Digital Transformation, R&D, etc.). Each gets a full-page photo divider and a content page — exactly like the MSN reference PDF.</div>
+  <div id="customSectionsContainer"></div>
+  <button class="add-btn" onclick="addCustomSection()"><i class="fas fa-plus-circle"></i> Add New Section / Topic</button>
+  <div style="margin-top:20px">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fffbeb;color:#d97706"><i class="fas fa-images"></i></div>
+        <div><div class="card-title">Final Page Gallery</div><div class="card-desc">Additional photos shown in a mosaic grid at the end of the report</div></div>
+      </div>
+      <div class="field-row cols-3" id="finalGalleryGrid">
+        <div class="field-group"><div class="img-upload-zone" style="padding:10px" onclick="document.getElementById('inp_fg1').click()"><input type="file" id="inp_fg1" accept="image/*" style="display:none" onchange="handleImgUpload('inp_fg1','prev_fg1','s8_fg1')"><i class="fas fa-image" style="font-size:1rem"></i><div class="up-label" style="font-size:.62rem">Photo 1</div><img id="prev_fg1" class="img-preview" style="max-height:80px"></div></div>
+        <div class="field-group"><div class="img-upload-zone" style="padding:10px" onclick="document.getElementById('inp_fg2').click()"><input type="file" id="inp_fg2" accept="image/*" style="display:none" onchange="handleImgUpload('inp_fg2','prev_fg2','s8_fg2')"><i class="fas fa-image" style="font-size:1rem"></i><div class="up-label" style="font-size:.62rem">Photo 2</div><img id="prev_fg2" class="img-preview" style="max-height:80px"></div></div>
+        <div class="field-group"><div class="img-upload-zone" style="padding:10px" onclick="document.getElementById('inp_fg3').click()"><input type="file" id="inp_fg3" accept="image/*" style="display:none" onchange="handleImgUpload('inp_fg3','prev_fg3','s8_fg3')"><i class="fas fa-image" style="font-size:1rem"></i><div class="up-label" style="font-size:.62rem">Photo 3</div><img id="prev_fg3" class="img-preview" style="max-height:80px"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STEP 9: REVIEW & GENERATE ═══ -->
+<div class="step-panel" id="step9">
+  <div class="step-heading">Review & Generate Report</div>
+  <div class="step-sub">Review all your data, then generate a professional sustainability report that matches the MSN Laboratories reference PDF — with cover page, section dividers, data tables, and team photos.</div>
+  <div id="reviewSummary"></div>
+  <div class="card" style="border-color:var(--red)">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fff5f5;color:var(--red)"><i class="fas fa-file-pdf"></i></div>
+      <div><div class="card-title">Generate Sustainability Report</div><div class="card-desc">PDF styled like the MSN Laboratories Sustainability Report 2024</div></div>
+    </div>
+    <div class="export-grid">
+      <div class="export-btn" onclick="previewReport()" style="border-color:#0ea5e9">
+        <i class="fas fa-eye" style="color:#0ea5e9"></i>
+        <div class="eb-label">Preview</div><div class="eb-ext">View before download</div>
+      </div>
+      <div class="export-btn" onclick="generatePDF()" style="border-color:var(--red)">
+        <i class="fas fa-file-pdf" style="color:var(--red)"></i>
+        <div class="eb-label">Download PDF</div><div class="eb-ext">MSN-style full report</div>
+      </div>
+      <div class="export-btn" onclick="downloadDailyLog('excel')" style="border-color:var(--green)">
+        <i class="fas fa-file-excel" style="color:var(--green)"></i>
+        <div class="eb-label">Daily Log Excel</div><div class="eb-ext">All daily entries</div>
+      </div>
+    </div>
+    <div class="export-grid" style="margin-top:10px">
+      <div class="export-btn" onclick="downloadDailyLog('csv')" style="border-color:var(--teal)">
+        <i class="fas fa-file-csv" style="color:var(--teal)"></i>
+        <div class="eb-label">Daily Log CSV</div><div class="eb-ext">Raw data export</div>
+      </div>
+      <div class="export-btn" onclick="showHistoryModal()" style="border-color:#7c3aed">
+        <i class="fas fa-history" style="color:#7c3aed"></i>
+        <div class="eb-label">History Log</div><div class="eb-ext">View & filter all entries</div>
+      </div>
+      <div class="export-btn" onclick="clearAllData()" style="border-color:#94a3b8">
+        <i class="fas fa-trash" style="color:#94a3b8"></i>
+        <div class="eb-label">Clear All Data</div><div class="eb-ext">Reset this report</div>
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// ══════════════════════════════════════════════
+// CORE STATE & STORAGE
+// ══════════════════════════════════════════════
+const STEPS = [
+  {n:1,label:'Identity'},{n:2,label:'Leadership'},{n:3,label:'Profile'},
+  {n:4,label:'Environment'},{n:5,label:'Social'},{n:6,label:'Governance'},
+  {n:7,label:'Targets'},{n:8,label:'Gallery'},{n:9,label:'Generate'}
+];
+let currentStep = 1;
+let saveTimer = null;
+let leaderCount = 0;
+let customSectionCount = 0;
+let customTargetCount = 0;
+
+function getOrgId(){
+  return new URLSearchParams(window.location.search).get('orgId') ||
+         localStorage.getItem('eco_org_id') || 'default';
+}
+const STORE_META = () => 'srb_meta_' + getOrgId();
+const STORE_DAILY_ENV = (d) => 'srb_env_' + getOrgId() + '_' + d;
+const STORE_DAILY_SOC = (d) => 'srb_soc_' + getOrgId() + '_' + d;
+const STORE_IDX_ENV = () => 'srb_env_idx_' + getOrgId();
+const STORE_IDX_SOC = () => 'srb_soc_idx_' + getOrgId();
+const STORE_IMG = (k) => 'srb_img_' + getOrgId() + '_' + k;
+
+// ── Step bar build ──
+function buildStepBar(){
+  const bar = document.getElementById('stepBar');
+  bar.innerHTML = STEPS.map((s,i) => `
+    <div class="step-item">
+      <div class="step-dot ${currentStep===s.n?'active':completedSteps.has(s.n)?'done':''}" onclick="goStep(${s.n})" id="sdot${s.n}">${completedSteps.has(s.n)?'✓':s.n}</div>
+      <span class="step-label ${currentStep===s.n?'active':completedSteps.has(s.n)?'done':''}" id="slabel${s.n}">${s.label}</span>
+      ${i<STEPS.length-1?'<div class="step-line '+(completedSteps.has(s.n)?'done':'')+'" id="sline'+s.n+'"></div>':''}
+    </div>
+  `).join('');
+}
+const completedSteps = new Set();
+
+function goStep(n){
+  if(n<1||n>9) return;
+  completedSteps.add(currentStep);
+  document.getElementById('step'+currentStep).classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  currentStep = n;
+  document.getElementById('step'+n).classList.add('active');
+  const sn = document.getElementById('snav'+n);
+  if(sn) sn.classList.add('active');
+  buildStepBar();
+  document.getElementById('stepCounter').textContent = 'Step '+n+' of 9';
+  document.getElementById('prevBtn').style.visibility = n===1?'hidden':'visible';
+  document.getElementById('nextBtn').style.display = n===9?'none':'flex';
+  if(n===9) buildReviewSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Auto-save ──
+function autoSave(){
+  clearTimeout(saveTimer);
+  document.getElementById('saveDot').style.background='#fbbf24';
+  document.getElementById('saveText').textContent='Saving…';
+  saveTimer = setTimeout(persistMeta, 1200);
+}
+
+function persistMeta(){
+  const data = {};
+  document.querySelectorAll('[id^="s1_"],[id^="s3_"],[id^="g_"],[id^="t_"]').forEach(el=>{
+    if(el.id && !el.id.startsWith('srb')) data[el.id] = el.value;
+  });
+  // leaders
+  const leaders = [];
+  document.querySelectorAll('[data-leader-idx]').forEach(card=>{
+    const idx = card.dataset.leaderIdx;
+    leaders.push({
+      name: (document.getElementById('l_name_'+idx)||{value:''}).value,
+      desig: (document.getElementById('l_desig_'+idx)||{value:''}).value,
+      msg: (document.getElementById('l_msg_'+idx)||{value:''}).value
+    });
+  });
+  data._leaders = leaders;
+  // custom sections
+  const cs = [];
+  document.querySelectorAll('[data-cs-idx]').forEach(card=>{
+    const idx = card.dataset.csIdx;
+    cs.push({
+      title: (document.getElementById('cs_title_'+idx)||{value:''}).value,
+      subtitle: (document.getElementById('cs_sub_'+idx)||{value:''}).value,
+      content: (document.getElementById('cs_content_'+idx)||{value:''}).value
+    });
+  });
+  data._customSections = cs;
+  localStorage.setItem(STORE_META(), JSON.stringify(data));
+  document.getElementById('saveDot').style.background='#22c55e';
+  document.getElementById('saveText').textContent='Saved';
+}
+
+function loadMeta(){
+  const raw = localStorage.getItem(STORE_META());
+  if(!raw) return;
+  const data = JSON.parse(raw);
+  Object.entries(data).forEach(([k,v])=>{
+    if(k.startsWith('_')) return;
+    const el = document.getElementById(k);
+    if(el) el.value = v;
+  });
+  // restore leader images
+  (data._leaders||[]).forEach((l,i)=>{
+    addLeader(l);
+  });
+  // restore custom sections
+  (data._customSections||[]).forEach((cs)=>addCustomSection(cs));
+  // restore images
+  ['s1_coverPhoto','s1_logo','s1_molecule','s3_aboutPhoto','s3_gallery1','s3_gallery2','s3_gallery3',
+   's4_envPhoto','s5_socPhoto','s6_govPhoto','s8_fg1','s8_fg2','s8_fg3'].forEach(k=>{
+    const v = localStorage.getItem(STORE_IMG(k));
+    if(!v) return;
+    const prevMap = {s1_coverPhoto:'prev_coverPhoto',s1_logo:'prev_logo',s1_molecule:'prev_molecule',
+      s3_aboutPhoto:'prev_aboutPhoto',s3_gallery1:'prev_cg1',s3_gallery2:'prev_cg2',s3_gallery3:'prev_cg3',
+      s4_envPhoto:'prev_envPhoto',s5_socPhoto:'prev_socPhoto',s6_govPhoto:'prev_govPhoto',
+      s8_fg1:'prev_fg1',s8_fg2:'prev_fg2',s8_fg3:'prev_fg3'};
+    const prevEl = document.getElementById(prevMap[k]);
+    if(prevEl){prevEl.src=v;prevEl.style.display='block';}
+  });
+  calcEnvAutos();
+}
+
+// ── Image upload ──
+function handleImgUpload(inputId, previewId, storeKey){
+  const input = document.getElementById(inputId);
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const b64 = canvas.toDataURL('image/jpeg',0.82);
+      localStorage.setItem(STORE_IMG(storeKey), b64);
+      const prev = document.getElementById(previewId);
+      if(prev){prev.src=b64;prev.style.display='block';}
+      autoSave();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function getImg(k){ return localStorage.getItem(STORE_IMG(k))||''; }
+
+// ── Auto-calc env fields ──
+function calcEnvAutos(){
+  const nr=parseFloat(document.getElementById('e_elecNR').value)||0;
+  const r=parseFloat(document.getElementById('e_elecR').value)||0;
+  const fuel=parseFloat(document.getElementById('e_fuel').value)||0;
+  document.getElementById('e_elecTotal').value = nr+r ? (nr+r).toFixed(2) : '';
+  document.getElementById('e_totalEnergy').value = nr+r+fuel ? (nr+r+fuel).toFixed(2) : '';
+  const s1=parseFloat(document.getElementById('e_scope1').value)||0;
+  const s2=parseFloat(document.getElementById('e_scope2').value)||0;
+  document.getElementById('e_scope12').value = s1+s2 ? (s1+s2).toFixed(2) : '';
+  const ws=parseFloat(document.getElementById('e_wSurface').value)||0;
+  const wg=parseFloat(document.getElementById('e_wGround').value)||0;
+  const w3=parseFloat(document.getElementById('e_w3rd').value)||0;
+  document.getElementById('e_wTotal').value = ws+wg+w3 ? (ws+wg+w3).toFixed(2) : '';
+  const se=parseFloat(document.getElementById('s_permEmp').value)||0;
+  const sc=parseFloat(document.getElementById('s_contractEmp').value)||0;
+  document.getElementById('s_totalEmp').value = se+sc ? se+sc : '';
+}
+['e_elecNR','e_elecR','e_fuel','e_scope1','e_scope2','e_wSurface','e_wGround','e_w3rd','s_permEmp','s_contractEmp'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input',calcEnvAutos);
+});
+
+// ── Leadership ──
+function addLeader(data){
+  leaderCount++;
+  const idx = leaderCount;
+  const d = data||{};
+  const html = `
+  <div class="leader-card" data-leader-idx="${idx}" id="leaderCard${idx}">
+    ${idx>1?'<button class="remove-btn" onclick="removeLeader('+idx+')">✕ Remove</button>':''}
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div>
+        <label class="field-label" style="margin-bottom:5px;display:block">Photo</label>
+        <div class="leader-photo-area" id="lPhotoArea${idx}" onclick="document.getElementById('inp_l${idx}').click()">
+          <input type="file" id="inp_l${idx}" accept="image/*" style="display:none" onchange="handleLeaderPhoto(${idx})">
+          <img id="lPhoto${idx}" style="width:100%;height:100%;object-fit:cover;display:none">
+          <i class="fas fa-user" id="lIcon${idx}"></i>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="field-row cols-2">
+          <div class="field-group"><label class="field-label">Full Name *</label><input class="field-input" id="l_name_${idx}" placeholder="e.g. Dr. Ravi Kumar" value="${d.name||''}" oninput="autoSave()"></div>
+          <div class="field-group"><label class="field-label">Designation *</label><input class="field-input" id="l_desig_${idx}" placeholder="e.g. Managing Director & CEO" value="${d.desig||''}" oninput="autoSave()"></div>
+        </div>
+        <div class="field-group" style="margin-top:10px">
+          <label class="field-label">Message / Quote *</label>
+          <textarea class="field-input" id="l_msg_${idx}" rows="5" placeholder="Write the leadership message that appears in the report..." oninput="autoSave()">${d.msg||''}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('leadersContainer').insertAdjacentHTML('beforeend', html);
+  // restore photo
+  const ph = localStorage.getItem(STORE_IMG('l_photo_'+idx));
+  if(ph){ document.getElementById('lPhoto'+idx).src=ph; document.getElementById('lPhoto'+idx).style.display='block'; document.getElementById('lIcon'+idx).style.display='none'; }
+}
+
+function removeLeader(idx){
+  const el = document.getElementById('leaderCard'+idx);
+  if(el) el.remove();
+  autoSave();
+}
+
+function handleLeaderPhoto(idx){
+  const input = document.getElementById('inp_l'+idx);
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      let w=img.width,h=img.height,MAX=800;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const b64 = canvas.toDataURL('image/jpeg',0.82);
+      localStorage.setItem(STORE_IMG('l_photo_'+idx), b64);
+      document.getElementById('lPhoto'+idx).src=b64;
+      document.getElementById('lPhoto'+idx).style.display='block';
+      document.getElementById('lIcon'+idx).style.display='none';
+      autoSave();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Custom Sections ──
+function addCustomSection(data){
+  customSectionCount++;
+  const idx = customSectionCount;
+  const d = data||{};
+  const html = `
+  <div class="custom-section-card" data-cs-idx="${idx}" id="csCard${idx}">
+    <button class="remove-btn" onclick="removeCustomSection(${idx})">✕ Remove</button>
+    <div style="margin-bottom:10px">
+      <span class="section-divider-badge"><i class="fas fa-layer-group"></i> Custom Section ${idx}</span>
+    </div>
+    <div class="field-row cols-2">
+      <div class="field-group"><label class="field-label">Section Title *</label><input class="field-input" id="cs_title_${idx}" placeholder="e.g. Digital Transformation" value="${d.title||''}" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Subtitle / Tagline</label><input class="field-input" id="cs_sub_${idx}" placeholder="e.g. Embracing Technology for a Greener Tomorrow" value="${d.subtitle||''}" oninput="autoSave()"></div>
+    </div>
+    <div class="field-row cols-1">
+      <div class="field-group"><label class="field-label">Content *</label><textarea class="field-input" id="cs_content_${idx}" rows="5" placeholder="Describe this section in detail. This appears as the content page following the photo divider..." oninput="autoSave()">${d.content||''}</textarea></div>
+    </div>
+    <div class="field-group" style="margin-top:8px">
+      <label class="field-label">Section Photo (full-page divider)</label>
+      <div class="img-upload-zone" style="padding:12px" onclick="document.getElementById('inp_cs${idx}').click()">
+        <input type="file" id="inp_cs${idx}" accept="image/*" style="display:none" onchange="handleImgUpload('inp_cs${idx}','prev_cs${idx}','cs_photo_${idx}')">
+        <i class="fas fa-image" style="font-size:1.1rem"></i>
+        <div class="up-label" style="font-size:.67rem">Upload photo for section divider page</div>
+        <img id="prev_cs${idx}" class="img-preview" style="max-height:120px">
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('customSectionsContainer').insertAdjacentHTML('beforeend', html);
+  // restore photo
+  const ph = localStorage.getItem(STORE_IMG('cs_photo_'+idx));
+  if(ph){ const p=document.getElementById('prev_cs'+idx); if(p){p.src=ph;p.style.display='block';} }
+}
+
+function removeCustomSection(idx){
+  const el = document.getElementById('csCard'+idx);
+  if(el) el.remove();
+  autoSave();
+}
+
+function addCustomTarget(){
+  customTargetCount++;
+  const idx = customTargetCount;
+  document.getElementById('targetsContainer').insertAdjacentHTML('beforeend',`
+  <div class="field-row cols-1" style="background:#f8fafc;border-radius:9px;padding:12px;margin-bottom:10px;position:relative" id="ct${idx}">
+    <button onclick="this.parentElement.remove();autoSave()" style="position:absolute;top:8px;right:8px;background:#fee2e2;border:none;color:#dc2626;border-radius:5px;padding:3px 7px;font-size:.62rem;cursor:pointer">✕</button>
+    <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#374151;margin-bottom:8px">🎯 Custom Target ${idx}</div>
+    <div class="field-row cols-3">
+      <div class="field-group"><label class="field-label">Target Name</label><input class="field-input" id="ct_name_${idx}" placeholder="e.g. Biodiversity" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Target Description</label><input class="field-input" id="ct_desc_${idx}" placeholder="e.g. Plant 1M trees by 2030" oninput="autoSave()"></div>
+      <div class="field-group"><label class="field-label">Progress (%)</label><input class="field-input" id="ct_prog_${idx}" type="number" min="0" max="100" placeholder="e.g. 42" oninput="autoSave()"></div>
+    </div>
+  </div>`);
+}
+
+// ── Daily env entry ──
+function setEnvToday(){ document.getElementById('envDate').value = new Date().toISOString().slice(0,10); }
+function setSocToday(){ document.getElementById('socDate').value = new Date().toISOString().slice(0,10); }
+
+function envFields(){ return ['e_elecNR','e_elecR','e_fuel','e_solar','e_renPct','e_intensity','e_revenue','e_scope1','e_scope2','e_scope3total','e_s3travel','e_s3commute','e_s3upstream','e_ghgIntensity','e_nox','e_sox','e_pm','e_voc','e_hap','e_wSurface','e_wGround','e_w3rd','e_wConsume','e_wwGen','e_zld','e_rain','e_wIntensity','e_hazWaste','e_nhWaste','e_eWaste','e_bioWaste','e_wasteRecycled','e_wasteIntensity','e_hazDisposal','e_trees']; }
+function socFields(){ return ['s_permEmp','s_contractEmp','s_womenEmp','s_womenPct','s_womenLead','s_newHireM','s_newHireF','s_turnover','s_parentalLeave','s_returnRate','s_trainHrsEmp','s_trainHrsWrk','s_trainAvg','s_trainGMP','s_trainSafety','s_trainLD','s_fatalEmp','s_fatalCon','s_hci','s_lti','s_fac','s_manDays','s_hoursWorked','s_ltifr','s_nearMiss','s_safetyAudits','s_csrSpend']; }
+
+function saveEnvEntry(){
+  const date = document.getElementById('envDate').value;
+  if(!date) return alert('Please select a date');
+  const entry = {date};
+  envFields().forEach(f=>{ const el=document.getElementById(f); if(el) entry[f]=el.value; });
+  entry.savedAt = new Date().toISOString();
+  localStorage.setItem(STORE_DAILY_ENV(date), JSON.stringify(entry));
+  let idx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]');
+  if(!idx.includes(date)){ idx.push(date); idx.sort(); localStorage.setItem(STORE_IDX_ENV(), JSON.stringify(idx)); }
+  showToast('envToast');
+}
+
+function loadEnvEntry(date){
+  const raw = localStorage.getItem(STORE_DAILY_ENV(date));
+  if(!raw) return;
+  const entry = JSON.parse(raw);
+  envFields().forEach(f=>{ const el=document.getElementById(f); if(el) el.value=entry[f]||''; });
+  calcEnvAutos();
+  showToast('envToast','Loaded');
+}
+
+function saveSocEntry(){
+  const date = document.getElementById('socDate').value;
+  if(!date) return alert('Please select a date');
+  const entry = {date};
+  socFields().forEach(f=>{ const el=document.getElementById(f); if(el) entry[f]=el.value; });
+  entry.savedAt = new Date().toISOString();
+  localStorage.setItem(STORE_DAILY_SOC(date), JSON.stringify(entry));
+  let idx = JSON.parse(localStorage.getItem(STORE_IDX_SOC())||'[]');
+  if(!idx.includes(date)){ idx.push(date); idx.sort(); localStorage.setItem(STORE_IDX_SOC(), JSON.stringify(idx)); }
+  showToast('socToast');
+}
+
+function loadSocEntry(date){
+  const raw = localStorage.getItem(STORE_DAILY_SOC(date));
+  if(!raw) return;
+  const entry = JSON.parse(raw);
+  socFields().forEach(f=>{ const el=document.getElementById(f); if(el) el.value=entry[f]||''; });
+  showToast('socToast','Loaded');
+}
+
+function showToast(id, msg){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = '✓ '+(msg||'Saved!');
+  el.style.display='block';
+  setTimeout(()=>{ el.style.display='none'; }, 2000);
+}
+
+function showEnvHistory(){
+  const panel = document.getElementById('envHistoryPanel');
+  const idx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]');
+  if(!idx.length){ panel.innerHTML='<p style="font-size:.75rem;color:#64748b">No entries yet.</p>'; panel.style.display='block'; return; }
+  let html = '<table class="history-table"><thead><tr><th>Date</th><th>Elec NR (TJ)</th><th>Elec R (TJ)</th><th>Fuel (TJ)</th><th>Scope1 (tCO₂e)</th><th>Scope2 (tCO₂e)</th><th>Water (ML)</th><th>Haz Waste (MT)</th><th>Action</th></tr></thead><tbody>';
+  idx.forEach(d=>{
+    const e = JSON.parse(localStorage.getItem(STORE_DAILY_ENV(d))||'{}');
+    html += `<tr><td>${d}</td><td>${e.e_elecNR||'-'}</td><td>${e.e_elecR||'-'}</td><td>${e.e_fuel||'-'}</td><td>${e.e_scope1||'-'}</td><td>${e.e_scope2||'-'}</td><td>${e.e_wConsume||'-'}</td><td>${e.e_hazWaste||'-'}</td><td><a class="edit-link" onclick="loadEnvEntry('${d}');document.getElementById('envDate').value='${d}';document.getElementById('envHistoryPanel').style.display='none'">Load</a></td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('envHistoryTable').innerHTML = html;
+  panel.style.display = panel.style.display==='none'?'block':'none';
+}
+
+// ── History Modal ──
+function showHistoryModal(){
+  document.getElementById('historyModal').classList.add('open');
+  filterHistory();
+}
+function closeHistoryModal(){ document.getElementById('historyModal').classList.remove('open'); }
+
+function filterHistory(){
+  const from = document.getElementById('histFrom').value || '0000-01-01';
+  const to = document.getElementById('histTo').value || '9999-12-31';
+  const envIdx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]').filter(d=>d>=from&&d<=to);
+  let html = '<table class="history-table" style="font-size:.68rem"><thead><tr><th>Date</th><th>Scope1</th><th>Scope2</th><th>Energy(TJ)</th><th>Water(ML)</th><th>Haz Waste</th><th>Employees</th><th>LTI</th><th>CSR Spend</th></tr></thead><tbody>';
+  envIdx.forEach(d=>{
+    const e = JSON.parse(localStorage.getItem(STORE_DAILY_ENV(d))||'{}');
+    const s = JSON.parse(localStorage.getItem(STORE_DAILY_SOC(d))||'{}');
+    html += `<tr><td><strong>${d}</strong></td><td>${e.e_scope1||'-'}</td><td>${e.e_scope2||'-'}</td><td>${(parseFloat(e.e_totalEnergy)||parseFloat(e.e_elecNR)||0).toFixed(1)||'-'}</td><td>${e.e_wConsume||'-'}</td><td>${e.e_hazWaste||'-'}</td><td>${s.s_totalEmp||s.s_permEmp||'-'}</td><td>${s.s_lti||'-'}</td><td>${s.s_csrSpend||'-'}</td></tr>`;
+  });
+  if(!envIdx.length) html += '<tr><td colspan="9" style="text-align:center;padding:16px;color:#94a3b8">No entries in this date range</td></tr>';
+  html += '</tbody></table>';
+  document.getElementById('historyTableWrap').innerHTML = html;
+}
+
+// ── Download daily log ──
+function downloadDailyLog(fmt){
+  const envIdx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]');
+  const headers = ['Date','Elec_NR_TJ','Elec_R_TJ','Fuel_TJ','Total_Energy_TJ','Solar_kWh','RE_Pct','Scope1_tCO2e','Scope2_tCO2e','Scope3_tCO2e','NOx_kg','SOx_kg','PM_kg','VOC_kg','Water_Withdrawal_ML','Water_Consumption_ML','Wastewater_ML','ZLD_ML','Rainwater_ML','HazWaste_MT','NHWaste_MT','EWaste_MT','Biomedical_MT','Employees_Perm','Employees_Contract','Women_Pct','TrainHrs_Emp','LTI','Fatalities','ManDays_Lost','CSR_Spend_Lakhs'];
+  const rows = envIdx.map(d=>{
+    const e = JSON.parse(localStorage.getItem(STORE_DAILY_ENV(d))||'{}');
+    const s = JSON.parse(localStorage.getItem(STORE_DAILY_SOC(d))||'{}');
+    return [d,e.e_elecNR,e.e_elecR,e.e_fuel,e.e_totalEnergy,e.e_solar,e.e_renPct,e.e_scope1,e.e_scope2,e.e_scope3total,e.e_nox,e.e_sox,e.e_pm,e.e_voc,e.e_wSurface,e.e_wConsume,e.e_wwGen,e.e_zld,e.e_rain,e.e_hazWaste,e.e_nhWaste,e.e_eWaste,e.e_bioWaste,s.s_permEmp,s.s_contractEmp,s.s_womenPct,s.s_trainHrsEmp,s.s_lti,s.s_fatalEmp,s.s_manDays,s.s_csrSpend];
+  });
+  if(fmt==='csv'){
+    const csv = [headers.join(','),...rows.map(r=>r.map(v=>v||'').join(','))].join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sustainability_daily_log.csv'; a.click();
+  } else {
+    const ws = '<table><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+(v||'')+'</td>').join('')+'</tr>').join('')+'</table>';
+    const html = '<html><head><meta charset="utf-8"></head><body>'+ws+'<script src="js/eco-cursor.js"></script>
+</body></html>';
+    const blob = new Blob([html],{type:'application/vnd.ms-excel'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sustainability_daily_log.xls'; a.click();
+  }
+}
+
+// ── Review Summary ──
+function buildReviewSummary(){
+  const orgName = document.getElementById('s1_orgName').value||'—';
+  const year = document.getElementById('s1_year').value||'—';
+  const envIdx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]');
+  const socIdx = JSON.parse(localStorage.getItem(STORE_IDX_SOC())||'[]');
+  const leaderCards = document.querySelectorAll('[data-leader-idx]').length;
+  const csCards = document.querySelectorAll('[data-cs-idx]').length;
+  document.getElementById('reviewSummary').innerHTML = `
+  <div class="review-section">
+    <div class="review-section-title"><i class="fas fa-building" style="color:var(--red)"></i> ${orgName} — ${year}</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div class="review-kpi"><div class="k-val">${envIdx.length}</div><div class="k-label">Environmental Entries</div></div>
+      <div class="review-kpi"><div class="k-val">${socIdx.length}</div><div class="k-label">Social Entries</div></div>
+      <div class="review-kpi"><div class="k-val">${leaderCards}</div><div class="k-label">Leaders</div></div>
+      <div class="review-kpi"><div class="k-val">${csCards}</div><div class="k-label">Custom Sections</div></div>
+    </div>
+  </div>`;
+}
+
+// ── MSN-STYLE REPORT HTML ──
+function buildReportHTML(){
+  const d = (id)=>(document.getElementById(id)||{}).value||'';
+  const img = (k)=>getImg(k);
+  const leaders = [];
+  document.querySelectorAll('[data-leader-idx]').forEach(card=>{
+    const idx = card.dataset.leaderIdx;
+    leaders.push({ name:d('l_name_'+idx), desig:d('l_desig_'+idx), msg:d('l_msg_'+idx), photo:getImg('l_photo_'+idx) });
+  });
+  const customSections = [];
+  document.querySelectorAll('[data-cs-idx]').forEach(card=>{
+    const idx = card.dataset.csIdx;
+    customSections.push({ title:d('cs_title_'+idx), subtitle:d('cs_sub_'+idx), content:d('cs_content_'+idx), photo:getImg('cs_photo_'+idx) });
+  });
+  const envIdx = JSON.parse(localStorage.getItem(STORE_IDX_ENV())||'[]');
+  const latestEnv = envIdx.length ? JSON.parse(localStorage.getItem(STORE_DAILY_ENV(envIdx[envIdx.length-1]))||'{}') : {};
+  const latestSoc = envIdx.length ? JSON.parse(localStorage.getItem(STORE_DAILY_SOC(envIdx[envIdx.length-1]))||'{}') : {};
+
+  const PAGE = (content,bg='#fff') => `<div style="width:210mm;min-height:297mm;background:${bg};position:relative;page-break-after:always;overflow:hidden;font-family:Inter,sans-serif;box-sizing:border-box;">${content}</div>`;
+
+  const DIVIDER = (photo,subtitle,title,color='#fff') => PAGE(`
+    ${photo?`<img src="${photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0">`:'<div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a5f);z-index:0"></div>'}
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.56);z-index:1"></div>
+    <div style="position:absolute;top:14mm;left:14mm;z-index:2;display:flex;align-items:center;gap:8px">
+      ${img('s1_logo')?`<img src="${img('s1_logo')}" style="height:28px;object-fit:contain;filter:brightness(0) invert(1)">`:''}
+      <span style="color:rgba(255,255,255,.6);font-size:7.5pt;letter-spacing:1.5px;font-weight:600;text-transform:uppercase">${d('s1_reportTitle')||'SUSTAINABILITY REPORT'}</span>
+    </div>
+    <div style="position:absolute;bottom:48mm;left:18mm;right:18mm;z-index:2">
+      <div style="color:rgba(255,255,255,.75);font-style:italic;font-size:14pt;margin-bottom:6px">${subtitle}</div>
+      <div style="color:#fff;font-size:42pt;font-weight:900;line-height:1.08;letter-spacing:-1px">${title}</div>
+      <div style="width:50mm;height:3px;background:#B01020;margin-top:10mm"></div>
+      <div style="color:rgba(255,255,255,.7);font-size:7pt;margin-top:3mm;letter-spacing:2px;text-transform:uppercase">${d('s1_reportTitle')||'SUSTAINABILITY REPORT'} ${d('s1_year')}</div>
+    </div>
+  `);
+
+  const TABLE_ROW = (label,val,unit,alt) => `<tr style="background:${alt?'#f8fafc':'#fff'}"><td style="padding:5px 10px;font-size:8pt;color:#374151;border-bottom:1px solid #e2e8f0;width:55%">${label}</td><td style="padding:5px 10px;font-size:8.5pt;font-weight:700;color:#0f172a;border-bottom:1px solid #e2e8f0">${val||'—'}</td><td style="padding:5px 10px;font-size:7.5pt;color:#64748b;border-bottom:1px solid #e2e8f0">${unit}</td></tr>`;
+
+  const DATA_PAGE = (sectionTag,title,content) => PAGE(`
+    <div style="padding:18mm 16mm 14mm">
+      <div style="margin-bottom:8mm">
+        <span style="background:#B01020;color:#fff;font-size:7pt;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:3px">${sectionTag}</span>
+      </div>
+      <div style="font-size:20pt;font-weight:900;color:#0f172a;margin-bottom:6mm;line-height:1.1">${title}</div>
+      <div style="width:40mm;height:3px;background:#B01020;margin-bottom:8mm"></div>
+      ${content}
+    </div>
+    <div style="position:absolute;bottom:8mm;left:16mm;right:16mm;border-top:1px solid #e2e8f0;padding-top:4mm;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:6.5pt;color:#94a3b8;letter-spacing:1px">${d('s1_orgName')||'ORGANIZATION NAME'}</span>
+      <span style="font-size:6.5pt;color:#94a3b8;letter-spacing:1px">${d('s1_reportTitle')||'SUSTAINABILITY REPORT'} ${d('s1_year')}</span>
+    </div>
+  `);
+
+  const KPI_GRID = (items) => `<div style="display:grid;grid-template-columns:repeat(${Math.min(items.length,4)},1fr);gap:6mm;margin-bottom:8mm">${items.map(it=>`<div style="text-align:center"><div style="font-size:28pt;font-weight:900;color:#B01020;line-height:1">${it.v}</div><div style="font-size:7.5pt;color:#475569;font-weight:600;margin-top:2mm">${it.l}</div></div>`).join('')}</div>`;
+
+  const PROGRESS = (label,pct,color='#B01020') => `<div style="margin-bottom:4mm"><div style="display:flex;justify-content:space-between;margin-bottom:1.5mm"><span style="font-size:8pt;font-weight:600;color:#374151">${label}</span><span style="font-size:8pt;font-weight:800;color:${color}">${pct}%</span></div><div style="background:#e2e8f0;border-radius:4px;height:6px"><div style="width:${pct}%;background:${color};height:6px;border-radius:4px"></div></div></div>`;
+
+  let pages = '';
+
+  // ── COVER PAGE ──
+  const coverPhoto = img('s1_coverPhoto');
+  pages += PAGE(`
+    ${coverPhoto?`<img src="${coverPhoto}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0">`:'<div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);z-index:0"></div>'}
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.48);z-index:1"></div>
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;padding:0 18mm 22mm">
+      <div style="margin-bottom:auto;padding-top:14mm;display:flex;align-items:center;gap:10px">
+        ${img('s1_logo')?`<img src="${img('s1_logo')}" style="height:32px;object-fit:contain;filter:brightness(0) invert(1)">`:''}
+        ${img('s1_molecule')?`<img src="${img('s1_molecule')}" style="height:38px;object-fit:contain">`:''}
+      </div>
+      <div style="color:#E8C317;font-size:44pt;font-weight:900;line-height:1.05;letter-spacing:-1.5px;text-shadow:0 2px 12px rgba(0,0,0,.5)">${d('s1_tagline')||d('s1_orgName')||'Sustainability Report'}</div>
+      <div style="color:rgba(255,255,255,.9);font-size:14pt;font-weight:600;margin-top:5mm;letter-spacing:2px;text-transform:uppercase">${d('s1_reportTitle')||'SUSTAINABILITY REPORT'}</div>
+      <div style="color:rgba(255,255,255,.6);font-size:9pt;margin-top:3mm">${d('s1_year')} &nbsp;·&nbsp; ${d('s1_orgName')}</div>
+      <div style="width:45mm;height:3px;background:#B01020;margin-top:6mm"></div>
+    </div>
+  `);
+
+  // ── CONTENTS PAGE ──
+  const sections = ['About the Report','Message from Leadership','About the Organization','Environmental Performance','Social Performance','Governance & Ethics','ESG Targets & Commitments',...customSections.map(cs=>cs.title),'GRI Content Index'];
+  pages += PAGE(`
+    <div style="position:absolute;inset:0;background:#E8C317;z-index:0"></div>
+    <div style="position:relative;z-index:1;padding:18mm 16mm">
+      <div style="font-size:36pt;font-weight:900;color:#0f172a;margin-bottom:10mm">Contents</div>
+      <div style="width:100%;border-top:2px solid #0f172a;margin-bottom:8mm"></div>
+      ${sections.map((s,i)=>`<div style="display:flex;align-items:center;padding:3mm 0;border-bottom:1px solid rgba(0,0,0,.12)"><span style="font-size:10pt;font-weight:700;color:#0f172a;flex:1">${s}</span><span style="font-size:9pt;color:#374151;font-weight:600">${String(i*2+3).padStart(2,'0')}</span></div>`).join('')}
+    </div>
+  `);
+
+  // ── ABOUT REPORT ──
+  pages += DATA_PAGE('ABOUT THIS REPORT','Reporting Approach',`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8mm">
+      <div>
+        <p style="font-size:8.5pt;color:#475569;line-height:1.7;margin-bottom:4mm">This report presents ${d('s1_orgName')||'our organization'}'s sustainability performance for ${d('s1_year')}. It has been prepared in accordance with internationally recognized frameworks including ${d('s1_frameworks')||'GRI Standards 2021, SASB, and SEBI BRSR'}.</p>
+        <p style="font-size:8.5pt;color:#475569;line-height:1.7">All material ESG information has been compiled with reference to our key stakeholder groups — investors, employees, regulators, customers, and communities.</p>
+      </div>
+      <div>
+        <div style="background:#f8fafc;border-left:4px solid #B01020;padding:5mm;border-radius:0 6px 6px 0;margin-bottom:4mm">
+          <div style="font-size:8pt;font-weight:800;color:#B01020;margin-bottom:2mm">REPORTING BOUNDARY</div>
+          <p style="font-size:8pt;color:#475569;line-height:1.6">${d('s3_overview')||'All manufacturing operations, offices, and wholly-owned subsidiaries.'}</p>
+        </div>
+        <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:4mm">
+          <div style="font-size:7.5pt;font-weight:700;color:#374151;margin-bottom:2mm">Reporting Frameworks</div>
+          <div style="display:flex;flex-wrap:wrap;gap:2mm">${(d('s1_frameworks')||'GRI · SASB · SEBI BRSR · UNGC').split(',').map(f=>`<span style="background:#B01020;color:#fff;font-size:6.5pt;font-weight:700;padding:2px 6px;border-radius:3px">${f.trim()}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // ── LEADERSHIP PAGES ──
+  leaders.forEach(l=>{
+    if(!l.name&&!l.msg) return;
+    pages += PAGE(`
+      <div style="display:flex;height:100%">
+        <div style="width:45%;position:relative;overflow:hidden">
+          ${l.photo?`<img src="${l.photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:`<div style="position:absolute;inset:0;background:linear-gradient(180deg,#1e3a5f,#0f172a);display:flex;align-items:center;justify-content:center"><i class="fas fa-user" style="font-size:60pt;color:rgba(255,255,255,.15)"></i></div>`}
+        </div>
+        <div style="flex:1;padding:18mm 14mm 18mm 10mm;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:9pt;color:#B01020;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:4mm">Message from Leadership</div>
+          <div style="width:30mm;height:3px;background:#E8C317;margin-bottom:6mm"></div>
+          <div style="font-size:8.5pt;color:#374151;line-height:1.75;font-style:italic;position:relative;padding-left:5mm;border-left:3px solid #B01020">"${l.msg||'Our commitment to sustainability is at the heart of every decision we make.'}"</div>
+          <div style="margin-top:8mm">
+            <div style="font-size:11pt;font-weight:900;color:#0f172a">${l.name}</div>
+            <div style="font-size:8.5pt;color:#B01020;font-weight:700;margin-top:1mm">${l.desig}</div>
+          </div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:8mm;left:16mm;right:16mm;border-top:1px solid #e2e8f0;padding-top:3mm;display:flex;justify-content:space-between">
+        <span style="font-size:6.5pt;color:#94a3b8">${d('s1_orgName')}</span>
+        <span style="font-size:6.5pt;color:#94a3b8">${d('s1_reportTitle')} ${d('s1_year')}</span>
+      </div>
+    `);
+  });
+
+  // ── COMPANY DIVIDER ──
+  pages += DIVIDER(img('s3_aboutPhoto'),'About','Our Organization');
+
+  // ── COMPANY PROFILE ──
+  pages += DATA_PAGE('COMPANY PROFILE',d('s1_orgName')||'About Us',`
+    ${KPI_GRID([
+      {v:d('s3_facilities')||'—',l:'Manufacturing Facilities'},
+      {v:d('s3_employees')||'—',l:'Total Employees'},
+      {v:d('s3_countries')||'—',l:'Countries Present'},
+      {v:d('s3_founded')||'—',l:'Founded'}
+    ])}
+    <p style="font-size:8.5pt;color:#475569;line-height:1.75;margin-bottom:5mm">${d('s3_overview')||'Company overview not provided.'}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6mm">
+      <div style="background:#f8fafc;border-radius:8px;padding:5mm">
+        <div style="font-size:8pt;font-weight:800;color:#0f172a;margin-bottom:2mm">Products & Services</div>
+        <p style="font-size:7.5pt;color:#475569;line-height:1.6">${d('s3_products')||'—'}</p>
+      </div>
+      <div style="background:#f8fafc;border-radius:8px;padding:5mm">
+        <div style="font-size:8pt;font-weight:800;color:#0f172a;margin-bottom:2mm">Key Markets</div>
+        <p style="font-size:7.5pt;color:#475569;line-height:1.6">${d('s3_markets')||'—'}</p>
+      </div>
+    </div>
+  `);
+
+  // Company gallery
+  const g1=img('s3_gallery1'),g2=img('s3_gallery2'),g3=img('s3_gallery3');
+  if(g1||g2||g3){
+    pages += PAGE(`
+      <div style="display:grid;grid-template-columns:${g3?'1fr 1fr 1fr':'1fr 1fr'};height:100%;gap:0">
+        ${g1?`<img src="${g1}" style="width:100%;height:100%;object-fit:cover">`:''}
+        ${g2?`<img src="${g2}" style="width:100%;height:100%;object-fit:cover">`:''}
+        ${g3?`<img src="${g3}" style="width:100%;height:100%;object-fit:cover">`:''}
+      </div>
+      <div style="position:absolute;bottom:10mm;left:0;right:0;text-align:center;z-index:2">
+        <span style="background:rgba(0,0,0,.65);color:#fff;font-size:7pt;padding:3px 12px;border-radius:20px">${d('s1_orgName')} — Facilities</span>
+      </div>
+    `);
+  }
+
+  // ── ENVIRONMENTAL DIVIDER + DATA ──
+  pages += DIVIDER(img('s4_envPhoto'),'Preserving Our Planet','Environmental Performance');
+
+  pages += DATA_PAGE('ENVIRONMENTAL','Energy Management',`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-bottom:6mm">
+      ${KPI_GRID([{v:latestEnv.e_totalEnergy||'—',l:'Total Energy (TJ)'},{v:latestEnv.e_renPct||'—',l:'Renewable %'},{v:latestEnv.e_solar||'—',l:'Solar (kWh)'},{v:latestEnv.e_intensity||'—',l:'Energy Intensity'}])}
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#B01020"><th style="padding:6px 10px;color:#fff;font-size:8pt;text-align:left">Parameter</th><th style="padding:6px 10px;color:#fff;font-size:8pt;text-align:right">Value</th><th style="padding:6px 10px;color:#fff;font-size:8pt;text-align:left">Unit</th></tr></thead>
+      <tbody>
+        ${TABLE_ROW('Electricity — Non-Renewable',latestEnv.e_elecNR,'TJ',false)}
+        ${TABLE_ROW('Electricity — Renewable',latestEnv.e_elecR,'TJ',true)}
+        ${TABLE_ROW('Fuel Consumption',latestEnv.e_fuel,'TJ',false)}
+        ${TABLE_ROW('Total Energy Consumed',latestEnv.e_totalEnergy,'TJ',true)}
+        ${TABLE_ROW('Energy Intensity',latestEnv.e_intensity,'TJ/INR Mn',false)}
+      </tbody>
+    </table>
+  `);
+
+  pages += DATA_PAGE('ENVIRONMENTAL','GHG Emissions',`
+    ${KPI_GRID([{v:latestEnv.e_scope1||'—',l:'Scope 1 (tCO₂e)'},{v:latestEnv.e_scope2||'—',l:'Scope 2 (tCO₂e)'},{v:latestEnv.e_scope3total||'—',l:'Scope 3 (tCO₂e)'},{v:latestEnv.e_ghgIntensity||'—',l:'GHG Intensity'}])}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:5mm">
+      <thead><tr style="background:#B01020"><th style="padding:6px 10px;color:#fff;font-size:8pt;text-align:left">Emission Source</th><th style="padding:6px 10px;color:#fff;font-size:8pt;text-align:right">tCO₂e</th></tr></thead>
+      <tbody>
+        ${TABLE_ROW('Scope 1 — Direct Emissions',latestEnv.e_scope1,'tCO₂e',false)}
+        ${TABLE_ROW('Scope 2 — Indirect (Electricity)',latestEnv.e_scope2,'tCO₂e',true)}
+        ${TABLE_ROW('Scope 3 — Business Travel',latestEnv.e_s3travel,'tCO₂e',false)}
+        ${TABLE_ROW('Scope 3 — Employee Commute',latestEnv.e_s3commute,'tCO₂e',true)}
+        ${TABLE_ROW('Scope 3 — Total',latestEnv.e_scope3total,'tCO₂e',false)}
+      </tbody>
+    </table>
+    <div style="background:#fef2f2;border-left:4px solid #B01020;padding:4mm;border-radius:0 6px 6px 0">
+      <div style="font-size:7.5pt;font-weight:700;color:#B01020;margin-bottom:2mm">AIR POLLUTANTS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm">
+        ${[['NOx',latestEnv.e_nox,'kg'],['SOx',latestEnv.e_sox,'kg'],['PM',latestEnv.e_pm,'kg'],['VOC',latestEnv.e_voc,'kg'],['HAP',latestEnv.e_hap,'kg']].map(([l,v,u])=>`<div style="font-size:7.5pt"><strong>${l}:</strong> ${v||'—'} ${u}</div>`).join('')}
+      </div>
+    </div>
+  `);
+
+  pages += DATA_PAGE('ENVIRONMENTAL','Water & Waste',`
+    ${KPI_GRID([{v:latestEnv.e_wConsume||'—',l:'Water Consumed (ML)'},{v:latestEnv.e_zld||'—',l:'ZLD Recycled (ML)'},{v:latestEnv.e_hazWaste||'—',l:'Haz Waste (MT)'},{v:latestEnv.e_trees||'—',l:'Trees Planted'}])}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6mm">
+      <div>
+        <div style="font-size:9pt;font-weight:800;color:#0f172a;margin-bottom:3mm">Water Management</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#1d4ed8"><th style="padding:5px 8px;color:#fff;font-size:7.5pt;text-align:left">Parameter</th><th style="padding:5px 8px;color:#fff;font-size:7.5pt">ML</th></tr></thead>
+          <tbody>
+            ${TABLE_ROW('Groundwater',latestEnv.e_wGround,'ML',false)}
+            ${TABLE_ROW('Surface Water',latestEnv.e_wSurface,'ML',true)}
+            ${TABLE_ROW('Total Withdrawal',latestEnv.e_wTotal,'ML',false)}
+            ${TABLE_ROW('Consumption',latestEnv.e_wConsume,'ML',true)}
+            ${TABLE_ROW('ZLD Recycled',latestEnv.e_zld,'ML',false)}
+            ${TABLE_ROW('Rainwater Harvested',latestEnv.e_rain,'ML',true)}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:9pt;font-weight:800;color:#0f172a;margin-bottom:3mm">Waste Management</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#16a34a"><th style="padding:5px 8px;color:#fff;font-size:7.5pt;text-align:left">Waste Type</th><th style="padding:5px 8px;color:#fff;font-size:7.5pt">MT</th></tr></thead>
+          <tbody>
+            ${TABLE_ROW('Hazardous Waste',latestEnv.e_hazWaste,'MT',false)}
+            ${TABLE_ROW('Non-Hazardous',latestEnv.e_nhWaste,'MT',true)}
+            ${TABLE_ROW('E-Waste',latestEnv.e_eWaste,'MT',false)}
+            ${TABLE_ROW('Biomedical',latestEnv.e_bioWaste,'MT',true)}
+            ${TABLE_ROW('Recycled / Recovered',latestEnv.e_wasteRecycled,'MT',false)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `);
+
+  // ── SOCIAL DIVIDER + DATA ──
+  pages += DIVIDER(img('s5_socPhoto'),'Connecting with People','Social Performance');
+
+  pages += DATA_PAGE('SOCIAL','Workforce & Diversity',`
+    ${KPI_GRID([{v:latestSoc.s_permEmp||d('s3_employees')||'—',l:'Total Employees'},{v:latestSoc.s_womenPct?latestSoc.s_womenPct+'%':'—',l:'Women in Workforce'},{v:latestSoc.s_trainAvg||'—',l:'Avg Training hrs'},{v:latestSoc.s_lti||'0',l:'Lost Time Injuries'}])}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6mm">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#7c3aed"><th style="padding:6px 8px;color:#fff;font-size:7.5pt;text-align:left">Workforce</th><th style="padding:6px 8px;color:#fff;font-size:7.5pt">Count</th></tr></thead>
+        <tbody>
+          ${TABLE_ROW('Permanent Employees',latestSoc.s_permEmp,'',false)}
+          ${TABLE_ROW('Contract Workers',latestSoc.s_contractEmp,'',true)}
+          ${TABLE_ROW('Women Employees',latestSoc.s_womenEmp,'',false)}
+          ${TABLE_ROW('New Hires (M/F)',`${latestSoc.s_newHireM||0}/${latestSoc.s_newHireF||0}`,'',true)}
+          ${TABLE_ROW('Turnover Rate',latestSoc.s_turnover,'%',false)}
+        </tbody>
+      </table>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#c2410c"><th style="padding:6px 8px;color:#fff;font-size:7.5pt;text-align:left">OHS Safety</th><th style="padding:6px 8px;color:#fff;font-size:7.5pt">Value</th></tr></thead>
+        <tbody>
+          ${TABLE_ROW('Fatalities',latestSoc.s_fatalEmp||'0','',false)}
+          ${TABLE_ROW('Lost Time Injuries',latestSoc.s_lti||'0','',true)}
+          ${TABLE_ROW('First Aid Cases',latestSoc.s_fac||'0','',false)}
+          ${TABLE_ROW('Man-Days Lost',latestSoc.s_manDays||'0','',true)}
+          ${TABLE_ROW('Near Misses',latestSoc.s_nearMiss||'0','',false)}
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;padding:4mm;margin-top:5mm;border-radius:0 6px 6px 0">
+      <div style="font-size:7.5pt;font-weight:700;color:#15803d;margin-bottom:2mm">TRAINING & DEVELOPMENT</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm">
+        ${[['Employee Hrs',latestSoc.s_trainHrsEmp],['Worker Hrs',latestSoc.s_trainHrsWrk],['Avg hrs/person',latestSoc.s_trainAvg],['GMP Training',latestSoc.s_trainGMP],['Safety Training',latestSoc.s_trainSafety],['L&D Hours',latestSoc.s_trainLD]].map(([l,v])=>`<div style="font-size:7.5pt"><strong>${l}:</strong> ${v||'—'}</div>`).join('')}
+      </div>
+    </div>
+  `);
+
+  // ── GOVERNANCE DIVIDER + DATA ──
+  pages += DIVIDER(img('s6_govPhoto'),'Promoting Ethical','Governance');
+
+  pages += DATA_PAGE('GOVERNANCE','Board & Ethics',`
+    ${KPI_GRID([{v:d('g_boardTotal')||'—',l:'Board Members'},{v:d('g_indepPct')?d('g_indepPct')+'%':'—',l:'Independent Directors'},{v:d('g_womenDir')?d('g_womenDir')+'%':'—',l:'Women Directors'},{v:d('g_corruption')||'0',l:'Corruption Cases'}])}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6mm">
+      <div>
+        <div style="font-size:9pt;font-weight:800;color:#0f172a;margin-bottom:3mm">Ethics & Compliance</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tbody>
+            ${TABLE_ROW('Corruption Cases',d('g_corruption')||'0','',false)}
+            ${TABLE_ROW('Non-Compliance Incidents',d('g_nonComp')||'0','',true)}
+            ${TABLE_ROW('Whistleblower Reports',d('g_whistle')||'0','',false)}
+            ${TABLE_ROW('Anti-Bribery Policy',d('g_abPolicy')||'—','',true)}
+            ${TABLE_ROW('Human Rights Policy',d('g_hrPolicy')||'—','',false)}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:9pt;font-weight:800;color:#0f172a;margin-bottom:3mm">Supply Chain</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tbody>
+            ${TABLE_ROW('Total Suppliers',d('g_suppTotal')||'—','',false)}
+            ${TABLE_ROW('Local Suppliers',d('g_suppLocal')||'—','',true)}
+            ${TABLE_ROW('Local Spend %',d('g_suppLocalPct')?d('g_suppLocalPct')+'%':'—','',false)}
+            ${TABLE_ROW('CoC Compliance %',d('g_suppCoC')?d('g_suppCoC')+'%':'—','',true)}
+            ${TABLE_ROW('ESG Audits Done',d('g_suppAudits')||'—','',false)}
+          </tbody>
+        </table>
+        <div style="margin-top:4mm;display:flex;flex-wrap:wrap;gap:2mm">
+          ${[['ISO 14001',d('g_iso14001')],['ISO 45001',d('g_iso45001')],['ISO 9001',d('g_iso9001')]].filter(([,v])=>v==='Certified').map(([l])=>`<span style="background:#16a34a;color:#fff;font-size:6.5pt;font-weight:700;padding:2px 7px;border-radius:3px">✓ ${l}</span>`).join('')}
+          ${d('g_otherCerts')?`<span style="background:#1d4ed8;color:#fff;font-size:6.5pt;font-weight:700;padding:2px 7px;border-radius:3px">${d('g_otherCerts')}</span>`:''}
+        </div>
+      </div>
+    </div>
+  `);
+
+  // ── ESG TARGETS ──
+  pages += DATA_PAGE('ESG COMMITMENTS','Targets & Progress',`
+    <p style="font-size:8.5pt;color:#475569;line-height:1.7;margin-bottom:6mm">${d('s1_orgName')||'We'} is committed to a long-term sustainability roadmap with measurable targets aligned to global frameworks.</p>
+    ${PROGRESS('Net-Zero Emissions (Target: '+d('t_nzYear')+')',d('t_nzProgress')||'0','#B01020')}
+    ${PROGRESS('Renewable Energy ('+d('t_reTarget')+')',d('t_reProgress')||'0','#d97706')}
+    ${PROGRESS('Water Reduction ('+d('t_wrTarget')+')',d('t_wrProgress')||'0','#1d4ed8')}
+    ${PROGRESS('Waste Diversion ('+d('t_wdTarget')+')',d('t_wdProgress')||'0','#16a34a')}
+    ${Array.from({length:customTargetCount},((_,i)=>i+1)).map(i=>{
+      const n=document.getElementById('ct_name_'+i),p=document.getElementById('ct_prog_'+i);
+      return n&&p&&n.value?PROGRESS(n.value,p.value||'0','#7c3aed'):'';
+    }).join('')}
+  `);
+
+  // ── CUSTOM SECTIONS ──
+  customSections.forEach(cs=>{
+    if(!cs.title) return;
+    pages += DIVIDER(cs.photo,cs.subtitle||'',cs.title);
+    pages += DATA_PAGE(cs.title.toUpperCase(),cs.title,`<p style="font-size:9pt;color:#475569;line-height:1.8">${cs.content||''}</p>`);
+  });
+
+  // ── FINAL GALLERY ──
+  const fg1=img('s8_fg1'),fg2=img('s8_fg2'),fg3=img('s8_fg3');
+  if(fg1||fg2||fg3){
+    pages += PAGE(`
+      <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:100%;gap:0">
+        ${fg1?`<img src="${fg1}" style="width:100%;height:100%;object-fit:cover">`:''}
+        ${fg2?`<img src="${fg2}" style="width:100%;height:100%;object-fit:cover">`:''}
+        ${fg3?`<img src="${fg3}" style="grid-column:1/3;width:100%;height:100%;object-fit:cover">`:''}
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,.18);z-index:1;pointer-events:none"></div>
+      <div style="position:absolute;bottom:12mm;left:0;right:0;text-align:center;z-index:2">
+        <span style="background:rgba(0,0,0,.65);color:#fff;font-size:8pt;font-weight:600;padding:4px 16px;border-radius:20px">${d('s1_orgName')} — Sustainability in Action</span>
+      </div>
+    `);
+  }
+
+  // ── BACK COVER ──
+  pages += PAGE(`
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);z-index:0"></div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:20mm">
+      ${img('s1_logo')?`<img src="${img('s1_logo')}" style="height:48px;object-fit:contain;filter:brightness(0) invert(1);margin-bottom:10mm">`:''}
+      <div style="color:#E8C317;font-size:22pt;font-weight:900;margin-bottom:4mm">${d('s1_orgName')||'Our Organization'}</div>
+      <div style="color:rgba(255,255,255,.7);font-size:9pt;margin-bottom:8mm">${d('s1_address')||''}</div>
+      <div style="color:rgba(255,255,255,.5);font-size:8pt;margin-bottom:10mm">${d('s1_website')||''} &nbsp;·&nbsp; CIN: ${d('s1_cin')||''}</div>
+      <div style="width:40mm;height:3px;background:#B01020;margin-bottom:8mm"></div>
+      <div style="color:rgba(255,255,255,.45);font-size:7.5pt">© ${d('s1_year')} ${d('s1_orgName')} — All Rights Reserved</div>
+    </div>
+  `);
+
+  return `<div style="font-family:Inter,sans-serif">${pages}</div>`;
+}
+
+// ── Preview ──
+function previewReport(){
+  document.getElementById('previewFrame').innerHTML = buildReportHTML();
+  document.getElementById('previewModal').classList.add('open');
+}
+function closePreview(){ document.getElementById('previewModal').classList.remove('open'); }
+
+// ── Generate PDF ──
+function generatePDF(){
+  const orgName = document.getElementById('s1_orgName').value || 'sustainability';
+  const html = buildReportHTML();
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.style.cssText = 'position:fixed;top:0;left:-9999px;z-index:-1';
+  document.body.appendChild(container);
+  const opt = {
+    margin:[0,0,0,0],
+    filename:`${orgName.replace(/\s+/g,'_')}_Sustainability_Report.pdf`,
+    image:{type:'jpeg',quality:0.92},
+    html2canvas:{scale:2,useCORS:true,logging:false},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  };
+  html2pdf().set(opt).from(container).save().then(()=>{ document.body.removeChild(container); });
+}
+
+// ── Clear ──
+function clearAllData(){
+  if(!confirm('Clear all saved data for this report? This cannot be undone.')) return;
+  const orgId = getOrgId();
+  Object.keys(localStorage).filter(k=>k.includes(orgId)).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+
+// ── INIT ──
+function init(){
+  // Set today's date on date pickers
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('envDate').value = today;
+  document.getElementById('socDate').value = today;
+  // Add first leader slot
+  if(!document.querySelector('[data-leader-idx]')) addLeader();
+  // Build step bar
+  buildStepBar();
+  // Load saved data
+  loadMeta();
+  // Load today's env/soc entries if they exist
+  loadEnvEntry(today);
+  loadSocEntry(today);
+  // Update bottom nav
+  document.getElementById('prevBtn').style.visibility = 'hidden';
+}
+init();
+</script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

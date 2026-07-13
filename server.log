@@ -1,0 +1,31 @@
+22:01:34 [[32minfo[39m] 📚 Swagger docs available at /api/docs
+22:01:34 [[32minfo[39m] Socket.IO server initialized
+22:01:35 [[33mwarn[39m] [Redis] Unavailable:
+22:01:35 [[33mwarn[39m] [Redis] Connection closed
+22:01:35 [[32minfo[39m] [Redis] Reconnecting...
+22:01:35 [[33mwarn[39m] [Redis] Could not connect — running without cache/blacklist (dev mode):
+22:01:35 [[32minfo[39m] ✅ PostgreSQL connected via Prisma
+22:01:35 [[32minfo[39m] 🚀 EcoSphere running on http://localhost:5000 [development]
+22:01:35 [[32minfo[39m] 🌿 Frontend: http://localhost:5000/
+22:01:35 [[32minfo[39m] 📚 API Docs: http://localhost:5000/api/docs
+22:01:35 [[32minfo[39m] 💚 Health:   http://localhost:5000/health
+22:01:35 [[33mwarn[39m] [Redis] Unavailable:
+22:01:35 [[33mwarn[39m] [Redis] Connection closed
+22:01:35 [[32minfo[39m] [Redis] Reconnecting...
+22:01:35 [[33mwarn[39m] [Redis] Unavailable:
+22:01:35 [[33mwarn[39m] [Redis] Connection closed
+22:01:35 [[32minfo[39m] [Redis] Reconnecting...
+22:01:36 [[33mwarn[39m] [Redis] Unavailable:
+22:01:36 [[33mwarn[39m] [Redis] Connection closed
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /org-portal.html HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /assets/logo.png HTTP/1.1" 200 33377 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /js/eco-universe.js HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /js/api.js HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /js/pdf-download.js HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /js/eco-api-service.js HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:03 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:03 +0000] "GET /js/org-connect.js HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:05 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:05 +0000] "GET /favicon.ico HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:18 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:18 +0000] "POST /api/v1/auth/login HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:19 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:19 +0000] "GET /api/v1/monitoring/records/dashboard HTTP/1.1" 200 256 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:19 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:19 +0000] "GET /api/v1/reports?limit=5&sortBy=createdAt&sortOrder=desc HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+22:10:19 [[32minfo[39m] ::1 - - [10/Jun/2026:16:40:19 +0000] "GET /api/v1/monitoring/records/dashboard HTTP/1.1" 200 256 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"

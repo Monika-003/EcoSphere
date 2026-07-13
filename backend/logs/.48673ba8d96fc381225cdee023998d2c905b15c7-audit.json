@@ -1,0 +1,120 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\.48673ba8d96fc381225cdee023998d2c905b15c7-audit.json",
+    "files": [
+        {
+            "date": 1781336768285,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-13.log",
+            "hash": "1f50876655879192ac0b8e040e4b2bccb97b347bb4bef6d9688ef35fe10a0ad4"
+        },
+        {
+            "date": 1781540530422,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-15.log",
+            "hash": "47013cc1bcbf691e1d5f5e27190533ccb633bafd09ee36a289968d407d47c836"
+        },
+        {
+            "date": 1781789345905,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-18.log",
+            "hash": "b32080f34d102e48915cb29cf51250e5a20558f7bef71322d42db943aa5b3566"
+        },
+        {
+            "date": 1781807825527,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-19.log",
+            "hash": "27dac7e0411032d3efcb92dae0d25e2338c3bbecab09423908adc9aad9e4633c"
+        },
+        {
+            "date": 1781896587109,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-20.log",
+            "hash": "9cbb398b751651e4365d7b9063aeab8a540dd513a3bab3ddf145911e867249a7"
+        },
+        {
+            "date": 1782048859957,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-21.log",
+            "hash": "5195f55f469d3753b194d0e8193b9f69ca790a01e41115958299ea90d6dc71ff"
+        },
+        {
+            "date": 1782106284937,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-22.log",
+            "hash": "cb2c7e3e4918068e7ce6572e177a55fa1f202a986b07c856dd544365fd540ea5"
+        },
+        {
+            "date": 1782194860446,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-23.log",
+            "hash": "98c7a645221a2a9e1cd0c6bec5e68209773a0b74bee14f1b2cfcc40799b7248f"
+        },
+        {
+            "date": 1782309653232,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-24.log",
+            "hash": "31d1d232f78eb271edb6ef019b2d547432e8fb8160b24f6eda2b0482a33abe80"
+        },
+        {
+            "date": 1782376229524,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-25.log",
+            "hash": "0c179502d69a9fa5977601de1c6d13644065ffbd3c3b4085697604743e64ff88"
+        },
+        {
+            "date": 1782450503292,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-26.log",
+            "hash": "175d381178cf5cf01b59d22a1602920684b2dbb10caa0845a855844541be45f7"
+        },
+        {
+            "date": 1782537553959,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-27.log",
+            "hash": "d9c85696205e371e553fedf0da3c39ae6ee5b43b6821ffdb66f2b4b17ecd7c80"
+        },
+        {
+            "date": 1782699478341,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-29.log",
+            "hash": "4f197d9c980b131474117eea677e862a166f18505d7e6e2bdcb89cb0f895caad"
+        },
+        {
+            "date": 1782799184871,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-06-30.log",
+            "hash": "612f5ce10c7dae1adf75d3b906ae144086f39baa76764f588333dc42d8b66f44"
+        },
+        {
+            "date": 1782887453062,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-01.log",
+            "hash": "973e1a744007b4c602062acfeac4ff44e2687b818b86b2bf93b39ca51bd00877"
+        },
+        {
+            "date": 1782979430203,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-02.log",
+            "hash": "344dd4d493a4f455ef558ac063a15100f594e7cef62432165f0b82adb2b7f8d3"
+        },
+        {
+            "date": 1783087824427,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-03.log",
+            "hash": "f735f0b51079433f97a3d82f995152cca00a8c632bdf71454e6c7be4414904a1"
+        },
+        {
+            "date": 1783176312673,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-04.log",
+            "hash": "77a6ec7eddd5ed8b02480fcc1c427c4150ba6c5ba91af3eccbfeb50ced6bb58b"
+        },
+        {
+            "date": 1783354779808,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-06.log",
+            "hash": "950579284715af4805416cb53943e3f7c14cbe86f8fbd0e1e24e2fdc04f22c11"
+        },
+        {
+            "date": 1783434274396,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-07.log",
+            "hash": "9946d5338edea55e1cedbe2df94a3a99344af852c64e3dc812c7a5b2b79642c3"
+        },
+        {
+            "date": 1783489332169,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-08.log",
+            "hash": "1f49341a0e881edd4fa8f2f81ba6e70a9cec62f8204e4882d880850f591326ea"
+        },
+        {
+            "date": 1783926333815,
+            "name": "C:\\Users\\lenovo\\OneDrive\\Desktop\\practice\\EcoSphere\\backend\\logs\\error-2026-07-13.log",
+            "hash": "93ef9af7cbb7f4b97948f771f9297c4c3fcd23dc071429fbb92ce9c1987e0480"
+        }
+    ],
+    "hashType": "sha256"
+}

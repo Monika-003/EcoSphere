@@ -1,0 +1,178 @@
+name: EcoSphere CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY:     ghcr.io
+  IMAGE_NAME:   ${{ github.repository }}/ecosphere-api
+
+jobs:
+  # ──────────────────────────────────────
+  # 1. Lint & Type Check
+  # ──────────────────────────────────────
+  lint:
+    name: Lint & Style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: cd backend && npm ci
+
+      - name: Run ESLint
+        run: cd backend && npm run lint --if-present
+
+  # ──────────────────────────────────────
+  # 2. Unit & Integration Tests
+  # ──────────────────────────────────────
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB:       ecosphere_test
+          POSTGRES_USER:     ecosphere
+          POSTGRES_PASSWORD: testpass
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: cd backend && npm ci
+
+      - name: Generate Prisma client
+        run: cd backend && npx prisma generate
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://ecosphere:testpass@localhost:5432/ecosphere_test
+        run: cd backend && npx prisma migrate deploy
+
+      - name: Run tests
+        env:
+          NODE_ENV:      test
+          DATABASE_URL:  postgresql://ecosphere:testpass@localhost:5432/ecosphere_test
+          REDIS_URL:     redis://localhost:6379
+          JWT_SECRET:    test_jwt_secret_32_chars_minimum
+          JWT_REFRESH_SECRET: test_refresh_secret_32_chars
+        run: cd backend && npm test --if-present
+
+  # ──────────────────────────────────────
+  # 3. Build Docker Image
+  # ──────────────────────────────────────
+  build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry:  ${{ env.REGISTRY }}
+          username:  ${{ github.actor }}
+          password:  ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context:  ./backend
+          file:     ./backend/docker/Dockerfile
+          push:     true
+          tags:     ${{ steps.meta.outputs.tags }}
+          labels:   ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ──────────────────────────────────────
+  # 4. Deploy to AWS EC2
+  # ──────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/ecosphere
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker compose -f docker/docker-compose.yml pull api
+            docker compose -f docker/docker-compose.yml up -d --no-deps api
+            docker system prune -f
+            echo "✅ Deployment complete: $(date)"
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://api.ecosphere.app/health || exit 1
+          echo "✅ Health check passed"
+
+      - name: Notify Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: "EcoSphere API ${{ job.status }} — ${{ github.sha }}"
+          SLACK_COLOR:   ${{ job.status == 'success' && 'good' || 'danger' }}

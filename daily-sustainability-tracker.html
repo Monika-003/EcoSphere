@@ -1,0 +1,892 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Daily Sustainability Tracker — EcoSphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+
+/* Topbar */
+.topbar{background:linear-gradient(90deg,#0f172a,#1e3a5f);height:58px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 14px rgba(0,0,0,.3)}
+.tb-left{display:flex;align-items:center;gap:12px}
+.back-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:5px 13px;color:#fff;font-family:'Poppins',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:.15s}
+.back-btn:hover{background:rgba(255,255,255,.2)}
+.tb-title{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:800;color:#fff}
+.tb-sub{font-size:.68rem;color:#94a3b8}
+.tb-right{display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.25);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.saved-badge{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:4px 11px;font-size:.68rem;font-weight:700;color:#4ade80;display:none;align-items:center;gap:5px}
+
+/* Date bar */
+.date-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.date-bar label{font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:700;color:#374151}
+.date-bar input[type=date]{padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-family:'Inter',sans-serif;font-size:.82rem;color:#0f172a;outline:none;background:#f8fafc}
+.date-bar input[type=date]:focus{border-color:#1d4ed8}
+.tab-btns{display:flex;gap:0;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9px;padding:3px;margin-left:auto}
+.tab-btn{padding:6px 16px;border:none;background:transparent;font-family:'Poppins',sans-serif;font-size:.76rem;font-weight:700;color:#64748b;cursor:pointer;border-radius:7px;transition:.15s}
+.tab-btn.active{background:#fff;color:#1d4ed8;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - 100px)}
+.sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f0;padding:14px 0;overflow-y:auto;position:sticky;top:58px;height:calc(100vh - 58px)}
+.sid-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:.78rem;font-weight:600;color:#64748b;transition:.1s;border-left:3px solid transparent;text-decoration:none}
+.sid-item:hover{background:#f8fafc;color:#374151}
+.sid-item.active{color:#1d4ed8;background:#eff6ff;border-left-color:#1d4ed8}
+.sid-item i{width:16px;text-align:center;font-size:.82rem}
+.sid-section{font-size:.6rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;padding:10px 16px 4px}
+
+/* Main */
+.main{flex:1;padding:22px 24px 100px;max-width:900px}
+
+/* Cards */
+.section-card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:20px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.05);scroll-margin-top:80px}
+.sc-header{padding:15px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f1f5f9;cursor:pointer;user-select:none}
+.sc-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.sc-title{font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:800;color:#0f172a}
+.sc-sub{font-size:.7rem;color:#94a3b8;margin-top:1px}
+.sc-badge{margin-left:auto;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#16a34a}
+.sc-body{padding:18px 20px}
+.sc-body.collapsed{display:none}
+
+/* Form grid */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.fg-full{grid-column:1/-1}
+.fl{display:flex;flex-direction:column;gap:4px}
+.fl label{font-size:.7rem;font-weight:700;color:#374151;letter-spacing:.01em}
+.fl .unit{font-size:.62rem;color:#94a3b8;margin-top:1px}
+.fl input,.fl select,.fl textarea{padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:'Inter',sans-serif;font-size:.8rem;color:#0f172a;background:#fff;outline:none;transition:.15s;width:100%}
+.fl input:focus,.fl select:focus,.fl textarea:focus{border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.07)}
+.fl textarea{resize:vertical;min-height:64px}
+.sub-label{font-family:'Poppins',sans-serif;font-size:.74rem;font-weight:700;color:#475569;margin:12px 0 8px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;grid-column:1/-1}
+
+/* Bottom nav */
+.bot-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;padding:11px 24px;display:flex;align-items:center;gap:10px;z-index:99;box-shadow:0 -4px 18px rgba(0,0,0,.07)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:9px;font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:.15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-save{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff;box-shadow:0 3px 12px rgba(29,78,216,.3)}
+.btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0}
+.btn-green{background:linear-gradient(135deg,#0a3d2e,#16a34a);color:#fff;box-shadow:0 3px 12px rgba(22,163,74,.3)}
+.btn-sm{padding:6px 13px;font-size:.74rem}
+
+/* Log table */
+.log-wrap{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden}
+.log-top{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:10px}
+.log-top h3{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:800;color:#0f172a}
+.log-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.log-filters input[type=date]{padding:5px 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:.76rem}
+.log-table{width:100%;overflow-x:auto}
+table.lt{width:100%;border-collapse:collapse;font-size:.75rem}
+table.lt th{background:#f8fafc;padding:9px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+table.lt td{padding:8px 12px;border-bottom:1px solid #f8fafc;color:#374151;white-space:nowrap}
+table.lt tr:hover td{background:#fafbff}
+.log-empty{padding:40px;text-align:center;color:#94a3b8;font-size:.82rem}
+
+/* Toast */
+.toast{position:fixed;bottom:72px;right:20px;background:#0f172a;color:#fff;padding:9px 16px;border-radius:10px;font-family:'Poppins',sans-serif;font-size:.74rem;font-weight:700;z-index:9999;display:flex;align-items:center;gap:7px;opacity:0;transform:translateY(8px);transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+
+/* Summary boxes (view mode) */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi-box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+.kpi-val{font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:900;color:#1d4ed8}
+.kpi-lbl{font-size:.66rem;color:#64748b;font-weight:600;margin-top:3px;line-height:1.4}
+
+/* Responsive */
+@media(max-width:640px){.sidebar{display:none}.main{padding:16px 12px 90px}.fg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+    <div>
+      <div class="tb-title"><i class="fas fa-chart-line" style="margin-right:6px;color:#4ade80"></i>Daily Sustainability Tracker</div>
+      <div class="tb-sub">GRI · SASB · UNGC — Based on MSN Laboratories Sustainability Report 2024</div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="live-dot"></div>
+    <div class="saved-badge" id="savedBadge"><i class="fas fa-check-circle"></i> Saved</div>
+  </div>
+</div>
+
+<!-- DATE BAR -->
+<div class="date-bar">
+  <label><i class="fas fa-calendar-day" style="color:#1d4ed8;margin-right:5px"></i>Entry Date</label>
+  <input type="date" id="entryDate" onchange="loadEntry()">
+  <button class="btn btn-ghost btn-sm" onclick="setToday()"><i class="fas fa-crosshairs"></i> Today</button>
+  <div class="tab-btns">
+    <button class="tab-btn active" id="tabEntry" onclick="switchTab('entry')"><i class="fas fa-edit"></i> Data Entry</button>
+    <button class="tab-btn" id="tabLog" onclick="switchTab('log')"><i class="fas fa-history"></i> History Log</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR NAV -->
+  <div class="sidebar" id="sidebarNav">
+    <div class="sid-section">Environmental</div>
+    <a class="sid-item active" href="#sec-energy" onclick="scrollTo('sec-energy')"><i class="fas fa-bolt" style="color:#f59e0b"></i> Energy</a>
+    <a class="sid-item" href="#sec-ghg" onclick="scrollTo('sec-ghg')"><i class="fas fa-cloud" style="color:#3b82f6"></i> GHG Emissions</a>
+    <a class="sid-item" href="#sec-water" onclick="scrollTo('sec-water')"><i class="fas fa-tint" style="color:#0891b2"></i> Water & Effluent</a>
+    <a class="sid-item" href="#sec-waste" onclick="scrollTo('sec-waste')"><i class="fas fa-trash" style="color:#dc2626"></i> Waste</a>
+    <a class="sid-item" href="#sec-bio" onclick="scrollTo('sec-bio')"><i class="fas fa-leaf" style="color:#16a34a"></i> Biodiversity</a>
+    <div class="sid-section">Social</div>
+    <a class="sid-item" href="#sec-workforce" onclick="scrollTo('sec-workforce')"><i class="fas fa-users" style="color:#7c3aed"></i> Workforce</a>
+    <a class="sid-item" href="#sec-training" onclick="scrollTo('sec-training')"><i class="fas fa-graduation-cap" style="color:#0369a1"></i> Training</a>
+    <a class="sid-item" href="#sec-ohs" onclick="scrollTo('sec-ohs')"><i class="fas fa-hard-hat" style="color:#d97706"></i> OHS & Safety</a>
+    <div class="sid-section">Governance</div>
+    <a class="sid-item" href="#sec-economic" onclick="scrollTo('sec-economic')"><i class="fas fa-rupee-sign" style="color:#059669"></i> Economic</a>
+    <a class="sid-item" href="#sec-supply" onclick="scrollTo('sec-supply')"><i class="fas fa-truck" style="color:#6366f1"></i> Supply Chain</a>
+    <a class="sid-item" href="#sec-csr" onclick="scrollTo('sec-csr')"><i class="fas fa-hands-helping" style="color:#e11d48"></i> CSR</a>
+    <a class="sid-item" href="#sec-compliance" onclick="scrollTo('sec-compliance')"><i class="fas fa-shield-alt" style="color:#0f172a"></i> Compliance</a>
+    <div class="sid-section">Targets</div>
+    <a class="sid-item" href="#sec-targets" onclick="scrollTo('sec-targets')"><i class="fas fa-bullseye" style="color:#dc2626"></i> ESG Targets</a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ENTRY PANEL -->
+    <div id="panelEntry">
+
+    <!-- ── ENERGY ────────────────────────────── -->
+    <div class="section-card" id="sec-energy">
+      <div class="sc-header" onclick="toggleSection('energy-body')">
+        <div class="sc-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-bolt"></i></div>
+        <div><div class="sc-title">Energy Management</div><div class="sc-sub">GRI 302 — Total energy, electricity, fuel, renewables</div></div>
+        <div class="sc-badge">TJ / kWh</div>
+      </div>
+      <div class="sc-body" id="energy-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-plug" style="color:#f59e0b;margin-right:6px"></i>Electricity Consumption</div>
+          <div class="fl"><label>Electricity — Non-Renewable (TJ)</label><input type="number" step="0.01" data-field="energy_elec_nonren" placeholder="e.g. 682.63"><div class="unit">Terajoules · MSN FY23-24: 682.63 TJ</div></div>
+          <div class="fl"><label>Electricity — Renewable (TJ)</label><input type="number" step="0.01" data-field="energy_elec_ren" placeholder="e.g. 22.62"><div class="unit">Terajoules · MSN FY23-24: 22.62 TJ</div></div>
+          <div class="fl"><label>Total Electricity Consumed (TJ)</label><input type="number" step="0.01" data-field="energy_elec_total" placeholder="auto or enter"><div class="unit">Terajoules</div></div>
+          <div class="sub-label"><i class="fas fa-fire" style="color:#ef4444;margin-right:6px"></i>Fuel Consumption</div>
+          <div class="fl"><label>Total Fuel Consumption (TJ)</label><input type="number" step="0.01" data-field="energy_fuel_total" placeholder="e.g. 1103.03"><div class="unit">Terajoules · MSN FY23-24: 1,103.03 TJ</div></div>
+          <div class="fl"><label>Coal (MT/month)</label><input type="number" step="0.01" data-field="energy_coal"><div class="unit">Metric Tonnes</div></div>
+          <div class="fl"><label>Furnace Oil / HFO (KL/month)</label><input type="number" step="0.01" data-field="energy_hfo"><div class="unit">Kilolitres</div></div>
+          <div class="fl"><label>Natural Gas (Nm³/month)</label><input type="number" step="0.01" data-field="energy_gas"></div>
+          <div class="fl"><label>Diesel / HSD (KL/month)</label><input type="number" step="0.01" data-field="energy_hsd"></div>
+          <div class="sub-label"><i class="fas fa-solar-panel" style="color:#16a34a;margin-right:6px"></i>Renewable Energy</div>
+          <div class="fl"><label>Solar Power Generated (kWh/day)</label><input type="number" step="0.01" data-field="energy_solar_gen"><div class="unit">kWh</div></div>
+          <div class="fl"><label>Wind Power Generated (kWh/day)</label><input type="number" step="0.01" data-field="energy_wind_gen"><div class="unit">kWh</div></div>
+          <div class="fl"><label>Renewable Energy Share (%)</label><input type="number" step="0.01" data-field="energy_re_pct" placeholder="e.g. 3.2"><div class="unit">% of total · MSN target: 25% by 2030</div></div>
+          <div class="sub-label"><i class="fas fa-chart-line" style="color:#1d4ed8;margin-right:6px"></i>Totals & Intensity</div>
+          <div class="fl"><label>Total Energy Consumed (TJ)</label><input type="number" step="0.01" data-field="energy_total" placeholder="e.g. 1808.28"><div class="unit">MSN FY23-24: 1,808.28 TJ</div></div>
+          <div class="fl"><label>Energy Intensity (TJ / INR Mn revenue)</label><input type="number" step="0.0001" data-field="energy_intensity" placeholder="e.g. 0.019"><div class="unit">MSN FY23-24: 0.019</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GHG EMISSIONS ─────────────────────── -->
+    <div class="section-card" id="sec-ghg">
+      <div class="sc-header" onclick="toggleSection('ghg-body')">
+        <div class="sc-icon" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-cloud"></i></div>
+        <div><div class="sc-title">GHG Emissions</div><div class="sc-sub">GRI 305 — Scope 1, 2, 3 carbon footprint</div></div>
+        <div class="sc-badge">tCO₂e</div>
+      </div>
+      <div class="sc-body" id="ghg-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-industry" style="color:#dc2626;margin-right:6px"></i>Direct & Indirect Emissions</div>
+          <div class="fl"><label>Scope 1 — Direct Emissions (tCO₂e)</label><input type="number" step="0.01" data-field="ghg_scope1" placeholder="e.g. 126073.6"><div class="unit">MSN FY23-24: 126,073.6 tCO₂e</div></div>
+          <div class="fl"><label>Scope 2 — Indirect Emissions (tCO₂e)</label><input type="number" step="0.01" data-field="ghg_scope2" placeholder="e.g. 135767.63"><div class="unit">MSN FY23-24: 135,767.63 tCO₂e</div></div>
+          <div class="fl"><label>Combined Scope 1+2 (tCO₂e)</label><input type="number" step="0.01" data-field="ghg_scope12" placeholder="auto or enter"><div class="unit">MSN FY23-24: 261,841.23 tCO₂e</div></div>
+          <div class="sub-label"><i class="fas fa-link" style="color:#6366f1;margin-right:6px"></i>Scope 3 Value Chain Emissions</div>
+          <div class="fl"><label>Cat.1 — Purchased Goods & Services</label><input type="number" step="0.01" data-field="ghg_s3_cat1" placeholder="e.g. 12726.04"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.2 — Capital Goods</label><input type="number" step="0.01" data-field="ghg_s3_cat2" placeholder="e.g. 971.36"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.3 — Fuel & Energy Activities</label><input type="number" step="0.01" data-field="ghg_s3_cat3" placeholder="e.g. 42445.00"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.4 — Upstream Transportation</label><input type="number" step="0.01" data-field="ghg_s3_cat4" placeholder="e.g. 2581.94"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.5 — Waste in Operations</label><input type="number" step="0.01" data-field="ghg_s3_cat5" placeholder="e.g. 303.16"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.6 — Business Travel</label><input type="number" step="0.01" data-field="ghg_s3_cat6" placeholder="e.g. 5835.35"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Cat.7 — Employee Commute</label><input type="number" step="0.01" data-field="ghg_s3_cat7" placeholder="e.g. 1872.86"><div class="unit">tCO₂e</div></div>
+          <div class="fl"><label>Total Scope 3 (tCO₂e)</label><input type="number" step="0.01" data-field="ghg_scope3_total" placeholder="e.g. 66735.71"><div class="unit">MSN FY23-24: 66,735.71 tCO₂e</div></div>
+          <div class="sub-label"><i class="fas fa-smog" style="color:#78716c;margin-right:6px"></i>Other Air Emissions</div>
+          <div class="fl"><label>NOₓ (kg)</label><input type="number" step="0.01" data-field="ghg_nox" placeholder="e.g. 1.64"><div class="unit">kg · MSN FY23-24: 1.64 kg</div></div>
+          <div class="fl"><label>SOₓ (kg)</label><input type="number" step="0.01" data-field="ghg_sox" placeholder="e.g. 0.83"><div class="unit">kg</div></div>
+          <div class="fl"><label>VOC (kg)</label><input type="number" step="0.01" data-field="ghg_voc" placeholder="e.g. 748.25"><div class="unit">kg · MSN FY23-24: 748.25 kg</div></div>
+          <div class="fl"><label>Particulate Matter (kg)</label><input type="number" step="0.01" data-field="ghg_pm" placeholder="e.g. 7.35"><div class="unit">kg</div></div>
+          <div class="fl"><label>GHG Intensity (tCO₂e / INR Mn)</label><input type="number" step="0.0001" data-field="ghg_intensity"><div class="unit">Emissions intensity ratio</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WATER ──────────────────────────────── -->
+    <div class="section-card" id="sec-water">
+      <div class="sc-header" onclick="toggleSection('water-body')">
+        <div class="sc-icon" style="background:#cffafe;color:#0891b2"><i class="fas fa-tint"></i></div>
+        <div><div class="sc-title">Water & Effluent</div><div class="sc-sub">GRI 303 — Withdrawal, consumption, ZLD, intensity</div></div>
+        <div class="sc-badge">ML</div>
+      </div>
+      <div class="sc-body" id="water-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-water" style="color:#0891b2;margin-right:6px"></i>Water Withdrawal</div>
+          <div class="fl"><label>Groundwater Withdrawal (ML)</label><input type="number" step="0.01" data-field="water_gw" placeholder="e.g. 116.52"><div class="unit">Mega Litres · MSN FY23-24: 116.52 ML</div></div>
+          <div class="fl"><label>Third-Party / Municipal (ML)</label><input type="number" step="0.01" data-field="water_tp" placeholder="e.g. 196.39"><div class="unit">Mega Litres · MSN FY23-24: 196.39 ML</div></div>
+          <div class="fl"><label>Total Withdrawal (ML)</label><input type="number" step="0.01" data-field="water_total_wdl" placeholder="e.g. 312.91"><div class="unit">MSN FY23-24: 312.91 ML</div></div>
+          <div class="sub-label"><i class="fas fa-recycle" style="color:#16a34a;margin-right:6px"></i>Water Management</div>
+          <div class="fl"><label>Water Consumption (ML)</label><input type="number" step="0.01" data-field="water_consumption" placeholder="e.g. 111.13"><div class="unit">MSN FY23-24: 111.13 ML</div></div>
+          <div class="fl"><label>Wastewater Generated (ML)</label><input type="number" step="0.01" data-field="water_ww_gen" placeholder="e.g. 201.78"><div class="unit">MSN FY23-24: 201.78 ML</div></div>
+          <div class="fl"><label>Wastewater to ZLD (ML)</label><input type="number" step="0.01" data-field="water_zld" placeholder="e.g. 210.93"><div class="unit">ZLD treated · MSN FY23-24: 210.93 ML</div></div>
+          <div class="fl"><label>Rainwater Recycled (ML)</label><input type="number" step="0.01" data-field="water_rain" placeholder="e.g. 29.41"><div class="unit">MSN FY23-24: 29.41 ML</div></div>
+          <div class="fl"><label>Wastewater Discharged to 3rd Party (ML)</label><input type="number" step="0.01" data-field="water_discharged" placeholder="e.g. 20.07"><div class="unit">MSN FY23-24: 20.07 ML</div></div>
+          <div class="fl"><label>% Wastewater Recycled / Reused</label><input type="number" step="0.1" data-field="water_recycled_pct" placeholder="e.g. 52"><div class="unit">% · MSN FY23-24: 52%</div></div>
+          <div class="fl"><label>Solvent Recovery Savings (INR Mn/month)</label><input type="number" step="0.01" data-field="water_solvent_savings" placeholder="e.g. 13.52"><div class="unit">MSN FY23-24: 13.52 Mn/month</div></div>
+          <div class="fl"><label>Water Intensity (ML / INR Mn revenue)</label><input type="number" step="0.000001" data-field="water_intensity" placeholder="e.g. 0.00331"><div class="unit">MSN FY23-24: 0.00331</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WASTE ──────────────────────────────── -->
+    <div class="section-card" id="sec-waste">
+      <div class="sc-header" onclick="toggleSection('waste-body')">
+        <div class="sc-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-trash"></i></div>
+        <div><div class="sc-title">Waste Management</div><div class="sc-sub">GRI 306 — Hazardous, non-hazardous, e-waste, disposal</div></div>
+        <div class="sc-badge">MT</div>
+      </div>
+      <div class="sc-body" id="waste-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-biohazard" style="color:#dc2626;margin-right:6px"></i>Waste Generation</div>
+          <div class="fl"><label>Hazardous Waste Generated (MT)</label><input type="number" step="0.01" data-field="waste_haz" placeholder="e.g. 3335.61"><div class="unit">Metric Tonnes · MSN FY23-24: 3,335.61 MT</div></div>
+          <div class="fl"><label>Non-Hazardous Waste (MT)</label><input type="number" step="0.01" data-field="waste_nhaz" placeholder="e.g. 21019.2"><div class="unit">MT · MSN FY23-24: 21,019.2 MT</div></div>
+          <div class="fl"><label>E-Waste (MT)</label><input type="number" step="0.01" data-field="waste_ewaste" placeholder="e.g. 37.04"><div class="unit">MT · MSN FY23-24: 37.04 MT</div></div>
+          <div class="fl"><label>Bio-Medical Waste (MT)</label><input type="number" step="0.01" data-field="waste_biomedical" placeholder="e.g. 3.25"><div class="unit">MSN FY23-24: 3.25 MT</div></div>
+          <div class="fl"><label>Total Waste Generated (MT)</label><input type="number" step="0.01" data-field="waste_total" placeholder="e.g. 24391.87"><div class="unit">MSN FY23-24: 24,391.87 MT</div></div>
+          <div class="sub-label"><i class="fas fa-recycle" style="color:#16a34a;margin-right:6px"></i>Hazardous Waste Disposal</div>
+          <div class="fl"><label>Recycled (MT)</label><input type="number" step="0.01" data-field="waste_haz_recycled" placeholder="e.g. 637.5"></div>
+          <div class="fl"><label>TSDF / Landfill (MT)</label><input type="number" step="0.01" data-field="waste_tsdf" placeholder="e.g. 21016.02"></div>
+          <div class="fl"><label>Incinerated (MT)</label><input type="number" step="0.01" data-field="waste_incinerated" placeholder="e.g. 2698.08"></div>
+          <div class="fl"><label>Co-Processing / E-Waste (MT)</label><input type="number" step="0.01" data-field="waste_coprocess" placeholder="e.g. 37.04"></div>
+          <div class="fl"><label>Solvent Loss Reduction (%)</label><input type="number" step="0.1" data-field="waste_solvent_reduction" placeholder="e.g. 29"><div class="unit">% reduction via Solvent Recovery System</div></div>
+          <div class="fl"><label>Waste Intensity (MT / INR Mn)</label><input type="number" step="0.0001" data-field="waste_intensity" placeholder="e.g. 0.025"><div class="unit">MSN FY23-24: 0.025</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BIODIVERSITY ───────────────────────── -->
+    <div class="section-card" id="sec-bio">
+      <div class="sc-header" onclick="toggleSection('bio-body')">
+        <div class="sc-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-leaf"></i></div>
+        <div><div class="sc-title">Biodiversity</div><div class="sc-sub">GRI 304 — Plantations, protected areas, biodiversity plans</div></div>
+        <div class="sc-badge">GRI 304</div>
+      </div>
+      <div class="sc-body" id="bio-body">
+        <div class="fg">
+          <div class="fl"><label>Saplings / Trees Planted (cumulative)</label><input type="number" data-field="bio_trees" placeholder="e.g. 2000"><div class="unit">MSN FY23-24: 2,000+ saplings</div></div>
+          <div class="fl"><label>New Saplings Planted (this period)</label><input type="number" data-field="bio_new_trees"></div>
+          <div class="fl"><label>Green Area Coverage (%)</label><input type="number" step="0.1" data-field="bio_green_pct"></div>
+          <div class="fl"><label>Sites in / near Protected Areas</label><input type="number" data-field="bio_protected_sites" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>Biodiversity Mgmt Plans in Place</label><select data-field="bio_plans"><option value="">—</option><option>Yes — All Sites</option><option>Yes — Some Sites</option><option>In Development</option><option>No</option></select></div>
+          <div class="fl fg-full"><label>Biodiversity Incidents / Observations</label><textarea data-field="bio_notes" placeholder="Any biodiversity incidents, observations, or initiatives this period"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WORKFORCE ──────────────────────────── -->
+    <div class="section-card" id="sec-workforce">
+      <div class="sc-header" onclick="toggleSection('wf-body')">
+        <div class="sc-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-users"></i></div>
+        <div><div class="sc-title">Workforce</div><div class="sc-sub">GRI 401, 405 — Employees, diversity, hires, turnover</div></div>
+        <div class="sc-badge">GRI 401</div>
+      </div>
+      <div class="sc-body" id="wf-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-user-check" style="color:#7c3aed;margin-right:6px"></i>Headcount</div>
+          <div class="fl"><label>Total Permanent Employees</label><input type="number" data-field="wf_perm_total" placeholder="e.g. 12550"><div class="unit">MSN FY23-24: 12,550</div></div>
+          <div class="fl"><label>Contract / Temporary Workers</label><input type="number" data-field="wf_contract" placeholder="e.g. 4236"><div class="unit">MSN FY23-24: 4,236</div></div>
+          <div class="fl"><label>Total Workforce (Perm + Contract)</label><input type="number" data-field="wf_total"></div>
+          <div class="fl"><label>Women — Permanent Employees</label><input type="number" data-field="wf_women"></div>
+          <div class="fl"><label>Women in Workforce (%)</label><input type="number" step="0.01" data-field="wf_women_pct" placeholder="e.g. 12.16"><div class="unit">MSN FY23-24: 12.16% · Target: 30% by 2030</div></div>
+          <div class="fl"><label>Women on Board (%)</label><input type="number" step="0.1" data-field="wf_board_women_pct" placeholder="e.g. 25"><div class="unit">MSN FY23-24: 25%</div></div>
+          <div class="sub-label"><i class="fas fa-user-plus" style="color:#16a34a;margin-right:6px"></i>New Hires & Turnover</div>
+          <div class="fl"><label>New Hires — Male</label><input type="number" data-field="wf_hire_male" placeholder="e.g. 5154"></div>
+          <div class="fl"><label>New Hires — Female</label><input type="number" data-field="wf_hire_female" placeholder="e.g. 883"></div>
+          <div class="fl"><label>Total New Hires</label><input type="number" data-field="wf_hire_total" placeholder="e.g. 6037"></div>
+          <div class="fl"><label>Turnover — Male</label><input type="number" data-field="wf_turn_male" placeholder="e.g. 1664"></div>
+          <div class="fl"><label>Turnover — Female</label><input type="number" data-field="wf_turn_female" placeholder="e.g. 264"></div>
+          <div class="fl"><label>Total Turnover</label><input type="number" data-field="wf_turn_total" placeholder="e.g. 1928"></div>
+          <div class="fl"><label>Turnover Rate (%)</label><input type="number" step="0.1" data-field="wf_turn_rate" placeholder="e.g. 15"><div class="unit">MSN FY23-24: 15%</div></div>
+          <div class="sub-label"><i class="fas fa-baby" style="color:#e879f9;margin-right:6px"></i>Parental Leave</div>
+          <div class="fl"><label>Employees on Parental Leave</label><input type="number" data-field="wf_parental"></div>
+          <div class="fl"><label>Returned After Parental Leave</label><input type="number" data-field="wf_returned_parental"></div>
+          <div class="fl"><label>Employee Benefits Spend (INR Mn)</label><input type="number" step="0.01" data-field="wf_benefits_spend" placeholder="e.g. 582.03"><div class="unit">MSN FY23-24: 582.03 Mn</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TRAINING ───────────────────────────── -->
+    <div class="section-card" id="sec-training">
+      <div class="sc-header" onclick="toggleSection('tr-body')">
+        <div class="sc-icon" style="background:#dbeafe;color:#0369a1"><i class="fas fa-graduation-cap"></i></div>
+        <div><div class="sc-title">Training & Education</div><div class="sc-sub">GRI 404 — Training hours by type, gender, avg hours</div></div>
+        <div class="sc-badge">Hours</div>
+      </div>
+      <div class="sc-body" id="tr-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-clock" style="color:#0369a1;margin-right:6px"></i>Total Training Hours</div>
+          <div class="fl"><label>Training Hours — Employees (Total)</label><input type="number" data-field="tr_emp_total" placeholder="e.g. 185056"><div class="unit">MSN FY23-24: 185,056 hrs</div></div>
+          <div class="fl"><label>Training Hours — Workers (Total)</label><input type="number" data-field="tr_worker_total" placeholder="e.g. 42729"><div class="unit">MSN FY23-24: 42,729 hrs</div></div>
+          <div class="fl"><label>Avg Hours / Employee</label><input type="number" step="0.01" data-field="tr_avg_emp" placeholder="e.g. 14.76"><div class="unit">MSN FY23-24: 14.76 hrs</div></div>
+          <div class="fl"><label>Avg Hours / Worker</label><input type="number" step="0.01" data-field="tr_avg_worker" placeholder="e.g. 9.96"><div class="unit">MSN FY23-24: 9.96 hrs</div></div>
+          <div class="sub-label"><i class="fas fa-book" style="color:#6366f1;margin-right:6px"></i>Training by Type (Employee Hours)</div>
+          <div class="fl"><label>GMP Training (hrs)</label><input type="number" data-field="tr_gmp" placeholder="e.g. 135276"></div>
+          <div class="fl"><label>Safety Training (hrs)</label><input type="number" data-field="tr_safety" placeholder="e.g. 31448"></div>
+          <div class="fl"><label>L&D / Leadership (hrs)</label><input type="number" data-field="tr_ld" placeholder="e.g. 17823"></div>
+          <div class="fl"><label>Other Training (hrs)</label><input type="number" data-field="tr_other" placeholder="e.g. 511"></div>
+          <div class="sub-label"><i class="fas fa-user-graduate" style="color:#7c3aed;margin-right:6px"></i>Performance Reviews</div>
+          <div class="fl"><label>Employees Who Received Performance Review</label><input type="number" data-field="tr_perf_review" placeholder="e.g. 8021"></div>
+          <div class="fl"><label>% of Employees Reviewed</label><input type="number" step="0.1" data-field="tr_perf_pct" placeholder="e.g. 63.9"><div class="unit">MSN FY23-24: ~63.9%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OHS ────────────────────────────────── -->
+    <div class="section-card" id="sec-ohs">
+      <div class="sc-header" onclick="toggleSection('ohs-body')">
+        <div class="sc-icon" style="background:#fef9c3;color:#d97706"><i class="fas fa-hard-hat"></i></div>
+        <div><div class="sc-title">Occupational Health & Safety</div><div class="sc-sub">GRI 403 — Injuries, fatalities, man-days lost, hours worked</div></div>
+        <div class="sc-badge">GRI 403</div>
+      </div>
+      <div class="sc-body" id="ohs-body">
+        <div class="fg">
+          <div class="sub-label"><i class="fas fa-user-injured" style="color:#dc2626;margin-right:6px"></i>Injury Metrics — Employees</div>
+          <div class="fl"><label>High-Consequence Injuries (excl. fatalities)</label><input type="number" data-field="ohs_hci_emp" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>Recordable Injuries</label><input type="number" data-field="ohs_ri_emp" placeholder="0"></div>
+          <div class="fl"><label>Lost Time Injuries (&lt;48h)</label><input type="number" data-field="ohs_lti_emp" placeholder="0"></div>
+          <div class="fl"><label>Reportable Accidents (&gt;48h)</label><input type="number" data-field="ohs_ra_emp" placeholder="0"></div>
+          <div class="fl"><label>First-Aid Cases — Employees</label><input type="number" data-field="ohs_fac_emp" placeholder="e.g. 18"><div class="unit">MSN FY23-24: 18</div></div>
+          <div class="fl"><label>Man-Days Lost — Employees</label><input type="number" data-field="ohs_mdl_emp" placeholder="0"></div>
+          <div class="fl"><label>Fatalities — Employees</label><input type="number" data-field="ohs_fatal_emp" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="sub-label"><i class="fas fa-hard-hat" style="color:#d97706;margin-right:6px"></i>Injury Metrics — Contract Workers</div>
+          <div class="fl"><label>High-Consequence Injuries — Workers</label><input type="number" data-field="ohs_hci_wkr" placeholder="0"></div>
+          <div class="fl"><label>First-Aid Cases — Workers</label><input type="number" data-field="ohs_fac_wkr" placeholder="e.g. 51"><div class="unit">MSN FY23-24: 51</div></div>
+          <div class="fl"><label>Fatalities — Workers</label><input type="number" data-field="ohs_fatal_wkr" placeholder="0"></div>
+          <div class="sub-label"><i class="fas fa-stopwatch" style="color:#1d4ed8;margin-right:6px"></i>Hours Worked</div>
+          <div class="fl"><label>Total Hours Worked — Employees</label><input type="number" data-field="ohs_hrs_emp" placeholder="e.g. 17899413"><div class="unit">MSN FY23-24: 17,899,413 hrs</div></div>
+          <div class="fl"><label>Total Hours Worked — Contract Workers</label><input type="number" data-field="ohs_hrs_wkr" placeholder="e.g. 9546672"><div class="unit">MSN FY23-24: 9,546,672 hrs</div></div>
+          <div class="sub-label"><i class="fas fa-clipboard-check" style="color:#16a34a;margin-right:6px"></i>Safety Audits</div>
+          <div class="fl"><label>Internal Safety Audits Conducted</label><input type="number" data-field="ohs_int_audits" placeholder="e.g. 36"><div class="unit">MSN FY23-24: 36 internal</div></div>
+          <div class="fl"><label>Third-Party Safety Audits</label><input type="number" data-field="ohs_ext_audits" placeholder="e.g. 18"><div class="unit">MSN FY23-24: 18 third-party</div></div>
+          <div class="fl"><label>Sexual Harassment Cases</label><input type="number" data-field="ohs_posh" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ECONOMIC ───────────────────────────── -->
+    <div class="section-card" id="sec-economic">
+      <div class="sc-header" onclick="toggleSection('eco-body')">
+        <div class="sc-icon" style="background:#dcfce7;color:#059669"><i class="fas fa-rupee-sign"></i></div>
+        <div><div class="sc-title">Economic Performance</div><div class="sc-sub">GRI 201 — Revenue, EVG, EVD, wages, taxes</div></div>
+        <div class="sc-badge">INR Mn</div>
+      </div>
+      <div class="sc-body" id="eco-body">
+        <div class="fg">
+          <div class="fl"><label>Revenue (INR Millions)</label><input type="number" step="0.01" data-field="econ_revenue" placeholder="e.g. 94618"><div class="unit">MSN FY23-24: INR 94,618 Mn</div></div>
+          <div class="fl"><label>Revenue (USD Millions)</label><input type="number" step="0.01" data-field="econ_revenue_usd" placeholder="e.g. 1000"></div>
+          <div class="fl"><label>Operating Costs (INR Mn)</label><input type="number" step="0.01" data-field="econ_opex" placeholder="e.g. 12396.4"><div class="unit">MSN FY23-24: 12,396.4 Mn</div></div>
+          <div class="fl"><label>Employee Wages & Benefits (INR Mn)</label><input type="number" step="0.01" data-field="econ_wages" placeholder="e.g. 12110.9"><div class="unit">MSN FY23-24: 12,110.9 Mn</div></div>
+          <div class="fl"><label>Payments to Government / Tax (INR Mn)</label><input type="number" step="0.01" data-field="econ_tax" placeholder="e.g. 1475.46"><div class="unit">MSN FY23-24: 1,475.46 Mn</div></div>
+          <div class="fl"><label>Economic Value Distributed (INR Mn)</label><input type="number" step="0.01" data-field="econ_evd" placeholder="e.g. 25982.76"><div class="unit">MSN FY23-24: 25,982.76 Mn</div></div>
+          <div class="fl"><label>Economic Value Retained (INR Mn)</label><input type="number" step="0.01" data-field="econ_evr" placeholder="e.g. 68635.24"><div class="unit">MSN FY23-24: 68,635.24 Mn</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPPLY CHAIN ───────────────────────── -->
+    <div class="section-card" id="sec-supply">
+      <div class="sc-header" onclick="toggleSection('sc-body')">
+        <div class="sc-icon" style="background:#ede9fe;color:#6366f1"><i class="fas fa-truck"></i></div>
+        <div><div class="sc-title">Sustainable Supply Chain</div><div class="sc-sub">GRI 204 — Local vs. global suppliers, spend</div></div>
+        <div class="sc-badge">GRI 204</div>
+      </div>
+      <div class="sc-body" id="sc-body">
+        <div class="fg">
+          <div class="fl"><label>Local Suppliers (count)</label><input type="number" data-field="sup_local" placeholder="e.g. 1567"><div class="unit">MSN FY23-24: 1,567</div></div>
+          <div class="fl"><label>Global Suppliers (count)</label><input type="number" data-field="sup_global" placeholder="e.g. 195"><div class="unit">MSN FY23-24: 195</div></div>
+          <div class="fl"><label>Total Suppliers</label><input type="number" data-field="sup_total" placeholder="e.g. 1762"><div class="unit">MSN FY23-24: 1,762</div></div>
+          <div class="fl"><label>% Local Suppliers</label><input type="number" step="0.1" data-field="sup_local_pct" placeholder="e.g. 89"><div class="unit">MSN FY23-24: 89%</div></div>
+          <div class="fl"><label>% Spend on Local Suppliers</label><input type="number" step="0.01" data-field="sup_local_spend_pct" placeholder="e.g. 94.71"><div class="unit">MSN FY23-24: 94.71%</div></div>
+          <div class="fl"><label>% Spend on Global Suppliers</label><input type="number" step="0.01" data-field="sup_global_spend_pct" placeholder="e.g. 5.59"><div class="unit">MSN FY23-24: 5.59%</div></div>
+          <div class="fl"><label>Suppliers with Signed CoC (%)</label><input type="number" step="0.1" data-field="sup_coc_pct" placeholder="Target: 100% by 2026"><div class="unit">MSN target: 100% by 2026</div></div>
+          <div class="fl"><label>Suppliers Screened for ESG</label><input type="number" data-field="sup_esg_screened"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CSR ────────────────────────────────── -->
+    <div class="section-card" id="sec-csr">
+      <div class="sc-header" onclick="toggleSection('csr-body')">
+        <div class="sc-icon" style="background:#ffe4e6;color:#e11d48"><i class="fas fa-hands-helping"></i></div>
+        <div><div class="sc-title">CSR & Community</div><div class="sc-sub">GRI 413 — CSR spend, SDT, community initiatives</div></div>
+        <div class="sc-badge">INR</div>
+      </div>
+      <div class="sc-body" id="csr-body">
+        <div class="fg">
+          <div class="fl"><label>Total CSR Spend (INR)</label><input type="number" data-field="csr_spend" placeholder="e.g. 7018702"><div class="unit">MSN FY23-24: INR 70,18,702</div></div>
+          <div class="fl"><label>Healthcare Initiatives (count)</label><input type="number" data-field="csr_health"></div>
+          <div class="fl"><label>Education Initiatives (count)</label><input type="number" data-field="csr_edu"></div>
+          <div class="fl"><label>SDT (Self-Directed Teams) Members</label><input type="number" data-field="csr_sdt" placeholder="e.g. 500"><div class="unit">MSN FY23-24: 500+</div></div>
+          <div class="fl"><label>SDT Locations</label><input type="number" data-field="csr_sdt_loc" placeholder="e.g. 10"><div class="unit">MSN: 10+ in Telangana & AP</div></div>
+          <div class="fl fg-full"><label>CSR Activities this Period</label><textarea data-field="csr_notes" placeholder="Describe CSR activities, community programs, beneficiaries..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COMPLIANCE ─────────────────────────── -->
+    <div class="section-card" id="sec-compliance">
+      <div class="sc-header" onclick="toggleSection('comp-body')">
+        <div class="sc-icon" style="background:#f1f5f9;color:#0f172a"><i class="fas fa-shield-alt"></i></div>
+        <div><div class="sc-title">Compliance & Ethics</div><div class="sc-sub">GRI 205, 307 — Incidents, corruption, privacy, child labor</div></div>
+        <div class="sc-badge">GRI 205</div>
+      </div>
+      <div class="sc-body" id="comp-body">
+        <div class="fg">
+          <div class="fl"><label>Regulatory Non-Compliance Incidents</label><input type="number" data-field="comp_nci" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>Confirmed Corruption Cases</label><input type="number" data-field="comp_corruption" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>Data Breach / Privacy Complaints</label><input type="number" data-field="comp_privacy" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>Child / Forced Labor Incidents</label><input type="number" data-field="comp_childlabor" placeholder="0"><div class="unit">MSN FY23-24: 0</div></div>
+          <div class="fl"><label>ISO 14001 Sites Certified</label><input type="number" data-field="comp_iso14001" placeholder="e.g. 25"><div class="unit">MSN: All 25 sites certified</div></div>
+          <div class="fl"><label>ISO 45001 Sites Certified</label><input type="number" data-field="comp_iso45001"></div>
+          <div class="fl"><label>New ISO Certifications this Period</label><input type="number" data-field="comp_new_iso" placeholder="e.g. 2"><div class="unit">MSN FY23-24: 2 new certifications</div></div>
+          <div class="fl fg-full"><label>Compliance Notes</label><textarea data-field="comp_notes" placeholder="Describe any compliance actions, certifications obtained, or regulatory updates..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ESG TARGETS ────────────────────────── -->
+    <div class="section-card" id="sec-targets">
+      <div class="sc-header" onclick="toggleSection('tgt-body')">
+        <div class="sc-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-bullseye"></i></div>
+        <div><div class="sc-title">ESG Targets Progress</div><div class="sc-sub">Track progress against MSN 2024 sustainability targets</div></div>
+        <div class="sc-badge">Progress</div>
+      </div>
+      <div class="sc-body" id="tgt-body">
+        <div class="fg">
+          <div class="sub-label" style="background:#fef2f2;padding:8px;border-radius:6px;border:1px solid #fecaca">MSN Sustainability Targets (from Sustainability Report 2024)</div>
+          <div class="fl"><label>Net-Zero Scope 1&2 — Target Year 2045<br><span style="color:#94a3b8;font-weight:400">Current Scope 1+2 Progress (% toward net-zero)</span></label><input type="number" step="0.1" data-field="tgt_netzero_pct" placeholder="e.g. 15"></div>
+          <div class="fl"><label>Renewable Energy: Target 25% by 2030<br><span style="color:#94a3b8;font-weight:400">Current renewable share (%)</span></label><input type="number" step="0.1" data-field="tgt_re_current" placeholder="e.g. 3.2"></div>
+          <div class="fl"><label>Scope 1&2 Reduction: Target 25% by 2030<br><span style="color:#94a3b8;font-weight:400">Current % reduction from base year</span></label><input type="number" step="0.1" data-field="tgt_ghg_reduction"></div>
+          <div class="fl"><label>Freshwater Reduction: Target 33% by 2030<br><span style="color:#94a3b8;font-weight:400">Current % reduction achieved</span></label><input type="number" step="0.1" data-field="tgt_water_reduction"></div>
+          <div class="fl"><label>Zero Waste to Landfill: Target 2026<br><span style="color:#94a3b8;font-weight:400">% waste diverted from landfill</span></label><input type="number" step="0.1" data-field="tgt_zero_landfill"></div>
+          <div class="fl"><label>100% Recyclable Packaging: Target 2028<br><span style="color:#94a3b8;font-weight:400">Current recyclable packaging (%)</span></label><input type="number" step="0.1" data-field="tgt_recycle_pkg"></div>
+          <div class="fl"><label>Women in Workforce: Target 30% by 2030<br><span style="color:#94a3b8;font-weight:400">Current women % in workforce</span></label><input type="number" step="0.01" data-field="tgt_women_pct"></div>
+          <div class="fl"><label>Solar Project: 50 MW Planned<br><span style="color:#94a3b8;font-weight:400">Solar capacity commissioned (MW)</span></label><input type="number" step="0.1" data-field="tgt_solar_mw"></div>
+          <div class="fl fg-full"><label>Period Notes / Highlights</label><textarea data-field="period_notes" placeholder="Overall highlights, challenges, initiatives, or achievements for this tracking period..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end panelEntry -->
+
+    <!-- LOG PANEL -->
+    <div id="panelLog" style="display:none">
+      <div class="log-wrap">
+        <div class="log-top">
+          <h3><i class="fas fa-history" style="color:#1d4ed8;margin-right:7px"></i>Daily Update History</h3>
+          <div class="log-filters">
+            <label style="font-size:.75rem;font-weight:700;color:#374151">From</label>
+            <input type="date" id="logFrom">
+            <label style="font-size:.75rem;font-weight:700;color:#374151">To</label>
+            <input type="date" id="logTo">
+            <button class="btn btn-ghost btn-sm" onclick="renderLog()"><i class="fas fa-filter"></i> Filter</button>
+            <button class="btn btn-green btn-sm" onclick="downloadLog()"><i class="fas fa-download"></i> Download Log</button>
+            <button class="btn btn-sm" style="background:#ef4444;color:#fff" onclick="clearLogConfirm()"><i class="fas fa-trash"></i> Clear All</button>
+          </div>
+        </div>
+        <div class="log-table" id="logTable"></div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end layout -->
+
+<!-- BOTTOM NAV -->
+<div class="bot-bar">
+  <button class="btn btn-save" onclick="saveEntry()"><i class="fas fa-save"></i> Save Today's Data</button>
+  <button class="btn btn-ghost" onclick="switchTab('log')"><i class="fas fa-history"></i> View History</button>
+  <button class="btn btn-green" style="margin-left:auto" onclick="downloadLog()"><i class="fas fa-download"></i> Download Daily Log</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle" style="color:#4ade80"></i> <span id="toastMsg">Saved</span></div>
+
+<script src="js/eco-export.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ═══════════════════════════════════
+   STORAGE
+═══════════════════════════════════ */
+var STORE_KEY = 'dst_daily_log'; // daily sustainability tracker log
+
+function getAllEntries(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveAllEntries(d){
+  localStorage.setItem(STORE_KEY, JSON.stringify(d));
+}
+
+/* ═══════════════════════════════════
+   DATE HELPERS
+═══════════════════════════════════ */
+function todayISO(){
+  var d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function setToday(){
+  document.getElementById('entryDate').value = todayISO();
+  loadEntry();
+}
+window.setToday = setToday;
+
+/* ═══════════════════════════════════
+   COLLECT / LOAD
+═══════════════════════════════════ */
+function collectEntry(){
+  var obj = {};
+  document.querySelectorAll('[data-field]').forEach(function(el){
+    obj[el.dataset.field] = el.value || '';
+  });
+  return obj;
+}
+function loadEntry(){
+  var dt = document.getElementById('entryDate').value;
+  var all = getAllEntries();
+  var entry = all[dt] || {};
+  document.querySelectorAll('[data-field]').forEach(function(el){
+    el.value = entry[el.dataset.field] !== undefined ? entry[el.dataset.field] : '';
+  });
+  showToast('Loaded entry for '+dt, '#94a3b8');
+}
+
+/* ═══════════════════════════════════
+   SAVE
+═══════════════════════════════════ */
+function saveEntry(){
+  var dt = document.getElementById('entryDate').value;
+  if(!dt){ showToast('Please select a date first', '#ef4444'); return; }
+  var all = getAllEntries();
+  var entry = collectEntry();
+  entry._saved_at = new Date().toISOString();
+  all[dt] = entry;
+  saveAllEntries(all);
+  var badge = document.getElementById('savedBadge');
+  if(badge){ badge.style.display = 'flex'; setTimeout(function(){ badge.style.display='none'; }, 3000); }
+  showToast('Data saved for '+dt);
+}
+window.saveEntry = saveEntry;
+
+/* Auto-save on input after 2s debounce */
+var autoSaveTimer = null;
+document.addEventListener('input', function(e){
+  if(e.target.dataset.field){
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function(){ saveEntry(); }, 2000);
+  }
+});
+document.addEventListener('change', function(e){
+  if(e.target.dataset.field) saveEntry();
+});
+
+/* ═══════════════════════════════════
+   SECTION TOGGLE
+═══════════════════════════════════ */
+window.toggleSection = function(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('collapsed');
+};
+
+/* Sidebar scroll */
+window.scrollTo = function(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('.sid-item').forEach(function(s){ s.classList.remove('active'); });
+  var link = document.querySelector('[onclick="scrollTo(\''+id+'\')"]');
+  if(link) link.classList.add('active');
+  return false;
+};
+
+/* ═══════════════════════════════════
+   TAB SWITCH
+═══════════════════════════════════ */
+window.switchTab = function(tab){
+  var isEntry = tab === 'entry';
+  document.getElementById('panelEntry').style.display = isEntry ? '' : 'none';
+  document.getElementById('panelLog').style.display   = isEntry ? 'none' : '';
+  document.getElementById('sidebarNav').style.display = isEntry ? '' : 'none';
+  document.getElementById('tabEntry').classList.toggle('active', isEntry);
+  document.getElementById('tabLog').classList.toggle('active', !isEntry);
+  if(!isEntry) renderLog();
+};
+
+/* ═══════════════════════════════════
+   LOG TABLE
+═══════════════════════════════════ */
+var LOG_COLS = [
+  {key:'_date',             label:'Date'},
+  {key:'energy_total',      label:'Energy (TJ)'},
+  {key:'ghg_scope1',        label:'Scope 1 (tCO₂e)'},
+  {key:'ghg_scope2',        label:'Scope 2 (tCO₂e)'},
+  {key:'ghg_scope12',       label:'Scope 1+2'},
+  {key:'ghg_scope3_total',  label:'Scope 3 (tCO₂e)'},
+  {key:'ghg_voc',           label:'VOC (kg)'},
+  {key:'water_total_wdl',   label:'Water Wdl (ML)'},
+  {key:'water_consumption', label:'Water Cons (ML)'},
+  {key:'water_recycled_pct',label:'Water Recycled (%)'},
+  {key:'waste_total',       label:'Waste Total (MT)'},
+  {key:'waste_haz',         label:'Haz Waste (MT)'},
+  {key:'waste_recycled_pct',label:'Waste Recycled (%)'},
+  {key:'wf_perm_total',     label:'Employees'},
+  {key:'wf_women_pct',      label:'Women (%)'},
+  {key:'wf_turn_rate',      label:'Turnover (%)'},
+  {key:'ohs_fatal_emp',     label:'Fatalities Emp'},
+  {key:'ohs_fac_emp',       label:'First Aid Emp'},
+  {key:'econ_revenue',      label:'Revenue (INR Mn)'},
+  {key:'comp_nci',          label:'Non-Compliance'},
+];
+
+window.renderLog = function(){
+  var from = document.getElementById('logFrom').value;
+  var to   = document.getElementById('logTo').value;
+  var all  = getAllEntries();
+  var dates = Object.keys(all).sort();
+  if(from) dates = dates.filter(function(d){ return d >= from; });
+  if(to)   dates = dates.filter(function(d){ return d <= to; });
+
+  var container = document.getElementById('logTable');
+  if(!dates.length){
+    container.innerHTML = '<div class="log-empty"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px"></i>No entries found for the selected period.</div>';
+    return;
+  }
+
+  var cols = LOG_COLS;
+  var thead = '<thead><tr>'+cols.map(function(c){ return '<th>'+c.label+'</th>'; }).join('')+'<th>Actions</th></tr></thead>';
+  var tbody = '<tbody>'+dates.map(function(dt){
+    var e = all[dt];
+    return '<tr>'+cols.map(function(c){
+      var val = c.key === '_date' ? dt : (e[c.key] || '—');
+      return '<td>'+val+'</td>';
+    }).join('')+
+    '<td><button class="btn btn-ghost btn-sm" onclick="loadDateEntry(\''+dt+'\')" style="font-size:.68rem;padding:4px 10px"><i class="fas fa-edit"></i> Edit</button>'+
+    '<button class="btn btn-sm" onclick="deleteEntry(\''+dt+'\')" style="background:#fef2f2;color:#ef4444;border:1px solid #fecaca;font-size:.68rem;padding:4px 8px;margin-left:4px"><i class="fas fa-trash"></i></button></td>';
+  }).join('')+'</tbody>';
+
+  container.innerHTML = '<table class="lt">'+thead+tbody+'</table>';
+};
+
+window.loadDateEntry = function(dt){
+  document.getElementById('entryDate').value = dt;
+  loadEntry();
+  switchTab('entry');
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+window.deleteEntry = function(dt){
+  if(!confirm('Delete entry for '+dt+'?')) return;
+  var all = getAllEntries();
+  delete all[dt];
+  saveAllEntries(all);
+  renderLog();
+  showToast('Deleted entry for '+dt, '#ef4444');
+};
+
+window.clearLogConfirm = function(){
+  if(!confirm('Are you sure you want to clear ALL historical entries? This cannot be undone.')) return;
+  localStorage.removeItem(STORE_KEY);
+  renderLog();
+  showToast('All entries cleared', '#ef4444');
+};
+
+/* ═══════════════════════════════════
+   DOWNLOAD LOG
+═══════════════════════════════════ */
+window.downloadLog = function(){
+  var from = document.getElementById('logFrom') ? document.getElementById('logFrom').value : '';
+  var to   = document.getElementById('logTo')   ? document.getElementById('logTo').value   : '';
+  var all  = getAllEntries();
+  var dates = Object.keys(all).sort();
+  if(from) dates = dates.filter(function(d){ return d >= from; });
+  if(to)   dates = dates.filter(function(d){ return d <= to; });
+
+  if(!dates.length){ showToast('No data to export', '#ef4444'); return; }
+
+  /* Build CSV with all fields */
+  var allKeys = ['Date'];
+  var fieldMeta = [
+    ['energy_elec_nonren','Energy — Electricity Non-Renewable (TJ)'],
+    ['energy_elec_ren','Energy — Electricity Renewable (TJ)'],
+    ['energy_elec_total','Energy — Total Electricity (TJ)'],
+    ['energy_fuel_total','Energy — Fuel Total (TJ)'],
+    ['energy_coal','Energy — Coal (MT/mo)'],
+    ['energy_hsd','Energy — Diesel/HSD (KL/mo)'],
+    ['energy_solar_gen','Energy — Solar Generated (kWh/day)'],
+    ['energy_re_pct','Energy — Renewable Share (%)'],
+    ['energy_total','Energy — Total Consumed (TJ)'],
+    ['energy_intensity','Energy — Intensity (TJ/INR Mn)'],
+    ['ghg_scope1','GHG — Scope 1 (tCO₂e)'],
+    ['ghg_scope2','GHG — Scope 2 (tCO₂e)'],
+    ['ghg_scope12','GHG — Scope 1+2 (tCO₂e)'],
+    ['ghg_s3_cat1','GHG — Scope 3 Cat1 (tCO₂e)'],
+    ['ghg_s3_cat3','GHG — Scope 3 Cat3 (tCO₂e)'],
+    ['ghg_s3_cat6','GHG — Scope 3 Cat6 (tCO₂e)'],
+    ['ghg_scope3_total','GHG — Scope 3 Total (tCO₂e)'],
+    ['ghg_nox','GHG — NOx (kg)'],
+    ['ghg_sox','GHG — SOx (kg)'],
+    ['ghg_voc','GHG — VOC (kg)'],
+    ['ghg_pm','GHG — PM (kg)'],
+    ['ghg_intensity','GHG — Intensity'],
+    ['water_gw','Water — Groundwater (ML)'],
+    ['water_tp','Water — Third-Party (ML)'],
+    ['water_total_wdl','Water — Total Withdrawal (ML)'],
+    ['water_consumption','Water — Consumption (ML)'],
+    ['water_ww_gen','Water — Wastewater Generated (ML)'],
+    ['water_zld','Water — ZLD Treated (ML)'],
+    ['water_rain','Water — Rainwater Recycled (ML)'],
+    ['water_recycled_pct','Water — % Recycled'],
+    ['water_intensity','Water — Intensity (ML/INR Mn)'],
+    ['waste_haz','Waste — Hazardous (MT)'],
+    ['waste_nhaz','Waste — Non-Hazardous (MT)'],
+    ['waste_ewaste','Waste — E-Waste (MT)'],
+    ['waste_total','Waste — Total Generated (MT)'],
+    ['waste_tsdf','Waste — TSDF/Landfill (MT)'],
+    ['waste_incinerated','Waste — Incinerated (MT)'],
+    ['waste_intensity','Waste — Intensity (MT/INR Mn)'],
+    ['bio_trees','Biodiversity — Trees Planted'],
+    ['bio_green_pct','Biodiversity — Green Coverage (%)'],
+    ['wf_perm_total','Workforce — Permanent Employees'],
+    ['wf_contract','Workforce — Contract Workers'],
+    ['wf_women_pct','Workforce — Women (%)'],
+    ['wf_board_women_pct','Workforce — Board Women (%)'],
+    ['wf_hire_total','Workforce — New Hires Total'],
+    ['wf_turn_total','Workforce — Turnover Total'],
+    ['wf_turn_rate','Workforce — Turnover Rate (%)'],
+    ['wf_benefits_spend','Workforce — Benefits Spend (INR Mn)'],
+    ['tr_emp_total','Training — Emp Hours Total'],
+    ['tr_worker_total','Training — Worker Hours Total'],
+    ['tr_avg_emp','Training — Avg Hours/Employee'],
+    ['tr_gmp','Training — GMP Hours'],
+    ['tr_safety','Training — Safety Hours'],
+    ['ohs_fatal_emp','OHS — Fatalities (Emp)'],
+    ['ohs_fatal_wkr','OHS — Fatalities (Workers)'],
+    ['ohs_fac_emp','OHS — First Aid Cases (Emp)'],
+    ['ohs_lti_emp','OHS — Lost Time Injuries (Emp)'],
+    ['ohs_hrs_emp','OHS — Hours Worked (Emp)'],
+    ['ohs_int_audits','OHS — Internal Audits'],
+    ['ohs_ext_audits','OHS — Third-Party Audits'],
+    ['ohs_posh','OHS — POSH Cases'],
+    ['econ_revenue','Economic — Revenue (INR Mn)'],
+    ['econ_opex','Economic — OpEx (INR Mn)'],
+    ['econ_wages','Economic — Wages (INR Mn)'],
+    ['econ_tax','Economic — Tax (INR Mn)'],
+    ['sup_local','Supply — Local Suppliers'],
+    ['sup_global','Supply — Global Suppliers'],
+    ['sup_local_spend_pct','Supply — Local Spend (%)'],
+    ['csr_spend','CSR — Total Spend (INR)'],
+    ['comp_nci','Compliance — Non-Compliance Incidents'],
+    ['comp_corruption','Compliance — Corruption Cases'],
+    ['comp_privacy','Compliance — Data Breach Cases'],
+    ['tgt_netzero_pct','Target — Net-Zero Progress (%)'],
+    ['tgt_re_current','Target — Renewable Share Current (%)'],
+    ['tgt_women_pct','Target — Women % Current'],
+    ['period_notes','Notes'],
+  ];
+
+  var headers = ['Date'].concat(fieldMeta.map(function(f){ return f[1]; }));
+  var rows = [headers].concat(dates.map(function(dt){
+    var e = all[dt];
+    return [dt].concat(fieldMeta.map(function(f){ return e[f[0]] || ''; }));
+  }));
+
+  window.ecoExport({
+    title: 'Daily Sustainability Log',
+    subtitle: 'GRI · SASB · UNGC — All tracked metrics',
+    formats: ['pdf','excel','csv'],
+    onFormat: function(fmt){
+      if(fmt === 'csv'){
+        var csv = window._ecoRowsToCsv(rows);
+        var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+        window._ecoTriggerDownload(blob, 'SustainabilityLog_'+todayISO()+'.csv');
+      } else if(fmt === 'excel'){
+        var xls = window._ecoRowsToXls(rows, 'Daily Log');
+        var blob = new Blob([xls], {type:'application/vnd.ms-excel;charset=utf-8'});
+        window._ecoTriggerDownload(blob, 'SustainabilityLog_'+todayISO()+'.xls');
+      } else if(fmt === 'pdf'){
+        generateLogPDF(dates, all, fieldMeta);
+      }
+    }
+  });
+};
+
+function generateLogPDF(dates, all, fieldMeta){
+  var today = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  var tableRows = fieldMeta.map(function(f){
+    var vals = dates.map(function(dt){ return all[dt][f[0]] || '—'; });
+    return '<tr><td style="font-weight:600;color:#374151;padding:5px 8px;border-bottom:1px solid #f1f5f9;font-size:.65rem;width:200px">'+f[1]+'</td>'+
+      vals.map(function(v){ return '<td style="padding:5px 8px;border-bottom:1px solid #f1f5f9;font-size:.65rem;color:#0f172a">'+v+'</td>'; }).join('')+'</tr>';
+  }).join('');
+  var dateHeaders = dates.map(function(d){ return '<th style="padding:6px 8px;background:#0c4a6e;color:#fff;font-size:.62rem;min-width:90px">'+d+'</th>'; }).join('');
+  var html = '<div style="font-family:Inter,sans-serif;padding:32px">'+
+    '<div style="background:linear-gradient(135deg,#0c4a6e,#0369a1);padding:28px;border-radius:10px;margin-bottom:20px;color:#fff">'+
+    '<div style="font-family:Poppins,sans-serif;font-size:1.4rem;font-weight:900;margin-bottom:4px">Daily Sustainability Tracking Log</div>'+
+    '<div style="font-size:.78rem;opacity:.8">GRI · SASB · UNGC — Based on MSN Laboratories Sustainability Report 2024</div>'+
+    '<div style="font-size:.72rem;opacity:.7;margin-top:8px">Exported on '+today+' | Entries: '+dates.length+'</div>'+
+    '</div>'+
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr><th style="padding:6px 8px;background:#0c4a6e;color:#fff;font-size:.62rem;text-align:left">Metric</th>'+dateHeaders+'</tr></thead>'+
+    '<tbody>'+tableRows+'</tbody></table></div></div>';
+  var el = document.createElement('div');
+  el.innerHTML = html;
+  el.style.position = 'absolute'; el.style.left = '-9999px';
+  document.body.appendChild(el);
+  var opt = {margin:10, filename:'SustainabilityLog_'+todayISO()+'.pdf',
+    html2canvas:{scale:1.2,useCORS:true}, jsPDF:{unit:'mm',format:'a3',orientation:'landscape'}};
+  html2pdf().set(opt).from(el).save().then(function(){ document.body.removeChild(el); });
+}
+
+/* ═══════════════════════════════════
+   TOAST
+═══════════════════════════════════ */
+function showToast(msg, color){
+  var t = document.getElementById('toast');
+  var m = document.getElementById('toastMsg');
+  if(!t) return;
+  if(m) m.textContent = msg;
+  if(color) t.style.background = color;
+  else t.style.background = '#0f172a';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); t.style.background = '#0f172a'; }, 2500);
+}
+window.showToast = showToast;
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+setToday();
+// Set log date range defaults
+var logFrom = document.getElementById('logFrom');
+var logTo   = document.getElementById('logTo');
+if(logFrom){
+  var d = new Date(); d.setDate(d.getDate()-30);
+  logFrom.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+if(logTo) logTo.value = todayISO();
+
+})();
+</script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

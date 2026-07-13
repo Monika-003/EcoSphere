@@ -1,0 +1,1576 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>QMICS EcoBot AI — Environmental Intelligence Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#0d9488;--p2:#0f766e;--acc:#059669;--warn:#d97706;--danger:#ef4444;
+  --bg:#f0fdfa;--card:#ffffff;--bdr:#e2e8f0;--txt:#0f172a;--muted:#64748b;
+  --crit:#dc2626;--high:#d97706;--med:#2563eb;--low:#16a34a;--info:#0284c7;
+  --ai-grad:linear-gradient(135deg,#0d9488 0%,#059669 100%);
+}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--p);border-radius:3px}
+
+/* ── Header ── */
+.hdr{
+  background:#fff;border-bottom:1px solid var(--bdr);
+  padding:14px 24px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(13,148,136,.08);
+}
+.hdr-icon{
+  width:42px;height:42px;background:var(--ai-grad);border-radius:11px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0;
+}
+.hdr-brand{flex:1}
+.hdr-title{font-size:1.05rem;font-weight:800;color:var(--txt)}
+.hdr-sub{font-size:.75rem;color:var(--muted);margin-top:1px}
+.hdr-actions{display:flex;gap:8px;align-items:center}
+.hdr-btn{
+  background:none;border:1px solid var(--bdr);border-radius:8px;
+  padding:7px 14px;font-size:.79rem;font-weight:700;cursor:pointer;
+  color:var(--txt);display:flex;align-items:center;gap:6px;transition:.15s;
+}
+.hdr-btn:hover{border-color:var(--p);color:var(--p)}
+.hdr-btn.primary{background:var(--p);color:#fff;border-color:var(--p)}
+.hdr-btn.primary:hover{background:var(--p2)}
+.ai-pill{
+  background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(5,150,105,.1));
+  border:1px solid rgba(13,148,136,.3);border-radius:20px;
+  padding:4px 12px;font-size:.72rem;font-weight:800;color:var(--p);
+  display:flex;align-items:center;gap:5px;
+}
+.ai-pill i{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Tab nav ── */
+.tab-nav{
+  background:#fff;border-bottom:1px solid var(--bdr);
+  padding:0 24px;display:flex;gap:0;overflow-x:auto;
+}
+.tab-nav::-webkit-scrollbar{height:3px}
+.tnav-item{
+  padding:13px 18px;font-size:.8rem;font-weight:700;cursor:pointer;
+  border-bottom:2.5px solid transparent;color:var(--muted);
+  display:flex;align-items:center;gap:7px;white-space:nowrap;transition:.15s;
+}
+.tnav-item:hover{color:var(--p)}
+.tnav-item.active{color:var(--p);border-bottom-color:var(--p)}
+.tnav-badge{
+  background:var(--p);color:#fff;border-radius:10px;
+  padding:1px 7px;font-size:.68rem;font-weight:800;min-width:18px;text-align:center;
+}
+.tnav-badge.warn{background:var(--warn)}
+.tnav-badge.danger{background:var(--danger)}
+
+/* ── Tab panels ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.main{padding:22px 24px;max-width:1400px;margin:0 auto}
+
+/* ── Section header ── */
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.sec-hdr h2{font-size:.95rem;font-weight:800;color:var(--txt)}
+.sec-hdr .sec-badge{
+  background:rgba(13,148,136,.1);color:var(--p);
+  border-radius:8px;padding:2px 8px;font-size:.7rem;font-weight:700;
+}
+.sec-divider{flex:1;height:1px;background:var(--bdr)}
+
+/* ── Grid layouts ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+@media(max-width:600px){.g3,.g4{grid-template-columns:1fr}}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px}
+.card-sm{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px}
+
+/* ── Score widget ── */
+.score-widget{
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center;
+}
+.score-ring{position:relative;width:80px;height:80px;margin-bottom:10px}
+.score-ring svg{width:80px;height:80px;transform:rotate(-90deg)}
+.score-ring circle{fill:none;stroke-width:7;stroke-linecap:round}
+.score-ring .ring-bg{stroke:#e2e8f0}
+.score-ring .ring-val{stroke:var(--p);transition:stroke-dashoffset .8s ease}
+.score-num{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:1.1rem;font-weight:900;color:var(--txt);
+}
+.score-label{font-size:.75rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.score-sub{font-size:.68rem;color:var(--muted)}
+.score-trend{font-size:.7rem;font-weight:700;margin-top:4px}
+.score-trend.up{color:var(--acc)}
+.score-trend.down{color:var(--danger)}
+
+/* ── Stat cards ── */
+.stat-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:16px 18px;display:flex;align-items:flex-start;gap:14px;
+}
+.stat-icon{
+  width:42px;height:42px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+}
+.stat-icon.teal{background:rgba(13,148,136,.12);color:var(--p)}
+.stat-icon.green{background:rgba(5,150,105,.12);color:var(--acc)}
+.stat-icon.amber{background:rgba(217,119,6,.12);color:var(--warn)}
+.stat-icon.red{background:rgba(239,68,68,.12);color:var(--danger)}
+.stat-icon.blue{background:rgba(37,99,235,.12);color:#2563eb}
+.stat-icon.purple{background:rgba(124,58,237,.12);color:#7c3aed}
+.stat-val{font-size:1.4rem;font-weight:900;color:var(--txt);line-height:1}
+.stat-label{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px}
+.stat-change{font-size:.7rem;font-weight:700;margin-top:4px}
+.stat-change.pos{color:var(--acc)}
+.stat-change.neg{color:var(--danger)}
+
+/* ── Status badges ── */
+.badge{font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:8px;display:inline-flex;align-items:center;gap:4px}
+.badge.NORMAL{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.badge.ATTENTION{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.badge.WARNING{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.badge.CRITICAL{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.badge.EMERGENCY{background:#4c1d95;color:#fff;border:1px solid #7c3aed}
+.badge.COMPLIANT{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.badge.NON_COMPLIANT{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+
+/* ── Monitoring table ── */
+.mon-table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bdr)}
+.mon-table{width:100%;border-collapse:collapse;background:#fff;font-size:.81rem}
+.mon-table th{background:#f8fafc;padding:10px 14px;font-weight:700;color:var(--muted);text-align:left;border-bottom:1px solid var(--bdr);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+.mon-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9;color:var(--txt);vertical-align:middle}
+.mon-table tr:last-child td{border-bottom:none}
+.mon-table tr:hover td{background:#f8fafc}
+.param-name{font-weight:700;color:var(--txt)}
+.param-cat{font-size:.68rem;color:var(--muted)}
+.val-cell{font-weight:800;font-size:.88rem}
+.val-cell.ok{color:var(--acc)}
+.val-cell.warn{color:var(--warn)}
+.val-cell.bad{color:var(--danger)}
+.threshold-bar{width:80px;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+.threshold-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ── AI Copilot chat ── */
+.copilot-wrap{display:flex;gap:16px;height:calc(100vh - 220px);min-height:500px}
+.copilot-sidebar{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.copilot-main{flex:1;display:flex;flex-direction:column;background:#fff;border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.chat-hdr{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;background:#f8fafc}
+.chat-avatar{width:36px;height:36px;background:var(--ai-grad);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;flex-shrink:0}
+.chat-title{font-size:.85rem;font-weight:800}
+.chat-status{font-size:.7rem;color:var(--acc);display:flex;align-items:center;gap:4px}
+.online-dot{width:7px;height:7px;background:var(--acc);border-radius:50%}
+.chat-messages{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:10px;max-width:80%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-bubble{padding:10px 14px;border-radius:12px;font-size:.82rem;line-height:1.6}
+.msg.bot .msg-bubble{background:#f1f5f9;border-radius:12px 12px 12px 0}
+.msg.user .msg-bubble{background:var(--p);color:#fff;border-radius:12px 12px 0 12px}
+.msg-avatar{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;align-self:flex-end}
+.msg.bot .msg-avatar{background:var(--ai-grad);color:#fff}
+.msg.user .msg-avatar{background:#e2e8f0;color:var(--muted)}
+.chat-input-row{padding:14px 16px;border-top:1px solid var(--bdr);display:flex;gap:8px;background:#fff}
+.chat-inp{
+  flex:1;border:1px solid var(--bdr);border-radius:10px;padding:10px 14px;
+  font-family:'Segoe UI',system-ui,sans-serif;font-size:.83rem;outline:none;resize:none;
+  height:44px;overflow:hidden;transition:.15s;
+}
+.chat-inp:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+.chat-send{
+  background:var(--p);color:#fff;border:none;border-radius:10px;
+  width:44px;height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;flex-shrink:0;transition:.15s;
+}
+.chat-send:hover{background:var(--p2)}
+.quick-btns{display:flex;flex-direction:column;gap:6px}
+.quick-btn{
+  background:#fff;border:1px solid var(--bdr);border-radius:9px;
+  padding:9px 12px;font-size:.74rem;font-weight:600;cursor:pointer;
+  color:var(--txt);text-align:left;transition:.15s;line-height:1.4;
+}
+.quick-btn:hover{border-color:var(--p);color:var(--p);background:rgba(13,148,136,.04)}
+.quick-btn i{color:var(--p);margin-right:5px}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:8px 12px}
+.typing-dot{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:bounce .8s ease infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* ── Prediction cards ── */
+.pred-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:18px;position:relative;overflow:hidden;
+}
+.pred-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.pred-card.HIGH::before,.pred-card.CRITICAL::before{background:var(--danger)}
+.pred-card.MEDIUM::before{background:var(--warn)}
+.pred-card.LOW::before{background:var(--acc)}
+.pred-title{font-size:.85rem;font-weight:800;margin-bottom:6px}
+.pred-desc{font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:12px}
+.pred-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pred-prob{
+  display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:700;
+}
+.prob-bar{width:60px;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+.prob-fill{height:100%;border-radius:3px}
+.prob-fill.HIGH{background:var(--danger)}
+.prob-fill.MEDIUM{background:var(--warn)}
+.prob-fill.LOW{background:var(--acc)}
+.pred-timeframe{font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:4px}
+.conf-score{font-size:.68rem;background:#f1f5f9;color:var(--muted);border-radius:6px;padding:2px 7px;font-weight:700}
+.pred-action{
+  background:#f8fafc;border-radius:8px;padding:8px 10px;
+  font-size:.75rem;color:var(--txt);display:flex;align-items:flex-start;gap:6px;
+}
+.pred-action i{color:var(--p);flex-shrink:0;margin-top:1px}
+
+/* ── Alert cards ── */
+.alert-item{
+  background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:16px 18px;display:flex;gap:14px;margin-bottom:10px;
+  transition:.15s;
+}
+.alert-item:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.alert-item.unread{border-left:3px solid var(--p)}
+.alert-item.unread.CRITICAL{border-left-color:var(--danger)}
+.alert-item.unread.HIGH{border-left-color:var(--warn)}
+.alert-sev{
+  width:38px;height:38px;border-radius:9px;display:flex;
+  align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;
+}
+.alert-sev.CRITICAL{background:#fef2f2;color:var(--danger)}
+.alert-sev.HIGH{background:#fff7ed;color:var(--warn)}
+.alert-sev.MEDIUM{background:#eff6ff;color:#2563eb}
+.alert-sev.LOW{background:#f0fdf4;color:var(--acc)}
+.alert-sev.INFORMATION{background:#f0fdfa;color:var(--p)}
+.alert-body{flex:1}
+.alert-title{font-size:.84rem;font-weight:800;margin-bottom:3px}
+.alert-detail{font-size:.76rem;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.alert-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.alert-chip{font-size:.68rem;background:#f1f5f9;color:var(--muted);border-radius:6px;padding:2px 7px;font-weight:600;display:flex;align-items:center;gap:3px}
+.alert-chip i{font-size:.65rem}
+.alert-actions{display:flex;gap:6px}
+.alert-btn{
+  font-size:.72rem;font-weight:700;padding:4px 11px;border-radius:7px;
+  cursor:pointer;border:1px solid var(--bdr);background:#fff;color:var(--txt);transition:.12s;
+}
+.alert-btn:hover{border-color:var(--p);color:var(--p)}
+.alert-btn.ack{background:var(--p);color:#fff;border-color:var(--p)}
+.alert-btn.ack:hover{background:var(--p2)}
+.alert-time{font-size:.7rem;color:var(--muted);white-space:nowrap;align-self:flex-start}
+.alert-impact{font-size:.7rem;background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 8px;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+
+/* ── Insights panel ── */
+.insights-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media(max-width:900px){.insights-grid{grid-template-columns:1fr}}
+.insight-item{
+  display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9;
+}
+.insight-item:last-child{border-bottom:none}
+.ins-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+.ins-icon.green{background:#f0fdf4;color:var(--acc)}
+.ins-icon.amber{background:#fffbeb;color:var(--warn)}
+.ins-icon.red{background:#fef2f2;color:var(--danger)}
+.ins-icon.blue{background:#eff6ff;color:#2563eb}
+.ins-icon.teal{background:rgba(13,148,136,.1);color:var(--p)}
+.ins-icon.purple{background:#faf5ff;color:#7c3aed}
+.ins-text{flex:1}
+.ins-title{font-size:.8rem;font-weight:700;margin-bottom:2px}
+.ins-body{font-size:.75rem;color:var(--muted);line-height:1.5}
+.ins-tag{font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:4px;display:inline-block}
+.ins-tag.info{background:#eff6ff;color:#1e40af}
+.ins-tag.warn{background:#fffbeb;color:#92400e}
+.ins-tag.ok{background:#f0fdf4;color:#166534}
+.ins-tag.crit{background:#fef2f2;color:#991b1b}
+
+/* ── Health summary banner ── */
+.health-banner{
+  background:var(--ai-grad);border-radius:12px;
+  padding:20px 24px;color:#fff;display:flex;align-items:center;gap:18px;margin-bottom:20px;
+}
+.hb-score{font-size:2.8rem;font-weight:900;line-height:1}
+.hb-grade{font-size:1rem;font-weight:800;opacity:.8;margin-top:2px}
+.hb-divider{width:1px;height:50px;background:rgba(255,255,255,.3)}
+.hb-detail{flex:1}
+.hb-title{font-size:1rem;font-weight:800;margin-bottom:4px}
+.hb-sub{font-size:.8rem;opacity:.8;line-height:1.5}
+.hb-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hb-chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;padding:11px 18px;border-radius:9px;font-size:.8rem;font-weight:600;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:fadeUp .25s ease}
+.toast.success{background:#059669;color:#fff}
+.toast.error{background:#dc2626;color:#fff}
+.toast.info{background:var(--p);color:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Refresh bar ── */
+.refresh-bar{
+  background:#fff;border-bottom:1px solid var(--bdr);
+  padding:8px 24px;display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);
+}
+.refresh-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite}
+.ref-btn{
+  margin-left:auto;background:none;border:1px solid var(--bdr);border-radius:7px;
+  padding:4px 12px;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--txt);
+  display:flex;align-items:center;gap:5px;transition:.12s;
+}
+.ref-btn:hover{border-color:var(--p);color:var(--p)}
+
+/* ── Loading spinner ── */
+.spinner{width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:var(--p);border-radius:50%;animation:spin .8s linear infinite;margin:32px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Chart containers ── */
+.chart-wrap{position:relative;height:180px}
+.chart-wrap-sm{position:relative;height:120px}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty i{font-size:2.2rem;margin-bottom:12px;opacity:.35}
+.empty p{font-size:.85rem;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-icon"><i class="fas fa-robot"></i></div>
+  <div class="hdr-brand">
+    <div class="hdr-title">QMICS EcoBot AI &nbsp;<span style="font-size:.7rem;color:var(--muted);font-weight:600">Environmental Intelligence Platform</span></div>
+    <div class="hdr-sub">Monitor Intelligently. Predict Risks. Protect the Environment.</div>
+  </div>
+  <div class="hdr-actions">
+    <span class="ai-pill"><i class="fas fa-circle"></i> AI Active</span>
+    <button class="hdr-btn" onclick="refreshAll()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <button class="hdr-btn primary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+  </div>
+</div>
+
+<!-- Refresh bar -->
+<div class="refresh-bar">
+  <span class="refresh-dot"></span>
+  <span>Live monitoring — last updated: <span id="last-updated">—</span></span>
+  <span style="margin-left:16px;color:var(--txt);font-weight:700" id="org-name-bar"></span>
+  <button class="ref-btn" onclick="refreshAll()"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+</div>
+
+<!-- Tab navigation -->
+<div class="tab-nav" id="tab-nav">
+  <div class="tnav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+    <i class="fas fa-th-large"></i> AI Dashboard
+    <span class="tnav-badge" id="badge-dashboard">6</span>
+  </div>
+  <div class="tnav-item" data-tab="copilot" onclick="switchTab('copilot')">
+    <i class="fas fa-comments"></i> AI Copilot
+  </div>
+  <div class="tnav-item" data-tab="monitoring" onclick="switchTab('monitoring')">
+    <i class="fas fa-chart-line"></i> Monitoring
+    <span class="tnav-badge" id="badge-mon">—</span>
+  </div>
+  <div class="tnav-item" data-tab="predictions" onclick="switchTab('predictions')">
+    <i class="fas fa-brain"></i> Predictions
+    <span class="tnav-badge warn" id="badge-pred">—</span>
+  </div>
+  <div class="tnav-item" data-tab="alerts" onclick="switchTab('alerts')">
+    <i class="fas fa-bell"></i> Alerts
+    <span class="tnav-badge danger" id="badge-alerts">—</span>
+  </div>
+  <div class="tnav-item" data-tab="insights" onclick="switchTab('insights')">
+    <i class="fas fa-lightbulb"></i> AI Insights
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD TAB ═══════════════════ -->
+<div class="tab-panel active" id="panel-dashboard">
+<div class="main">
+
+  <!-- Score widgets row -->
+  <div class="g4" style="margin-bottom:16px" id="score-widgets"></div>
+
+  <!-- Stat cards row -->
+  <div class="g4" style="margin-bottom:20px" id="stat-cards"></div>
+
+  <!-- Charts row -->
+  <div class="g2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="sec-hdr"><h2><i class="fas fa-chart-area" style="color:var(--p);margin-right:6px"></i>Environmental Parameter Trends</h2><div class="sec-divider"></div></div>
+      <div class="chart-wrap"><canvas id="chartTrends"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr"><h2><i class="fas fa-chart-pie" style="color:var(--p);margin-right:6px"></i>Monitoring Status Distribution</h2><div class="sec-divider"></div></div>
+      <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Recent alerts summary -->
+  <div class="card">
+    <div class="sec-hdr">
+      <h2><i class="fas fa-bell" style="color:var(--warn);margin-right:6px"></i>Recent Critical Alerts</h2>
+      <div class="sec-divider"></div>
+      <button class="hdr-btn" onclick="switchTab('alerts')">View All <i class="fas fa-arrow-right"></i></button>
+    </div>
+    <div id="dash-alerts-list"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════ COPILOT TAB ═══════════════════ -->
+<div class="tab-panel" id="panel-copilot">
+<div class="main" style="padding-top:16px">
+  <div class="copilot-wrap">
+    <!-- Sidebar quick actions -->
+    <div class="copilot-sidebar">
+      <div class="card-sm" style="margin-bottom:4px">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Quick Questions</div>
+        <div class="quick-btns" id="quick-btns"></div>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Conversation Topics</div>
+        <div id="conv-topics" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+    </div>
+    <!-- Chat area -->
+    <div class="copilot-main">
+      <div class="chat-hdr">
+        <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+        <div>
+          <div class="chat-title">EcoBot Environmental Copilot</div>
+          <div class="chat-status"><span class="online-dot"></span> AI Online — Environmental Intelligence Active</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-inp" id="chat-input" placeholder="Ask about monitoring results, compliance, regulations, corrective actions…" rows="1" onkeydown="window.ecobotKeyDown(event)"></textarea>
+        <button class="chat-send" onclick="window.sendCopilotMsg()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════ MONITORING TAB ═══════════════════ -->
+<div class="tab-panel" id="panel-monitoring">
+<div class="main">
+  <div class="sec-hdr">
+    <h2><i class="fas fa-chart-line" style="color:var(--p);margin-right:6px"></i>Intelligent Environmental Monitoring</h2>
+    <span class="sec-badge">AI-Classified</span>
+    <div class="sec-divider"></div>
+    <select id="mon-filter" onchange="window.filterMonitoring()" style="border:1px solid var(--bdr);border-radius:8px;padding:5px 10px;font-size:.78rem;background:#fff;cursor:pointer">
+      <option value="ALL">All Parameters</option>
+      <option value="NORMAL">Normal</option>
+      <option value="ATTENTION">Attention</option>
+      <option value="WARNING">Warning</option>
+      <option value="CRITICAL">Critical</option>
+      <option value="EMERGENCY">Emergency</option>
+    </select>
+  </div>
+  <div class="mon-table-wrap">
+    <table class="mon-table" id="mon-table">
+      <thead>
+        <tr>
+          <th>Parameter</th><th>Category</th><th>Current Value</th><th>Threshold</th><th>% of Limit</th><th>AI Status</th><th>Trend</th><th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody id="mon-tbody"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:20px">
+    <div class="sec-hdr"><h2><i class="fas fa-wifi" style="color:var(--p);margin-right:6px"></i>Sensor Health Status</h2><div class="sec-divider"></div></div>
+    <div class="g4" id="sensor-health"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════ PREDICTIONS TAB ═══════════════════ -->
+<div class="tab-panel" id="panel-predictions">
+<div class="main">
+  <div class="sec-hdr">
+    <h2><i class="fas fa-brain" style="color:var(--p);margin-right:6px"></i>Predictive Environmental Risk Analytics</h2>
+    <span class="sec-badge">ML-Powered</span>
+    <div class="sec-divider"></div>
+  </div>
+  <div style="margin-bottom:20px">
+    <div class="g3" id="pred-summary-cards"></div>
+  </div>
+  <div class="sec-hdr"><h2>Active Risk Predictions</h2><div class="sec-divider"></div></div>
+  <div class="g3" id="pred-list"></div>
+  <div style="margin-top:24px">
+    <div class="sec-hdr"><h2><i class="fas fa-history" style="color:var(--muted);margin-right:6px"></i>Prediction vs Actual History</h2><div class="sec-divider"></div></div>
+    <div class="card">
+      <div class="chart-wrap"><canvas id="chartPrediction"></canvas></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════ ALERTS TAB ═══════════════════ -->
+<div class="tab-panel" id="panel-alerts">
+<div class="main">
+  <div class="sec-hdr">
+    <h2><i class="fas fa-bell" style="color:var(--p);margin-right:6px"></i>Intelligent AI Alert &amp; Early Warning System</h2>
+    <span class="sec-badge">Real-time</span>
+    <div class="sec-divider"></div>
+    <select id="alert-filter" onchange="window.filterAlerts()" style="border:1px solid var(--bdr);border-radius:8px;padding:5px 10px;font-size:.78rem;background:#fff;cursor:pointer">
+      <option value="ALL">All Alerts</option>
+      <option value="CRITICAL">Critical</option>
+      <option value="HIGH">High</option>
+      <option value="MEDIUM">Medium</option>
+      <option value="LOW">Low</option>
+      <option value="UNREAD">Unread</option>
+    </select>
+    <button class="hdr-btn" onclick="window.ackAllAlerts()" style="margin-left:4px"><i class="fas fa-check-double"></i> Ack All</button>
+  </div>
+  <div id="alerts-list"></div>
+</div>
+</div>
+
+<!-- ═══════════════════ INSIGHTS TAB ═══════════════════ -->
+<div class="tab-panel" id="panel-insights">
+<div class="main">
+  <div class="health-banner" id="health-banner">
+    <div>
+      <div class="hb-score" id="hb-score">—</div>
+      <div class="hb-grade" id="hb-grade">—</div>
+    </div>
+    <div class="hb-divider"></div>
+    <div class="hb-detail">
+      <div class="hb-title">Daily Environmental Health Summary</div>
+      <div class="hb-sub" id="hb-summary">Analyzing environmental data…</div>
+      <div class="hb-chips" id="hb-chips"></div>
+    </div>
+    <div style="margin-left:auto;text-align:center">
+      <div style="font-size:.72rem;opacity:.7;margin-bottom:4px">Auto-refreshes with data</div>
+      <button class="hdr-btn" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff" onclick="buildInsightsPanel()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+  </div>
+
+  <div class="insights-grid">
+    <div>
+      <div class="sec-hdr"><h2><i class="fas fa-sun" style="color:var(--warn);margin-right:6px"></i>Today's AI Summary</h2><div class="sec-divider"></div></div>
+      <div class="card" id="todays-summary" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-exclamation-circle" style="color:var(--danger);margin-right:6px"></i>Critical Observations</h2><div class="sec-divider"></div></div>
+      <div class="card" id="critical-obs" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-chart-line" style="color:var(--med);margin-right:6px"></i>Trending Issues</h2><div class="sec-divider"></div></div>
+      <div class="card" id="trending-issues" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-tasks" style="color:var(--acc);margin-right:6px"></i>Recommended Actions</h2><div class="sec-divider"></div></div>
+      <div class="card" id="recommended-actions"></div>
+    </div>
+    <div>
+      <div class="sec-hdr"><h2><i class="fas fa-star" style="color:var(--p);margin-right:6px"></i>Environmental Highlights</h2><div class="sec-divider"></div></div>
+      <div class="card" id="env-highlights" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-shield-alt" style="color:var(--med);margin-right:6px"></i>Compliance Warnings</h2><div class="sec-divider"></div></div>
+      <div class="card" id="compliance-warnings" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-tools" style="color:var(--warn);margin-right:6px"></i>Calibration Reminders</h2><div class="sec-divider"></div></div>
+      <div class="card" id="calibration-reminders" style="margin-bottom:16px"></div>
+
+      <div class="sec-hdr"><h2><i class="fas fa-triangle-exclamation" style="color:var(--danger);margin-right:6px"></i>Potential Risks</h2><div class="sec-divider"></div></div>
+      <div class="card" id="potential-risks"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ══════════════════════════════════════
+   DATA LAYER — reads from localStorage
+══════════════════════════════════════ */
+function getOrgId(){
+  return (new URLSearchParams(window.location.search).get('orgId'))
+      || localStorage.getItem('eco_org_id')
+      || 'default';
+}
+
+function getPmData(){
+  var orgId = getOrgId();
+  var raw = localStorage.getItem('pmContent_' + orgId);
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return {};
+}
+
+function getMonRecords(){
+  var orgId = getOrgId();
+  var raw = localStorage.getItem('eia_mon_' + orgId);
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return [];
+}
+
+function getProfile(){
+  var orgId = getOrgId();
+  var raw = localStorage.getItem('ecoDashProfile_' + orgId)
+         || localStorage.getItem('ecoCorpProfile');
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return {};
+}
+
+/* ══════════════════════════════════════
+   SYNTHETIC MONITORING DATA (demo)
+   Merges real localStorage data where available
+══════════════════════════════════════ */
+var PARAMS = [];
+var ALERTS_DATA = [];
+var PREDICTIONS_DATA = [];
+
+function buildParamsFromStorage(){
+  var pm = getPmData();
+  var params = [];
+
+  /* Air */
+  params.push({cat:'Air Quality',param:'PM2.5',unit:'μg/m³',val:parseFloat((pm.pm25)||48),limit:60,trend:'up'});
+  params.push({cat:'Air Quality',param:'PM10',unit:'μg/m³',val:parseFloat((pm.pm10)||82),limit:100,trend:'stable'});
+  params.push({cat:'Air Quality',param:'CO₂',unit:'ppm',val:parseFloat((pm.co2)||720),limit:1000,trend:'down'});
+  params.push({cat:'Air Quality',param:'NOₓ',unit:'μg/m³',val:parseFloat((pm.nox)||28),limit:40,trend:'stable'});
+  /* Water */
+  params.push({cat:'Water Quality',param:'pH',unit:'',val:parseFloat((pm.ph)||7.2),limit:8.5,limitLow:6.5,trend:'stable'});
+  params.push({cat:'Water Quality',param:'TDS',unit:'mg/L',val:parseFloat((pm.tds)||420),limit:600,trend:'up'});
+  params.push({cat:'Water Quality',param:'BOD',unit:'mg/L',val:parseFloat((pm.bod)||18),limit:30,trend:'down'});
+  params.push({cat:'Water Quality',param:'DO',unit:'mg/L',val:parseFloat((pm.dissolved_oxygen)||6.4),limitLow:4,trend:'stable'});
+  /* Noise */
+  params.push({cat:'Noise',param:'Day Noise',unit:'dB(A)',val:parseFloat((pm.noise_day)||71),limit:75,trend:'up'});
+  params.push({cat:'Noise',param:'Night Noise',unit:'dB(A)',val:parseFloat((pm.noise_night)||64),limit:70,trend:'stable'});
+  /* Temperature */
+  params.push({cat:'Temperature',param:'Ambient Temp',unit:'°C',val:parseFloat((pm.ambient_temp)||28),limit:45,trend:'stable'});
+  params.push({cat:'Temperature',param:'Effluent Temp',unit:'°C',val:parseFloat((pm.effluent_temp)||31),limit:35,trend:'up'});
+  /* Humidity */
+  params.push({cat:'Humidity',param:'Relative Humidity',unit:'%',val:parseFloat((pm.humidity)||62),limit:80,trend:'stable'});
+  /* Energy */
+  params.push({cat:'Energy',param:'Power Consumption',unit:'kWh',val:parseFloat((pm.energy_kwh)||1840),limit:2500,trend:'down'});
+  /* Particulates */
+  params.push({cat:'Particulates',param:'Stack PM',unit:'mg/Nm³',val:parseFloat((pm.stack_pm)||95),limit:150,trend:'stable'});
+  /* Wastewater */
+  params.push({cat:'Wastewater',param:'COD',unit:'mg/L',val:parseFloat((pm.cod)||68),limit:100,trend:'up'});
+
+  return params;
+}
+
+function classifyParam(p){
+  var pct;
+  if(p.limitLow && !p.limit){
+    pct = p.val >= p.limitLow ? 0 : (p.limitLow - p.val) / p.limitLow * 100;
+  } else {
+    pct = p.limit ? (p.val / p.limit) * 100 : 50;
+  }
+  if(pct >= 100) return 'EMERGENCY';
+  if(pct >= 90) return 'CRITICAL';
+  if(pct >= 75) return 'WARNING';
+  if(pct >= 55) return 'ATTENTION';
+  return 'NORMAL';
+}
+
+function buildAlerts(){
+  var list = [];
+  var params = PARAMS;
+  var now = new Date();
+  for(var i = 0; i < params.length; i++){
+    var p = params[i];
+    var status = classifyParam(p);
+    if(status === 'NORMAL') continue;
+    var sev = status === 'EMERGENCY' ? 'CRITICAL'
+            : status === 'CRITICAL' ? 'CRITICAL'
+            : status === 'WARNING' ? 'HIGH'
+            : 'MEDIUM';
+    var mins = Math.floor(Math.random() * 120);
+    var t = new Date(now.getTime() - mins * 60000);
+    var timeStr = t.getHours() + ':' + (t.getMinutes()<10?'0':'') + t.getMinutes();
+    list.push({
+      id: 'ALT' + i,
+      severity: sev,
+      title: p.param + ' ' + status.toLowerCase().replace('_',' ') + ' detected',
+      detail: p.param + ' reading of ' + p.val + ' ' + p.unit + (p.limit?' (limit: '+p.limit+' '+p.unit+')':'') + '. AI analysis indicates ' + (sev==='CRITICAL'?'immediate':'prompt') + ' corrective action required.',
+      area: p.cat + ' Monitoring Zone',
+      dept: 'Environmental Health & Safety',
+      rootCause: sev==='CRITICAL' ? 'Possible equipment malfunction or process excursion' : 'Gradual parameter drift detected',
+      impact: sev==='CRITICAL' ? 'High — compliance risk' : 'Medium — monitor closely',
+      action: 'Inspect ' + p.param + ' monitoring equipment, verify calibration, check process parameters',
+      time: timeStr,
+      unread: true,
+      acked: false
+    });
+  }
+  /* Static calibration alert */
+  list.push({
+    id:'ALT_CAL',severity:'MEDIUM',
+    title:'Sensor Calibration Due — Air Quality Station A3',
+    detail:'Scheduled calibration for PM2.5 and NOₓ sensors overdue by 3 days. Readings may have reduced accuracy.',
+    area:'Air Quality Monitoring',dept:'Instrumentation & Control',
+    rootCause:'Scheduled maintenance not completed on time',
+    impact:'Low — accuracy degradation only',
+    action:'Schedule calibration within 48 hours with certified calibration engineer',
+    time:'08:14',unread:true,acked:false
+  });
+  list.push({
+    id:'ALT_INT',severity:'LOW',
+    title:'Monitoring Gap Detected — Water Station W2',
+    detail:'No data received from Water Station W2 for 4 hours. Station may have connectivity issues.',
+    area:'Water Quality Monitoring',dept:'IT & Instrumentation',
+    rootCause:'Network connectivity issue or sensor offline',
+    impact:'Low — gap in monitoring coverage',
+    action:'Check sensor connectivity, inspect power supply, verify data transmission',
+    time:'06:30',unread:false,acked:false
+  });
+  return list;
+}
+
+function buildPredictions(){
+  return [
+    {
+      id:'P1',level:'HIGH',title:'PM10 Excursion Risk — Next 48 Hours',
+      desc:'AI model predicts 78% probability of PM10 exceedance based on seasonal dust patterns, wind velocity trends, and current trajectory.',
+      prob:78,timeframe:'Within 48 hours',confidence:84,
+      action:'Increase watering frequency around boundary, deploy additional dust suppression measures, alert operations team.'
+    },
+    {
+      id:'P2',level:'MEDIUM',title:'Effluent Temperature Rise — ETP',
+      desc:'Cooling efficiency trending down 2.3% per week. Predicted to breach 35°C threshold within 10-14 days if no corrective action.',
+      prob:61,timeframe:'10-14 days',confidence:77,
+      action:'Inspect cooling tower efficiency, check heat exchanger fouling, verify coolant flow rate.'
+    },
+    {
+      id:'P3',level:'HIGH',title:'Noise Boundary Breach — Night Period',
+      desc:'Night noise at Boundary Point 3 shows upward trend. 72% probability of exceeding 70 dB(A) limit in next 3 operational nights.',
+      prob:72,timeframe:'3 nights',confidence:80,
+      action:'Audit night-shift operations, inspect vibration isolators, implement schedule controls for noisy equipment.'
+    },
+    {
+      id:'P4',level:'MEDIUM',title:'Sensor Failure — Water Station W1',
+      desc:'pH sensor W1 showing irregular calibration drift patterns consistent with electrode fouling. Estimated 85% likelihood of failure within 21 days.',
+      prob:55,timeframe:'21 days',confidence:85,
+      action:'Schedule preventive sensor replacement within 2 weeks during routine maintenance window.'
+    },
+    {
+      id:'P5',level:'LOW',title:'Compliance Score Degradation Risk',
+      desc:'Current parameter trend analysis suggests overall compliance score may drop below 85% threshold by end of quarter if trends continue.',
+      prob:38,timeframe:'End of quarter',confidence:71,
+      action:'Review corrective action plans for all WARNING parameters; prioritize PM2.5 and noise controls.'
+    },
+    {
+      id:'P6',level:'MEDIUM',title:'HVAC Efficiency Degradation',
+      desc:'Energy consumption in HVAC zone increasing 1.8% per week. Predicted to impact indoor air quality parameters within 4 weeks.',
+      prob:58,timeframe:'4 weeks',confidence:74,
+      action:'Schedule HVAC filter inspection and cleaning, verify duct integrity, check refrigerant levels.'
+    }
+  ];
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+function init(){
+  var profile = getProfile();
+  var nameEl = document.getElementById('org-name-bar');
+  if(nameEl && profile.org_name) nameEl.textContent = profile.org_name;
+
+  PARAMS = buildParamsFromStorage();
+  ALERTS_DATA = buildAlerts();
+  PREDICTIONS_DATA = buildPredictions();
+
+  updateTimestamp();
+  buildDashboard();
+  buildCopilot();
+  buildMonitoring();
+  buildPredictionsTab();
+  buildAlertsTab();
+  buildInsightsPanel();
+  updateBadges();
+}
+
+function updateTimestamp(){
+  var now = new Date();
+  var el = document.getElementById('last-updated');
+  if(el){
+    el.textContent = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+}
+
+/* ══════════════════════════════════════
+   BADGES
+══════════════════════════════════════ */
+function updateBadges(){
+  var monCrit = PARAMS.filter(function(p){
+    var s = classifyParam(p);
+    return s === 'CRITICAL' || s === 'EMERGENCY' || s === 'WARNING';
+  }).length;
+  var predHigh = PREDICTIONS_DATA.filter(function(p){return p.level==='HIGH'||p.level==='CRITICAL';}).length;
+  var alertsUnread = ALERTS_DATA.filter(function(a){return a.unread && !a.acked;}).length;
+
+  var bm = document.getElementById('badge-mon');
+  var bp = document.getElementById('badge-pred');
+  var ba = document.getElementById('badge-alerts');
+  if(bm) bm.textContent = monCrit || '—';
+  if(bp) bp.textContent = predHigh || '—';
+  if(ba) ba.textContent = alertsUnread || '—';
+}
+
+/* ══════════════════════════════════════
+   TAB SWITCH
+══════════════════════════════════════ */
+window.switchTab = function(tab){
+  var items = document.querySelectorAll('.tnav-item');
+  for(var i=0;i<items.length;i++){
+    items[i].classList.remove('active');
+    if(items[i].dataset.tab === tab) items[i].classList.add('active');
+  }
+  var panels = document.querySelectorAll('.tab-panel');
+  for(var j=0;j<panels.length;j++){
+    panels[j].classList.remove('active');
+  }
+  var target = document.getElementById('panel-' + tab);
+  if(target) target.classList.add('active');
+};
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+function calcOverallHealth(){
+  var total = PARAMS.length;
+  var ok = PARAMS.filter(function(p){return classifyParam(p)==='NORMAL';}).length;
+  return total ? Math.round((ok/total)*100) : 80;
+}
+
+function calcComplianceScore(){
+  var total = PARAMS.filter(function(p){return p.limit;}).length;
+  var comp = PARAMS.filter(function(p){
+    if(!p.limit) return true;
+    var s = classifyParam(p);
+    return s === 'NORMAL' || s === 'ATTENTION';
+  }).length;
+  return total ? Math.round((comp/total)*100) : 85;
+}
+
+function buildScoreRing(score, color){
+  var r = 33;
+  var circ = 2 * Math.PI * r;
+  var offset = circ - (score/100)*circ;
+  return '<svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="' + r + '" stroke-width="7"/>'
+    + '<circle class="ring-val" cx="40" cy="40" r="' + r + '" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '" stroke="' + color + '" stroke-width="7"/></svg>';
+}
+
+function buildDashboard(){
+  var health = calcOverallHealth();
+  var compliance = calcComplianceScore();
+  var aiRisk = 100 - Math.round(PREDICTIONS_DATA.filter(function(p){return p.level==='HIGH';}).length * 12);
+  var sensorHealth = 88;
+
+  var scores = [
+    {label:'Environmental Health',sub:'Overall Score',score:health,color:'#0d9488',trend:'+3%',up:true},
+    {label:'Compliance Score',sub:'Regulatory Status',score:compliance,color:'#059669',trend:'+1%',up:true},
+    {label:'AI Risk Score',sub:'Predicted Risk',score:aiRisk,color:aiRisk<70?'#ef4444':'#d97706',trend:'-2%',up:false},
+    {label:'Sensor Health',sub:'Active Sensors',score:sensorHealth,color:'#2563eb',trend:'0%',up:true}
+  ];
+
+  var swHtml = '';
+  for(var i=0;i<scores.length;i++){
+    var s = scores[i];
+    swHtml += '<div class="score-widget">';
+    swHtml += '<div class="score-ring">' + buildScoreRing(s.score, s.color) + '<div class="score-num">' + s.score + '</div></div>';
+    swHtml += '<div class="score-label">' + s.label + '</div>';
+    swHtml += '<div class="score-sub">' + s.sub + '</div>';
+    swHtml += '<div class="score-trend ' + (s.up?'up':'down') + '"><i class="fas fa-arrow-' + (s.up?'up':'down') + '"></i> ' + s.trend + ' vs last week</div>';
+    swHtml += '</div>';
+  }
+  var swEl = document.getElementById('score-widgets');
+  if(swEl) swEl.innerHTML = swHtml;
+
+  /* Stat cards */
+  var critCount = PARAMS.filter(function(p){var s=classifyParam(p);return s==='CRITICAL'||s==='EMERGENCY';}).length;
+  var warnCount = PARAMS.filter(function(p){return classifyParam(p)==='WARNING';}).length;
+  var predCount = PREDICTIONS_DATA.length;
+  var alertCount = ALERTS_DATA.filter(function(a){return !a.acked;}).length;
+
+  var stats = [
+    {icon:'fas fa-satellite-dish',cls:'teal',val:PARAMS.length,label:'Active Monitors',change:'+2 this week',pos:true},
+    {icon:'fas fa-exclamation-triangle',cls:'red',val:critCount,label:'Critical Areas',change:critCount>0?'Needs attention':'All clear',pos:critCount===0},
+    {icon:'fas fa-chart-line',cls:'amber',val:predCount,label:'Predicted Risks',change:PREDICTIONS_DATA.filter(function(p){return p.level==='HIGH';}).length + ' high priority',pos:false},
+    {icon:'fas fa-bell',cls:'purple',val:alertCount,label:'Active Alerts',change:'Unacknowledged',pos:alertCount===0}
+  ];
+
+  var scHtml = '';
+  for(var j=0;j<stats.length;j++){
+    var st = stats[j];
+    scHtml += '<div class="stat-card">';
+    scHtml += '<div class="stat-icon ' + st.cls + '"><i class="' + st.icon + '"></i></div>';
+    scHtml += '<div><div class="stat-val">' + st.val + '</div>';
+    scHtml += '<div class="stat-label">' + st.label + '</div>';
+    scHtml += '<div class="stat-change ' + (st.pos?'pos':'neg') + '">' + st.change + '</div></div>';
+    scHtml += '</div>';
+  }
+  var scEl = document.getElementById('stat-cards');
+  if(scEl) scEl.innerHTML = scHtml;
+
+  /* Recent alerts for dashboard */
+  var dalEl = document.getElementById('dash-alerts-list');
+  if(dalEl){
+    var top = ALERTS_DATA.filter(function(a){return a.severity==='CRITICAL'||a.severity==='HIGH';}).slice(0,3);
+    if(!top.length){
+      dalEl.innerHTML = '<div class="empty"><i class="fas fa-check-circle" style="color:var(--acc)"></i><p>No critical alerts at this time</p></div>';
+    } else {
+      var dHtml = '';
+      for(var k=0;k<top.length;k++){
+        dHtml += renderAlertItem(top[k], true);
+      }
+      dalEl.innerHTML = dHtml;
+    }
+  }
+
+  buildDashCharts();
+}
+
+function buildDashCharts(){
+  /* Trends chart */
+  var tc = document.getElementById('chartTrends');
+  if(tc){
+    var ctx1 = tc.getContext('2d');
+    var labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    new Chart(ctx1,{
+      type:'line',
+      data:{
+        labels:labels,
+        datasets:[
+          {label:'PM2.5',data:[52,55,48,61,58,47,48],borderColor:'#0d9488',backgroundColor:'rgba(13,148,136,.08)',tension:.4,fill:true,pointRadius:3},
+          {label:'Noise dB',data:[68,70,71,73,72,69,71],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.06)',tension:.4,fill:false,pointRadius:3},
+          {label:'BOD',data:[22,19,21,18,20,17,18],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.06)',tension:.4,fill:false,pointRadius:3}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
+        scales:{
+          x:{ticks:{font:{size:10}},grid:{color:'#f1f5f9'}},
+          y:{ticks:{font:{size:10}},grid:{color:'#f1f5f9'}}
+        }
+      }
+    });
+  }
+
+  /* Status distribution chart */
+  var sc = document.getElementById('chartStatus');
+  if(sc){
+    var ctx2 = sc.getContext('2d');
+    var normal=0,att=0,warn=0,crit=0,emerg=0;
+    for(var i=0;i<PARAMS.length;i++){
+      var s = classifyParam(PARAMS[i]);
+      if(s==='NORMAL') normal++;
+      else if(s==='ATTENTION') att++;
+      else if(s==='WARNING') warn++;
+      else if(s==='CRITICAL') crit++;
+      else emerg++;
+    }
+    new Chart(ctx2,{
+      type:'doughnut',
+      data:{
+        labels:['Normal','Attention','Warning','Critical','Emergency'],
+        datasets:[{
+          data:[normal,att,warn,crit,emerg],
+          backgroundColor:['#059669','#2563eb','#d97706','#dc2626','#7c3aed'],
+          borderWidth:0,hoverOffset:4
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:8}}}
+      }
+    });
+  }
+}
+
+/* ══════════════════════════════════════
+   AI COPILOT
+══════════════════════════════════════ */
+var CHAT_HISTORY = [];
+
+var QUICK_QUESTIONS = [
+  {icon:'fas fa-thermometer-half',text:'Summarize today\'s monitoring status'},
+  {icon:'fas fa-exclamation-triangle',text:'What parameters are out of compliance?'},
+  {icon:'fas fa-chart-line',text:'Explain the PM2.5 trend this week'},
+  {icon:'fas fa-balance-scale',text:'What regulations apply to our noise levels?'},
+  {icon:'fas fa-tools',text:'Suggest corrective actions for current alerts'},
+  {icon:'fas fa-file-alt',text:'Generate a professional monitoring summary'},
+  {icon:'fas fa-brain',text:'What risks are predicted for next 30 days?'},
+  {icon:'fas fa-shield-alt',text:'How can we improve our compliance score?'}
+];
+
+var CONV_TOPICS = [
+  {icon:'fas fa-wind',text:'Air Quality'},
+  {icon:'fas fa-tint',text:'Water Quality'},
+  {icon:'fas fa-volume-up',text:'Noise Levels'},
+  {icon:'fas fa-leaf',text:'Compliance'},
+  {icon:'fas fa-bolt',text:'Energy'},
+  {icon:'fas fa-recycle',text:'Waste Management'}
+];
+
+var BOT_RESPONSES = {
+  'summary': 'Based on current monitoring data, your environmental health score is {health}/100. {normal} of {total} parameters are within normal limits. Key areas requiring attention: {issues}. Overall compliance status is {comp}.',
+  'pm2.5': 'Current PM2.5 reading is 48 μg/m³ against the permissible limit of 60 μg/m³ — this is 80% of the threshold and classified as ATTENTION. The 7-day trend shows a slight upward trajectory (+4 μg/m³). I recommend increasing dust suppression measures proactively before the dry season.',
+  'noise': 'Night noise at Boundary Point 3 is reading 71 dB(A) against the CPCB limit of 70 dB(A). This is a minor exceedance. Regulatory reference: Environment (Protection) Rules, 1986, Schedule VI. Recommended actions: (1) audit night-shift machinery, (2) inspect acoustic barriers, (3) implement noise management plan per IS 3026.',
+  'compliance': 'Current compliance score is {comp}%. Parameters in violation: {violations}. Priority corrective actions: {actions}. Suggest filing a proactive voluntary disclosure if violations persist beyond 72 hours.',
+  'predict': 'Based on ML analysis of 90-day trends: (1) PM10 exceedance risk 78% within 48h, (2) Effluent temperature breach likely in 10-14 days, (3) Night noise exceedance probability 72% in next 3 nights. Recommended: prioritize PM and noise controls immediately.',
+  'default': 'I\'ve analyzed the current environmental monitoring data. Here are my key observations: {normal} parameters are within normal range, {issues} require attention. Based on current trends, I recommend reviewing the highlighted parameters and implementing the suggested corrective actions in the Alerts section.'
+};
+
+function buildCopilot(){
+  var qbEl = document.getElementById('quick-btns');
+  if(qbEl){
+    var html = '';
+    for(var i=0;i<QUICK_QUESTIONS.length;i++){
+      var q = QUICK_QUESTIONS[i];
+      html += '<button class="quick-btn" onclick="window.askCopilot(\'' + q.text.replace(/'/g,"\\'") + '\')">'
+            + '<i class="' + q.icon + '"></i>' + q.text + '</button>';
+    }
+    qbEl.innerHTML = html;
+  }
+
+  var ctEl = document.getElementById('conv-topics');
+  if(ctEl){
+    var html2 = '';
+    for(var j=0;j<CONV_TOPICS.length;j++){
+      var t = CONV_TOPICS[j];
+      html2 += '<button class="quick-btn" onclick="window.askCopilot(\'Tell me about ' + t.text + ' monitoring\')"><i class="' + t.icon + '"></i>' + t.text + '</button>';
+    }
+    ctEl.innerHTML = html2;
+  }
+
+  /* Welcome message */
+  appendBotMsg('Hello! I\'m your QMICS EcoBot AI Environmental Copilot. I have full visibility into your real-time monitoring data, compliance status, and predicted risks.\n\nI can help you:\n• Understand monitoring results and deviations\n• Explain applicable environmental regulations\n• Suggest corrective actions for exceedances\n• Generate professional environmental summaries\n• Answer any environmental management questions\n\nHow can I assist you today?');
+}
+
+function appendBotMsg(text){
+  var msgEl = document.getElementById('chat-messages');
+  if(!msgEl) return;
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = '<div class="msg-avatar"><i class="fas fa-robot"></i></div>'
+    + '<div class="msg-bubble">' + text.replace(/\n/g,'<br>') + '</div>';
+  msgEl.appendChild(div);
+  msgEl.scrollTop = msgEl.scrollHeight;
+}
+
+function appendUserMsg(text){
+  var msgEl = document.getElementById('chat-messages');
+  if(!msgEl) return;
+  var div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = '<div class="msg-avatar"><i class="fas fa-user"></i></div>'
+    + '<div class="msg-bubble">' + escHtml(text) + '</div>';
+  msgEl.appendChild(div);
+  msgEl.scrollTop = msgEl.scrollHeight;
+}
+
+function showTyping(){
+  var msgEl = document.getElementById('chat-messages');
+  if(!msgEl) return null;
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="msg-avatar"><i class="fas fa-robot"></i></div>'
+    + '<div class="msg-bubble"><div class="typing-indicator">'
+    + '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>'
+    + '</div></div>';
+  msgEl.appendChild(div);
+  msgEl.scrollTop = msgEl.scrollHeight;
+  return div;
+}
+
+function removeTyping(){
+  var t = document.getElementById('typing-indicator');
+  if(t) t.remove();
+}
+
+function generateResponse(question){
+  var q = question.toLowerCase();
+  var health = calcOverallHealth();
+  var comp = calcComplianceScore();
+  var critParams = PARAMS.filter(function(p){var s=classifyParam(p);return s==='CRITICAL'||s==='EMERGENCY'||s==='WARNING';});
+  var normal = PARAMS.length - critParams.length;
+  var issues = critParams.length ? critParams.map(function(p){return p.param;}).join(', ') : 'none';
+  var violations = critParams.length ? critParams.length + ' parameter(s)' : 'none currently';
+
+  if(q.indexOf('summar') >= 0 || q.indexOf('status') >= 0 || q.indexOf('today') >= 0){
+    return BOT_RESPONSES.summary
+      .replace('{health}',health).replace('{normal}',normal).replace('{total}',PARAMS.length)
+      .replace('{issues}',issues||'none').replace('{comp}',comp+'%');
+  }
+  if(q.indexOf('pm2.5') >= 0 || q.indexOf('particulate') >= 0 || q.indexOf('pm') >= 0){
+    return BOT_RESPONSES['pm2.5'];
+  }
+  if(q.indexOf('noise') >= 0 || q.indexOf('sound') >= 0 || q.indexOf('decibel') >= 0 || q.indexOf('db') >= 0){
+    return BOT_RESPONSES.noise;
+  }
+  if(q.indexOf('compliance') >= 0 || q.indexOf('regulat') >= 0 || q.indexOf('violation') >= 0){
+    return BOT_RESPONSES.compliance
+      .replace('{comp}',comp).replace('{violations}',violations)
+      .replace('{actions}','review PM controls, noise barriers, and ETP performance');
+  }
+  if(q.indexOf('predict') >= 0 || q.indexOf('risk') >= 0 || q.indexOf('forecast') >= 0){
+    return BOT_RESPONSES.predict;
+  }
+  if(q.indexOf('corrective') >= 0 || q.indexOf('action') >= 0 || q.indexOf('fix') >= 0){
+    return 'Recommended corrective actions based on current AI analysis:\n\n1. IMMEDIATE — Install additional dust suppression sprinklers at northern boundary (PM2.5 trending up)\n2. URGENT — Inspect and repair acoustic barriers at Boundary Point 3 (night noise exceedance)\n3. SCHEDULED — Clean ETP cooling tower; check heat exchanger fouling (effluent temp rising)\n4. PLANNED — Calibrate Water Station W1 pH sensor within 14 days (sensor drift detected)\n5. LONG-TERM — Evaluate renewable energy options to reduce Scope 2 emissions\n\nShall I generate a formal Corrective Action Report (CAR) for any of these?';
+  }
+  if(q.indexOf('water') >= 0 || q.indexOf('ph') >= 0 || q.indexOf('bod') >= 0){
+    return 'Water quality parameters are currently within acceptable ranges. pH: 7.2 (limit 6.5-8.5), BOD: 18 mg/L (limit 30), TDS: 420 mg/L (limit 600). Water Station W2 has a monitoring gap of 4 hours — recommend checking connectivity. Per CPCB Effluent Standards, your current values are compliant.';
+  }
+  if(q.indexOf('energy') >= 0 || q.indexOf('power') >= 0 || q.indexOf('kwh') >= 0){
+    return 'Current energy consumption is 1,840 kWh — 73.6% of the 2,500 kWh monitoring threshold. This represents a 3.2% reduction from last week, showing positive trend. Estimated Scope 2 emissions: 1.51 tCO₂e today. AI recommendation: shift high-consumption processes to off-peak hours to further reduce both cost and carbon intensity.';
+  }
+  if(q.indexOf('air') >= 0){
+    return 'Air quality analysis:\n• PM2.5: 48 μg/m³ (ATTENTION — 80% of limit)\n• PM10: 82 μg/m³ (ATTENTION — 82% of limit)\n• CO₂: 720 ppm (NORMAL — 72% of limit)\n• NOₓ: 28 μg/m³ (NORMAL — 70% of limit)\n\nAll parameters are currently below exceedance thresholds. Seasonal weather patterns may cause PM levels to rise. AI predicts 78% probability of PM10 exceedance in the next 48 hours.';
+  }
+  return BOT_RESPONSES.default
+    .replace('{normal}',normal).replace('{issues}',issues||'no parameters');
+}
+
+window.askCopilot = function(question){
+  switchTab('copilot');
+  setTimeout(function(){
+    var inp = document.getElementById('chat-input');
+    if(inp) inp.value = question;
+    window.sendCopilotMsg();
+  }, 100);
+};
+
+window.sendCopilotMsg = function(){
+  var inp = document.getElementById('chat-input');
+  if(!inp) return;
+  var text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  appendUserMsg(text);
+  var typingEl = showTyping();
+  setTimeout(function(){
+    removeTyping();
+    var resp = generateResponse(text);
+    appendBotMsg(resp);
+  }, 900 + Math.random() * 600);
+};
+
+window.ecobotKeyDown = function(e){
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    window.sendCopilotMsg();
+  }
+};
+
+/* ══════════════════════════════════════
+   MONITORING TABLE
+══════════════════════════════════════ */
+function trendIcon(t){
+  if(t==='up') return '<i class="fas fa-arrow-trend-up" style="color:var(--warn)"></i>';
+  if(t==='down') return '<i class="fas fa-arrow-trend-down" style="color:var(--acc)"></i>';
+  return '<i class="fas fa-minus" style="color:var(--muted)"></i>';
+}
+
+function buildMonRow(p){
+  var status = classifyParam(p);
+  var pct;
+  if(p.limitLow && !p.limit) pct = 0;
+  else pct = p.limit ? Math.min(100, Math.round((p.val/p.limit)*100)) : 50;
+  var fillColor = pct>=90?'#dc2626':pct>=75?'#d97706':pct>=55?'#2563eb':'#059669';
+  var valClass = pct>=90?'bad':pct>=75?'warn':'ok';
+  var limitStr = p.limitLow ? (p.limitLow+' – '+(p.limit||'∞')) : (p.limit?('≤'+p.limit):'—');
+
+  return '<tr data-status="' + status + '">'
+    + '<td><div class="param-name">' + escHtml(p.param) + '</div></td>'
+    + '<td><span class="param-cat">' + escHtml(p.cat) + '</span></td>'
+    + '<td class="val-cell ' + valClass + '">' + p.val + ' ' + escHtml(p.unit) + '</td>'
+    + '<td style="color:var(--muted);font-size:.78rem">' + limitStr + ' ' + escHtml(p.unit) + '</td>'
+    + '<td><span class="threshold-bar"><span class="threshold-fill" style="width:' + pct + '%;background:' + fillColor + '"></span></span> <span style="font-size:.75rem;color:var(--muted)">' + pct + '%</span></td>'
+    + '<td><span class="badge ' + status + '">' + status + '</span></td>'
+    + '<td>' + trendIcon(p.trend) + '</td>'
+    + '<td style="font-size:.72rem;color:var(--muted)">Just now</td>'
+    + '</tr>';
+}
+
+function buildMonitoring(){
+  var tbody = document.getElementById('mon-tbody');
+  if(!tbody) return;
+  var html = '';
+  for(var i=0;i<PARAMS.length;i++) html += buildMonRow(PARAMS[i]);
+  tbody.innerHTML = html;
+
+  /* Sensor health cards */
+  var sensors = [
+    {name:'Air Quality Station A1',loc:'North Boundary',status:'ONLINE',last:'2 min ago'},
+    {name:'Air Quality Station A2',loc:'South Gate',status:'ONLINE',last:'1 min ago'},
+    {name:'Air Quality Station A3',loc:'East Block',status:'CALIBRATION_DUE',last:'5 min ago'},
+    {name:'Water Station W1',loc:'ETP Outlet',status:'ONLINE',last:'3 min ago'},
+    {name:'Water Station W2',loc:'Groundwater Well',status:'OFFLINE',last:'4 hr ago'},
+    {name:'Noise Monitor N1',loc:'Boundary Point 1',status:'ONLINE',last:'1 min ago'},
+    {name:'Noise Monitor N3',loc:'Boundary Point 3',status:'ONLINE',last:'2 min ago'},
+    {name:'Energy Meter E1',loc:'Main Panel',status:'ONLINE',last:'1 min ago'}
+  ];
+  var shEl = document.getElementById('sensor-health');
+  if(shEl){
+    var shHtml = '';
+    for(var j=0;j<sensors.length;j++){
+      var s = sensors[j];
+      var ic = s.status==='ONLINE'?'var(--acc)':s.status==='OFFLINE'?'var(--danger)':'var(--warn)';
+      var dot = '<span style="width:8px;height:8px;border-radius:50%;background:'+ic+';display:inline-block;margin-right:5px"></span>';
+      shHtml += '<div class="card-sm">'
+        + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+        + '<div style="width:30px;height:30px;border-radius:8px;background:rgba(13,148,136,.1);display:flex;align-items:center;justify-content:center;color:var(--p);font-size:.75rem"><i class="fas fa-wifi"></i></div>'
+        + '<div style="flex:1"><div style="font-size:.78rem;font-weight:700">' + escHtml(s.name) + '</div>'
+        + '<div style="font-size:.68rem;color:var(--muted)">' + escHtml(s.loc) + '</div></div></div>'
+        + '<div style="font-size:.72rem">' + dot + '<b>' + s.status.replace(/_/g,' ') + '</b></div>'
+        + '<div style="font-size:.68rem;color:var(--muted);margin-top:3px">Last data: ' + s.last + '</div>'
+        + '</div>';
+    }
+    shEl.innerHTML = shHtml;
+  }
+}
+
+window.filterMonitoring = function(){
+  var val = document.getElementById('mon-filter').value;
+  var rows = document.querySelectorAll('#mon-tbody tr');
+  for(var i=0;i<rows.length;i++){
+    if(val === 'ALL' || rows[i].dataset.status === val){
+      rows[i].style.display = '';
+    } else {
+      rows[i].style.display = 'none';
+    }
+  }
+};
+
+/* ══════════════════════════════════════
+   PREDICTIONS
+══════════════════════════════════════ */
+function buildPredictionsTab(){
+  /* Summary cards */
+  var high = PREDICTIONS_DATA.filter(function(p){return p.level==='HIGH';}).length;
+  var med = PREDICTIONS_DATA.filter(function(p){return p.level==='MEDIUM';}).length;
+  var low2 = PREDICTIONS_DATA.filter(function(p){return p.level==='LOW';}).length;
+
+  var summCards = [
+    {icon:'fas fa-exclamation-triangle',cls:'red',val:high,label:'High Risk Predictions',sub:'Require immediate attention'},
+    {icon:'fas fa-exclamation-circle',cls:'amber',val:med,label:'Medium Risk Predictions',sub:'Monitor closely'},
+    {icon:'fas fa-info-circle',cls:'green',val:low2,label:'Low Risk Predictions',sub:'No immediate action'}
+  ];
+
+  var pscEl = document.getElementById('pred-summary-cards');
+  if(pscEl){
+    var html = '';
+    for(var i=0;i<summCards.length;i++){
+      var sc2 = summCards[i];
+      html += '<div class="stat-card">'
+        + '<div class="stat-icon ' + sc2.cls + '"><i class="' + sc2.icon + '"></i></div>'
+        + '<div><div class="stat-val">' + sc2.val + '</div>'
+        + '<div class="stat-label">' + sc2.label + '</div>'
+        + '<div style="font-size:.68rem;color:var(--muted);margin-top:2px">' + sc2.sub + '</div></div>'
+        + '</div>';
+    }
+    pscEl.innerHTML = html;
+  }
+
+  /* Prediction cards */
+  var plEl = document.getElementById('pred-list');
+  if(plEl){
+    var html2 = '';
+    for(var j=0;j<PREDICTIONS_DATA.length;j++){
+      var p = PREDICTIONS_DATA[j];
+      var probFill = p.prob;
+      html2 += '<div class="pred-card ' + p.level + '">'
+        + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">'
+        + '<div class="pred-title">' + escHtml(p.title) + '</div>'
+        + '<span class="badge ' + (p.level==='HIGH'?'CRITICAL':p.level==='MEDIUM'?'WARNING':'NORMAL') + '">' + p.level + '</span>'
+        + '</div>'
+        + '<div class="pred-desc">' + escHtml(p.desc) + '</div>'
+        + '<div class="pred-meta">'
+        + '<div class="pred-prob"><span>Probability:</span><div class="prob-bar"><div class="prob-fill ' + p.level + '" style="width:' + probFill + '%"></div></div><b>' + p.prob + '%</b></div>'
+        + '<span class="conf-score"><i class="fas fa-brain"></i> ' + p.confidence + '% confidence</span>'
+        + '</div>'
+        + '<div class="pred-timeframe"><i class="fas fa-clock"></i> ' + escHtml(p.timeframe) + '</div>'
+        + '<div class="pred-action" style="margin-top:10px"><i class="fas fa-lightbulb"></i><span>' + escHtml(p.action) + '</span></div>'
+        + '</div>';
+    }
+    plEl.innerHTML = html2;
+  }
+
+  /* Prediction vs actual chart */
+  var pvc = document.getElementById('chartPrediction');
+  if(pvc){
+    var ctx = pvc.getContext('2d');
+    new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6'],
+        datasets:[
+          {label:'Predicted Events',data:[3,5,4,6,4,5],backgroundColor:'rgba(13,148,136,.5)',borderColor:'#0d9488',borderWidth:1.5},
+          {label:'Actual Events',data:[2,5,3,5,4,0],backgroundColor:'rgba(217,119,6,.5)',borderColor:'#d97706',borderWidth:1.5}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
+        scales:{
+          x:{ticks:{font:{size:10}},grid:{color:'#f1f5f9'}},
+          y:{ticks:{font:{size:10},stepSize:1},grid:{color:'#f1f5f9'},beginAtZero:true}
+        }
+      }
+    });
+  }
+}
+
+/* ══════════════════════════════════════
+   ALERTS
+══════════════════════════════════════ */
+function sevIcon(sev){
+  if(sev==='CRITICAL') return 'fas fa-circle-xmark';
+  if(sev==='HIGH') return 'fas fa-exclamation-triangle';
+  if(sev==='MEDIUM') return 'fas fa-exclamation-circle';
+  if(sev==='LOW') return 'fas fa-info-circle';
+  return 'fas fa-bell';
+}
+
+function renderAlertItem(a, compact){
+  var icon = sevIcon(a.severity);
+  var html = '<div class="alert-item ' + (a.unread&&!a.acked?'unread ':'') + a.severity + '" id="alert-' + a.id + '">'
+    + '<div class="alert-sev ' + a.severity + '"><i class="' + icon + '"></i></div>'
+    + '<div class="alert-body">'
+    + '<div class="alert-title">' + escHtml(a.title) + '</div>'
+    + '<div class="alert-detail">' + escHtml(a.detail) + '</div>';
+
+  if(!compact){
+    html += '<div class="alert-chips">'
+      + '<span class="alert-chip"><i class="fas fa-map-marker-alt"></i>' + escHtml(a.area) + '</span>'
+      + '<span class="alert-chip"><i class="fas fa-users"></i>' + escHtml(a.dept) + '</span>'
+      + '<span class="alert-chip"><i class="fas fa-search"></i>' + escHtml(a.rootCause) + '</span>'
+      + '</div>';
+    html += '<span class="alert-impact"><i class="fas fa-bolt"></i> Impact: ' + escHtml(a.impact) + '</span>';
+    html += '<div style="font-size:.75rem;color:var(--txt);margin-top:6px"><i class="fas fa-check-square" style="color:var(--p)"></i> <b>Action:</b> ' + escHtml(a.action) + '</div>';
+  }
+
+  html += '<div class="alert-actions" style="margin-top:8px">';
+  if(!a.acked){
+    html += '<button class="alert-btn ack" onclick="window.ackAlert(\'' + a.id + '\')"><i class="fas fa-check"></i> Acknowledge</button>';
+  } else {
+    html += '<span style="font-size:.72rem;color:var(--acc);font-weight:700"><i class="fas fa-check-circle"></i> Acknowledged</span>';
+  }
+  html += '<button class="alert-btn" onclick="window.askCopilot(\'Explain the alert: ' + a.title.replace(/'/g,"\\'") + '\')"><i class="fas fa-robot"></i> Ask EcoBot</button>';
+  html += '</div></div>';
+  html += '<div class="alert-time">' + a.time + '<br><span class="badge ' + a.severity + '" style="margin-top:4px">' + a.severity + '</span></div>';
+  html += '</div>';
+  return html;
+}
+
+function buildAlertsTab(){
+  var el = document.getElementById('alerts-list');
+  if(!el) return;
+  var html = '';
+  for(var i=0;i<ALERTS_DATA.length;i++) html += renderAlertItem(ALERTS_DATA[i], false);
+  el.innerHTML = html || '<div class="empty"><i class="fas fa-bell-slash"></i><p>No alerts at this time</p></div>';
+}
+
+window.ackAlert = function(id){
+  for(var i=0;i<ALERTS_DATA.length;i++){
+    if(ALERTS_DATA[i].id === id){
+      ALERTS_DATA[i].acked = true;
+      ALERTS_DATA[i].unread = false;
+      break;
+    }
+  }
+  buildAlertsTab();
+  updateBadges();
+  showToast('Alert acknowledged','success');
+};
+
+window.ackAllAlerts = function(){
+  for(var i=0;i<ALERTS_DATA.length;i++){
+    ALERTS_DATA[i].acked = true;
+    ALERTS_DATA[i].unread = false;
+  }
+  buildAlertsTab();
+  updateBadges();
+  showToast('All alerts acknowledged','success');
+};
+
+window.filterAlerts = function(){
+  var val = document.getElementById('alert-filter').value;
+  var items = document.querySelectorAll('#alerts-list .alert-item');
+  for(var i=0;i<items.length;i++){
+    var show = false;
+    if(val==='ALL') show = true;
+    else if(val==='UNREAD') show = items[i].classList.contains('unread');
+    else show = items[i].classList.contains(val);
+    items[i].style.display = show ? '' : 'none';
+  }
+};
+
+/* ══════════════════════════════════════
+   AI INSIGHTS PANEL
+══════════════════════════════════════ */
+function buildInsightsPanel(){
+  var health = calcOverallHealth();
+  var comp = calcComplianceScore();
+  var critP = PARAMS.filter(function(p){var s=classifyParam(p);return s==='CRITICAL'||s==='EMERGENCY';});
+  var warnP = PARAMS.filter(function(p){return classifyParam(p)==='WARNING';});
+  var grade = health>=90?'A+':health>=80?'A':health>=70?'B+':health>=60?'B':'C';
+
+  /* Header banner */
+  var scoreEl = document.getElementById('hb-score');
+  var gradeEl = document.getElementById('hb-grade');
+  var summEl = document.getElementById('hb-summary');
+  var chipsEl = document.getElementById('hb-chips');
+  if(scoreEl) scoreEl.textContent = health;
+  if(gradeEl) gradeEl.textContent = 'Grade ' + grade;
+  if(summEl) summEl.textContent = comp + '% compliance · ' + critP.length + ' critical · ' + warnP.length + ' warnings · ' + PREDICTIONS_DATA.filter(function(p){return p.level==='HIGH';}).length + ' high-risk predictions active';
+  if(chipsEl){
+    var chips = ['Environmental Score: '+health+'/100','Compliance: '+comp+'%','Alerts: '+ALERTS_DATA.filter(function(a){return !a.acked;}).length+' active','Last Updated: Just now'];
+    var chipHtml = '';
+    for(var i=0;i<chips.length;i++) chipHtml += '<span class="hb-chip">' + chips[i] + '</span>';
+    chipsEl.innerHTML = chipHtml;
+  }
+
+  /* Today's Summary */
+  setCardContent('todays-summary', [
+    {icon:'fas fa-calendar-check',cls:'teal',title:'Daily Environmental Overview',body:'Monitoring across '+PARAMS.length+' parameters, '+calcOverallHealth()+'% within normal range. Compliance score '+comp+'%. Key focus areas: air quality boundary compliance and night noise levels.',tag:'Updated just now',tagCls:'info'},
+    {icon:'fas fa-chart-pie',cls:'blue',title:'Parameter Status Breakdown',body:PARAMS.filter(function(p){return classifyParam(p)==='NORMAL';}).length+' normal, '+PARAMS.filter(function(p){return classifyParam(p)==='ATTENTION';}).length+' attention, '+PARAMS.filter(function(p){return classifyParam(p)==='WARNING';}).length+' warning, '+critP.length+' critical out of '+PARAMS.length+' total active parameters.',tag:'Classified by AI',tagCls:'ok'}
+  ]);
+
+  /* Critical Observations */
+  var critObs = [];
+  for(var j=0;j<critP.length;j++){
+    critObs.push({icon:'fas fa-circle-xmark',cls:'red',title:critP[j].param+' — Critical Level',body:critP[j].param+' at '+critP[j].val+' '+critP[j].unit+'. Limit: '+critP[j].limit+' '+critP[j].unit+'. Immediate inspection recommended.',tag:'CRITICAL',tagCls:'crit'});
+  }
+  for(var k=0;k<warnP.length;k++){
+    critObs.push({icon:'fas fa-exclamation-triangle',cls:'amber',title:warnP[k].param+' — Warning Level',body:warnP[k].param+' trending towards limit. Current: '+warnP[k].val+' '+warnP[k].unit+' ('+Math.round((warnP[k].val/warnP[k].limit)*100)+'% of limit).',tag:'WARNING',tagCls:'warn'});
+  }
+  if(!critObs.length) critObs.push({icon:'fas fa-check-circle',cls:'green',title:'No Critical Observations',body:'All parameters currently within acceptable ranges. Continue routine monitoring.',tag:'ALL CLEAR',tagCls:'ok'});
+  setCardContent('critical-obs', critObs);
+
+  /* Trending Issues */
+  var trendingUp = PARAMS.filter(function(p){return p.trend==='up' && classifyParam(p)!=='NORMAL';});
+  var tItems = [];
+  for(var t=0;t<trendingUp.length;t++){
+    tItems.push({icon:'fas fa-arrow-trend-up',cls:'amber',title:trendingUp[t].param+' — Upward Trend',body:trendingUp[t].param+' values increasing over the monitoring period. Current: '+trendingUp[t].val+' '+trendingUp[t].unit+'. AI predicts potential exceedance if trend continues.',tag:'TRENDING',tagCls:'warn'});
+  }
+  if(!tItems.length) tItems.push({icon:'fas fa-minus-circle',cls:'blue',title:'No Adverse Trends Detected',body:'All parameters showing stable or improving trends over the 7-day monitoring window.',tag:'STABLE',tagCls:'ok'});
+  setCardContent('trending-issues', tItems);
+
+  /* Recommended Actions */
+  setCardContent('recommended-actions', [
+    {icon:'fas fa-1',cls:'red',title:'Priority 1 — Dust Suppression',body:'Increase sprinkler frequency at north and east boundaries. PM2.5 trending up; pre-emptive action prevents regulatory exceedance.',tag:'IMMEDIATE',tagCls:'crit'},
+    {icon:'fas fa-2',cls:'amber',title:'Priority 2 — Acoustic Barriers',body:'Inspect and repair noise barriers at Boundary Point 3. Night noise at 71 dB(A) exceeds 70 dB(A) CPCB limit.',tag:'URGENT',tagCls:'warn'},
+    {icon:'fas fa-3',cls:'blue',title:'Priority 3 — ETP Cooling',body:'Schedule ETP cooling tower cleaning and heat exchanger inspection within 7 days to prevent effluent temperature breach.',tag:'SCHEDULED',tagCls:'info'},
+    {icon:'fas fa-4',cls:'teal',title:'Priority 4 — Sensor Calibration',body:'Book certified calibration for Air Station A3 (PM2.5, NOₓ sensors). Current calibration overdue by 3 days.',tag:'PLANNED',tagCls:'info'}
+  ]);
+
+  /* Environmental Highlights */
+  setCardContent('env-highlights', [
+    {icon:'fas fa-trophy',cls:'green',title:'Energy Efficiency Improving',body:'Power consumption down 3.2% this week. On track to meet monthly target. Scope 2 emissions reducing.',tag:'POSITIVE',tagCls:'ok'},
+    {icon:'fas fa-tint',cls:'blue',title:'Water Quality Stable',body:'All water quality parameters within CPCB standards. BOD at 60% of limit — good operational control.',tag:'COMPLIANT',tagCls:'ok'},
+    {icon:'fas fa-wind',cls:'teal',title:'CO₂ Within Safe Range',body:'CO₂ at 720 ppm — well below 1000 ppm indoor air quality threshold. Ventilation systems functioning correctly.',tag:'NORMAL',tagCls:'ok'}
+  ]);
+
+  /* Compliance Warnings */
+  setCardContent('compliance-warnings', [
+    {icon:'fas fa-balance-scale',cls:'amber',title:'Night Noise Exceedance',body:'Night noise exceeding Environment (Protection) Rules, 1986 Schedule VI limit of 70 dB(A). Voluntary disclosure recommended if not resolved within 72 hours.',tag:'EP RULES 1986',tagCls:'warn'},
+    {icon:'fas fa-file-contract',cls:'red',title:'Calibration Record Gap',body:'Air Station A3 calibration overdue. CPCB guidelines require calibration records to be maintained and available for inspection. Risk of non-compliance during regulatory audit.',tag:'CPCB GUIDELINES',tagCls:'crit'}
+  ]);
+
+  /* Calibration Reminders */
+  setCardContent('calibration-reminders', [
+    {icon:'fas fa-tools',cls:'red',title:'Air Station A3 — OVERDUE',body:'PM2.5 & NOₓ calibration overdue by 3 days. Schedule immediately.',tag:'3 DAYS OVERDUE',tagCls:'crit'},
+    {icon:'fas fa-tools',cls:'amber',title:'Water Station W1 pH Sensor',body:'Scheduled calibration due in 14 days. AI detects slight drift — consider early calibration.',tag:'DUE IN 14 DAYS',tagCls:'warn'},
+    {icon:'fas fa-tools',cls:'blue',title:'Noise Monitor N1 & N2',body:'Annual calibration due in 30 days. Book calibration agency in advance.',tag:'DUE IN 30 DAYS',tagCls:'info'}
+  ]);
+
+  /* Potential Risks */
+  var riskItems = [];
+  for(var r=0;r<PREDICTIONS_DATA.length;r++){
+    if(PREDICTIONS_DATA[r].level !== 'LOW'){
+      riskItems.push({
+        icon:'fas fa-triangle-exclamation',
+        cls:PREDICTIONS_DATA[r].level==='HIGH'?'red':'amber',
+        title:PREDICTIONS_DATA[r].title,
+        body:'Probability: '+PREDICTIONS_DATA[r].prob+'% | Timeframe: '+PREDICTIONS_DATA[r].timeframe+' | Confidence: '+PREDICTIONS_DATA[r].confidence+'%',
+        tag:PREDICTIONS_DATA[r].level+' RISK',
+        tagCls:PREDICTIONS_DATA[r].level==='HIGH'?'crit':'warn'
+      });
+    }
+  }
+  setCardContent('potential-risks', riskItems.slice(0,4));
+}
+
+function setCardContent(id, items){
+  var el = document.getElementById(id);
+  if(!el) return;
+  if(!items || !items.length){
+    el.innerHTML = '<div class="empty"><i class="fas fa-check"></i><p>Nothing to report</p></div>';
+    return;
+  }
+  var html = '';
+  for(var i=0;i<items.length;i++){
+    var it = items[i];
+    html += '<div class="insight-item">'
+      + '<div class="ins-icon ' + it.cls + '"><i class="' + it.icon + '"></i></div>'
+      + '<div class="ins-text">'
+      + '<div class="ins-title">' + escHtml(it.title) + '</div>'
+      + '<div class="ins-body">' + escHtml(it.body) + '</div>'
+      + (it.tag ? '<span class="ins-tag ' + it.tagCls + '">' + it.tag + '</span>' : '')
+      + '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+/* ══════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════ */
+function escHtml(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type){
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type||'info');
+  t.innerHTML = '<i class="fas fa-' + (type==='success'?'check-circle':type==='error'?'times-circle':'info-circle') + '"></i>' + escHtml(msg);
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 3000);
+}
+
+window.refreshAll = function(){
+  PARAMS = buildParamsFromStorage();
+  ALERTS_DATA = buildAlerts();
+  PREDICTIONS_DATA = buildPredictions();
+  buildDashboard();
+  buildMonitoring();
+  buildPredictionsTab();
+  buildAlertsTab();
+  buildInsightsPanel();
+  updateBadges();
+  updateTimestamp();
+  showToast('Data refreshed','success');
+};
+
+/* ══════════════════════════════════════
+   BOOTSTRAP
+══════════════════════════════════════ */
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

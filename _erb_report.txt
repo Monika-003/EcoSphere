@@ -1,0 +1,803 @@
+    function buildReportHTML() {
+      var d = getData();
+      var logo   = erbGet('logo')   || '';
+      var cover  = erbGet('cover')  || '';
+      var leaders = erbGet('leaders') || [];
+      var goals   = erbGet('goals')   || [];
+      var shList  = erbGet('stakeholders') || [];
+      var csrList = erbGet('csr')    || [];
+      var risks   = erbGet('risks')  || [];
+      var awards  = erbGet('awards') || [];
+      var dailyLog= erbGet('daily_log') || [];
+
+      var NA = '<span style="color:#94a3b8;font-style:italic;">Information Not Provided</span>';
+      function val(v){ return (v && String(v).trim()) ? v : NA; }
+      function chk(v){ return (v && String(v).trim()) ? v : ''; }
+
+      /* ── brand colours ── */
+      var C = { red:'#B01020', yellow:'#E8C317', teal:'#1a7a6e', navy:'#0f172a', green:'#16a34a' };
+
+      /* ── page wrapper ── */
+      var pgN = 0;
+      function pg(body, classes){
+        pgN++;
+        return '<div class="rpt-page '+(classes||'')+'" style="page-break-after:always;background:#fff;width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;position:relative;font-family:Arial,Helvetica,sans-serif;overflow:hidden;">'
+          + body
+          + '<div style="position:absolute;bottom:12px;right:20px;font-size:10px;color:#94a3b8;">'+pgN+'</div>'
+          + '</div>';
+      }
+
+      /* ── divider page ── */
+      function DIVIDER(title, sub, bg){
+        bg = bg || C.navy;
+        var bgImg = cover ? 'background-image:url('+cover+');background-size:cover;background-position:center;' : '';
+        return pg(
+          '<div style="width:100%;height:100%;min-height:1123px;'+bg+';'+bgImg+'display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px 70px;background-color:'+bg+';box-sizing:border-box;">'
+          +'<div style="background:rgba(255,255,255,0.12);width:6px;height:80px;border-radius:3px;margin-bottom:24px;"></div>'
+          +'<div style="font-size:36px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:12px;letter-spacing:-0.5px;">'+title+'</div>'
+          +'<div style="font-size:16px;color:rgba(255,255,255,0.75);margin-bottom:32px;">'+sub+'</div>'
+          +'<div style="width:80px;height:4px;background:'+C.yellow+';border-radius:2px;"></div>'
+          +'</div>',
+          'divider-page'
+        );
+      }
+
+      /* ── section heading ── */
+      function HDR(t, level, color){
+        color = color || C.navy;
+        var sz = level===1?'22px':level===2?'16px':'13px';
+        var fw = level===1?'800':'700';
+        return '<div style="font-size:'+sz+';font-weight:'+fw+';color:'+color+';margin-bottom:10px;border-left:4px solid '+C.teal+';padding-left:12px;">'+t+'</div>';
+      }
+
+      /* ── two-col row ── */
+      function ROW2(a,b){
+        return '<div style="display:flex;gap:24px;margin-bottom:14px;">'
+          +'<div style="flex:1;">'+a+'</div>'
+          +'<div style="flex:1;">'+b+'</div>'
+          +'</div>';
+      }
+
+      /* ── labelled field ── */
+      function FIELD(label, value, color){
+        return '<div style="margin-bottom:10px;">'
+          +'<div style="font-size:10px;font-weight:700;color:'+(color||C.teal)+';text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">'+label+'</div>'
+          +'<div style="font-size:13px;color:#1e293b;line-height:1.5;">'+val(value)+'</div>'
+          +'</div>';
+      }
+
+      /* ── table ── */
+      function TBL(headers, rows, options){
+        options = options || {};
+        var hBg = options.hBg || C.navy;
+        var html = '<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;">';
+        html += '<thead><tr>';
+        headers.forEach(function(h,i){
+          html += '<th style="background:'+hBg+';color:#fff;padding:8px 10px;text-align:'+(i===0?'left':'center')+';font-weight:700;font-size:11px;white-space:nowrap;">'+h+'</th>';
+        });
+        html += '</tr></thead><tbody>';
+        rows.forEach(function(row, ri){
+          var bg = ri%2===0?'#fff':'#f8fafc';
+          html += '<tr style="background:'+bg+';">';
+          row.forEach(function(cell, ci){
+            html += '<td style="padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:'+(ci===0?'left':'center')+';color:#334155;">'+cell+'</td>';
+          });
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        return html;
+      }
+
+      /* ── stat card strip ── */
+      function STATS(items){
+        var html='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">';
+        items.forEach(function(item){
+          html+='<div style="flex:1;min-width:100px;background:'+C.navy+';border-radius:8px;padding:14px 12px;text-align:center;">'
+            +'<div style="font-size:22px;font-weight:900;color:'+C.yellow+';margin-bottom:4px;">'+item.v+'</div>'
+            +'<div style="font-size:10px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.4px;">'+item.l+'</div>'
+            +'</div>';
+        });
+        html+='</div>';
+        return html;
+      }
+
+      /* ── paragraph ── */
+      function PARA(text){
+        return '<p style="font-size:13px;color:#334155;line-height:1.7;margin-bottom:12px;">'+val(text)+'</p>';
+      }
+
+      /* ── page padding ── */
+      var PP = 'padding:50px 60px;';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 1: COVER
+      ══════════════════════════════════════════════════ */
+      var coverBg = cover
+        ? 'background-image:url('+cover+');background-size:cover;background-position:center;'
+        : 'background:'+C.navy+';';
+
+      var coverPage = '<div class="rpt-page" style="page-break-after:always;background:'+C.navy+';width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;position:relative;font-family:Arial,Helvetica,sans-serif;overflow:hidden;">'
+        + (cover?'<img src="'+cover+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;" alt="cover">':'')
+        + '<div style="position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;height:1123px;padding:60px;">'
+        + '<div>'
+        + (logo?'<img src="'+logo+'" style="height:70px;object-fit:contain;margin-bottom:24px;" alt="logo">':'')
+        + '</div>'
+        + '<div>'
+        + '<div style="width:60px;height:6px;background:'+C.yellow+';border-radius:3px;margin-bottom:24px;"></div>'
+        + '<div style="font-size:13px;font-weight:700;color:'+C.yellow+';text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Environmental Impact Assessment &amp; Sustainability Report</div>'
+        + '<div style="font-size:46px;font-weight:900;color:#fff;line-height:1.05;margin-bottom:12px;letter-spacing:-1px;">'+chk(d.org_name)||'Organisation Name'+'</div>'
+        + '<div style="font-size:20px;color:rgba(255,255,255,0.8);margin-bottom:8px;">'+(chk(d.branding_tagline)||'')+'</div>'
+        + '<div style="font-size:14px;color:rgba(255,255,255,0.6);margin-top:20px;">Reporting Period: '+(chk(d.branding_year)||new Date().getFullYear())+'</div>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:16px;">'
+        + '<div style="width:40px;height:40px;background:'+C.teal+';border-radius:50%;display:flex;align-items:center;justify-content:center;">'
+        + '<div style="width:16px;height:16px;background:#fff;border-radius:50%;"></div></div>'
+        + '<div style="font-size:12px;color:rgba(255,255,255,0.6);">Generated by EcoSphere Platform &bull; '+(chk(d.org_website)||chk(d.org_email)||'')+'</div>'
+        + '</div></div></div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 2: INSIDE COVER
+      ══════════════════════════════════════════════════ */
+      var statItems = [];
+      if(chk(d.stat_employees)) statItems.push({v:d.stat_employees,l:'Employees'});
+      if(chk(d.stat_facilities)) statItems.push({v:d.stat_facilities,l:'Facilities'});
+      if(chk(d.stat_countries)) statItems.push({v:d.stat_countries,l:'Countries'});
+      if(chk(d.stat_years)) statItems.push({v:d.stat_years,l:'Yrs in Operation'});
+      if(chk(d.stat_revenue)) statItems.push({v:'RM '+d.stat_revenue,l:'Annual Turnover'});
+      if(!statItems.length) statItems=[{v:'—',l:'Employees'},{v:'—',l:'Facilities'},{v:'—',l:'Countries'}];
+
+      var p2Body = '<div style="'+PP+'">'
+        + HDR('About This Report',1)
+        + PARA('This report presents the Environmental Impact Assessment (EIA) and Sustainability performance of '+(chk(d.org_name)||'the Organisation')+' for the reporting period '+(chk(d.branding_year)||new Date().getFullYear())+'. It has been prepared in accordance with internationally recognised frameworks including GRI Standards, TCFD recommendations, and the UN Sustainable Development Goals (SDGs).')
+        + PARA('All data, metrics and disclosures contained herein are based solely on information provided by the organisation. Where information has not been supplied, it is noted as "Information Not Provided".')
+        + '<div style="height:1px;background:#e2e8f0;margin:20px 0;"></div>'
+        + HDR('Organisation at a Glance',2)
+        + (statItems.length ? STATS(statItems) : '')
+        + ROW2(
+            FIELD('Organisation',''+chk(d.org_name))
+           +FIELD('Industry Sector',''+chk(d.industry))
+           +FIELD('Address',''+chk(d.address)),
+            FIELD('Registration No.',''+chk(d.reg_no))
+           +FIELD('Contact Person',''+chk(d.contact_name))
+           +FIELD('Email / Tel',chk(d.org_email)+(chk(d.org_email)&&chk(d.contact_phone)?' / ':'')+chk(d.contact_phone))
+          )
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 3: TABLE OF CONTENTS
+      ══════════════════════════════════════════════════ */
+      var tocItems=[
+        ['Chairman\'s Message','4'],['Company Profile','5'],['Leadership Team','6'],
+        ['Corporate Governance','7'],['Stakeholder Engagement','8'],['Materiality Assessment','9'],
+        ['ESG Strategy & Framework','10'],['ESG Goals & Targets','11'],
+        ['Environmental — Energy','12'],['Environmental — GHG Emissions','13'],
+        ['Environmental — Water','14'],['Environmental — Waste & Air','15'],
+        ['Project Details (EIA)','16'],['Environmental Baseline Data','17'],
+        ['EIA Impact Assessment Matrix','18'],['Social — Workforce','19'],
+        ['Social — OHS','20'],['CSR & Community Investment','21'],
+        ['Risk Assessment Register','22'],['Recommendations & Roadmap','23'],
+        ['Awards & Certifications','24'],['Policies & Compliance','25'],
+        ['Daily Monitoring Appendix','26'],['GRI Content Index','27']
+      ];
+      var tocBody='<div style="'+PP+'">'
+        +HDR('Table of Contents',1)
+        +'<div style="margin-top:16px;">';
+      tocItems.forEach(function(item,i){
+        tocBody+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #e2e8f0;">'
+          +'<div style="display:flex;align-items:center;gap:10px;">'
+          +'<div style="width:28px;height:28px;background:'+C.teal+';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">'+(i+1)+'</div>'
+          +'<div style="font-size:13px;color:#334155;">'+item[0]+'</div>'
+          +'</div>'
+          +'<div style="font-size:12px;color:#94a3b8;">Page '+item[1]+'</div>'
+          +'</div>';
+      });
+      tocBody+='</div></div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 4: CHAIRMAN'S MESSAGE
+      ══════════════════════════════════════════════════ */
+      var chairmanLdr = leaders.find(function(l){ return /chair|founder|ceo|director|president/i.test(l.role||''); });
+      var chairmanMsg = chk(d.rpt_chairman_msg)||'';
+      var ceoMsgBody = '<div style="'+PP+'">'
+        + HDR('Chairman\'s Message',1)
+        + '<div style="background:'+C.navy+';border-radius:10px;padding:30px;margin-bottom:20px;">'
+        + '<div style="font-size:28px;color:'+C.yellow+';font-weight:300;margin-bottom:8px;">"</div>'
+        + '<div style="font-size:14px;color:rgba(255,255,255,0.9);line-height:1.8;font-style:italic;">'+( chairmanMsg || 'Our commitment to environmental stewardship and sustainable development remains unwavering. This report reflects our progress, challenges, and aspirations as we continue to build a resilient and responsible organisation for future generations.')+'</div>'
+        + '<div style="font-size:28px;color:'+C.yellow+';text-align:right;">"</div>'
+        + '</div>';
+      if(chairmanLdr){
+        ceoMsgBody+='<div style="display:flex;align-items:center;gap:16px;margin-top:24px;">'
+          +(chairmanLdr.photo?'<img src="'+chairmanLdr.photo+'" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid '+C.teal+';" alt="'+chairmanLdr.name+'">':'<div style="width:70px;height:70px;border-radius:50%;background:'+C.teal+';display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">&#128100;</div>')
+          +'<div><div style="font-weight:700;font-size:15px;color:'+C.navy+';">'+chairmanLdr.name+'</div><div style="font-size:13px;color:#64748b;">'+chairmanLdr.role+'</div><div style="font-size:11px;color:#94a3b8;">'+chk(chairmanLdr.qual)+'</div></div></div>';
+      }
+      ceoMsgBody+='</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 5: COMPANY PROFILE
+      ══════════════════════════════════════════════════ */
+      var profileBody = '<div style="'+PP+'">'
+        + HDR('Company Profile',1)
+        + ROW2(
+            FIELD('Legal Name',chk(d.org_name))
+           +FIELD('Registration No.',chk(d.reg_no))
+           +FIELD('Year Established',chk(d.stat_years)?'Established ~'+(new Date().getFullYear()-parseInt(d.stat_years||0))+' ('+(d.stat_years)+' years)':'')
+           +FIELD('Industry',chk(d.industry))
+           +FIELD('Headquarters',chk(d.address)),
+            FIELD('Website',chk(d.org_website))
+           +FIELD('Contact',chk(d.org_email))
+           +FIELD('Reporting Year',chk(d.branding_year))
+           +FIELD('No. of Employees',chk(d.stat_employees))
+           +FIELD('No. of Facilities',chk(d.stat_facilities))
+          )
+        + HDR('About the Organisation',2)
+        + PARA(chk(d.branding_about)||chk(d.description))
+        + HDR('Products & Services',2)
+        + PARA(chk(d.branding_products))
+        + HDR('Vision',2)
+        + PARA(chk(d.branding_vision))
+        + HDR('Mission',2)
+        + PARA(chk(d.branding_mission))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 6: LEADERSHIP TEAM
+      ══════════════════════════════════════════════════ */
+      var leaderBody = '<div style="'+PP+'">'
+        + HDR('Leadership Team',1);
+      if(leaders.length){
+        var rows4=[];
+        for(var li=0;li<leaders.length;li+=2){
+          rows4.push([leaders[li],leaders[li+1]||null]);
+        }
+        rows4.forEach(function(pair){
+          leaderBody+='<div style="display:flex;gap:20px;margin-bottom:20px;">';
+          pair.forEach(function(ldr){
+            if(!ldr){leaderBody+='<div style="flex:1;"></div>';return;}
+            leaderBody+='<div style="flex:1;background:#f8fafc;border-radius:10px;padding:16px;border:1px solid #e2e8f0;">'
+              +'<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">'
+              +(ldr.photo?'<img src="'+ldr.photo+'" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid '+C.teal+';" alt="'+ldr.name+'">'
+                :'<div style="width:56px;height:56px;border-radius:50%;background:'+C.teal+';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">&#128100;</div>')
+              +'<div><div style="font-weight:700;font-size:14px;color:'+C.navy+';">'+val(ldr.name)+'</div>'
+              +'<div style="font-size:12px;color:'+C.teal+';">'+val(ldr.role)+'</div>'
+              +(chk(ldr.qual)?'<div style="font-size:11px;color:#64748b;">'+ldr.qual+'</div>':'')
+              +'</div></div>'
+              +(chk(ldr.msg)?'<p style="font-size:12px;color:#475569;line-height:1.6;margin:0;border-top:1px solid #e2e8f0;padding-top:8px;font-style:italic;">"'+ldr.msg+'"</p>':'')
+              +'</div>';
+          });
+          leaderBody+='</div>';
+        });
+      } else {
+        leaderBody += PARA('Leadership team information not provided.');
+      }
+      leaderBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 7: CORPORATE GOVERNANCE
+      ══════════════════════════════════════════════════ */
+      var govBody = '<div style="'+PP+'">'
+        + HDR('Corporate Governance',1)
+        + PARA('The organisation is committed to maintaining the highest standards of corporate governance, transparency and ethical business conduct. The Board of Directors provides strategic oversight, risk management and ensures accountability to all stakeholders.')
+        + HDR('Board Composition',2)
+        + (leaders.length
+          ? TBL(['Name','Designation','Qualification'],
+              leaders.map(function(l){return[val(l.name),val(l.role),chk(l.qual)||'—'];}),
+              {hBg:C.navy})
+          : PARA('Board composition data not provided.'))
+        + HDR('ESG Governance Structure',2)
+        + PARA('ESG oversight is integrated at the Board level. A dedicated Sustainability Committee reviews ESG performance, approves targets and monitors progress against the organisation\'s sustainability roadmap on a '+(chk(d.esg_framework)||'GRI-aligned')+' framework.')
+        + FIELD('Reporting Framework',chk(d.esg_framework))
+        + FIELD('SDG Alignment',chk(d.esg_sdg))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 8: STAKEHOLDER ENGAGEMENT
+      ══════════════════════════════════════════════════ */
+      var shBody = '<div style="'+PP+'">'
+        + HDR('Stakeholder Engagement',1)
+        + PARA('Effective stakeholder engagement is fundamental to our sustainability strategy. We engage with a broad range of stakeholders to understand their expectations, address concerns and incorporate feedback into our reporting and operational decisions.')
+        + (shList.length
+          ? TBL(['Stakeholder Group','Engagement Method','Frequency','Key Topics / Concerns'],
+              shList.map(function(s){return[val(s.grp),val(s.method),val(s.freq),val(s.topics)];}),
+              {hBg:C.teal})
+          : PARA('Stakeholder engagement data not provided.'))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 9: MATERIALITY & ESG STRATEGY
+      ══════════════════════════════════════════════════ */
+      var esgStratBody = '<div style="'+PP+'">'
+        + HDR('Materiality Assessment',1)
+        + PARA(chk(d.esg_materiality)||'A structured materiality assessment was conducted to identify topics most significant to the organisation and its stakeholders. Topics were prioritised based on their potential impact on business performance and stakeholder concern.')
+        + HDR('ESG Strategy Overview',1)
+        + PARA(chk(d.esg_strategy)||'Our ESG strategy is built on three pillars: Environmental Stewardship, Social Responsibility and Governance Excellence. We integrate sustainability into all business decisions, from supply chain to product lifecycle, ensuring long-term value creation for all stakeholders.')
+        + HDR('ESG Goals & Targets Register',1);
+
+      if(goals.length){
+        var statusColor=function(s){return s==='Achieved'?C.green:s==='On Track'?C.teal:s==='Behind'?C.red:C.navy;};
+        esgStratBody += TBL(
+          ['ESG Goal / KPI','Baseline','Current','Target','Deadline','Status'],
+          goals.map(function(g){
+            return [val(g.name),val(g.base),val(g.cur),val(g.tgt),val(g.dead),
+              '<span style="background:'+statusColor(g.status)+';color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;">'+val(g.status)+'</span>'];
+          }),
+          {hBg:C.navy}
+        );
+      } else {
+        esgStratBody += PARA('ESG goals and targets data not provided.');
+      }
+      esgStratBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 10: ENVIRONMENTAL — ENERGY
+      ══════════════════════════════════════════════════ */
+      var energyBody = '<div style="'+PP+'">'
+        + HDR('Environmental Performance: Energy',1)
+        + ROW2(
+            FIELD('Total Energy Consumed (kWh)',chk(d.energy_kwh))
+           +FIELD('Electricity from Grid (kWh)',chk(d.electricity_kwh))
+           +FIELD('Diesel / Fuel Used (litres)',chk(d.fuel_litres))
+           +FIELD('Natural Gas (m³)',chk(d.gas_m3)),
+            FIELD('Renewable Energy (kWh)',chk(d.renewable_kwh))
+           +FIELD('Renewable Energy Share (%)',chk(d.renewable_pct))
+           +FIELD('Energy Intensity',chk(d.energy_intensity))
+           +FIELD('Benchmark / Comparison',chk(d.energy_benchmark))
+          );
+      var energyItems=[];
+      if(chk(d.electricity_kwh)) energyItems.push({l:'Grid Electricity',v:d.electricity_kwh});
+      if(chk(d.renewable_kwh)) energyItems.push({l:'Renewable',v:d.renewable_kwh});
+      if(chk(d.fuel_litres)) energyItems.push({l:'Diesel/Fuel',v:d.fuel_litres});
+      if(chk(d.gas_m3)) energyItems.push({l:'Natural Gas',v:d.gas_m3});
+      if(energyItems.length) energyBody+=BARCHART(energyItems,'Energy Consumption by Source',C.teal);
+      energyBody += FIELD('Energy Conservation Measures',chk(d.energy_conservation))+'</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 11: GHG EMISSIONS
+      ══════════════════════════════════════════════════ */
+      var ghgBody = '<div style="'+PP+'">'
+        + HDR('Environmental Performance: GHG Emissions',1)
+        + ROW2(
+            FIELD('Scope 1 Emissions (tCO₂e)',chk(d.ghg_scope1))
+           +FIELD('Scope 2 Emissions (tCO₂e)',chk(d.ghg_scope2))
+           +FIELD('Scope 3 Emissions (tCO₂e)',chk(d.ghg_scope3))
+           +FIELD('Total GHG (tCO₂e)',chk(d.ghg_total)),
+            FIELD('GHG Intensity',chk(d.ghg_intensity))
+           +FIELD('Carbon Offset (tCO₂e)',chk(d.carbon_offset))
+           +FIELD('Net GHG Emissions',chk(d.net_ghg))
+           +FIELD('Reduction Target',chk(d.ghg_target))
+          );
+      var ghgItems=[];
+      if(chk(d.ghg_scope1)) ghgItems.push({l:'Scope 1',v:d.ghg_scope1});
+      if(chk(d.ghg_scope2)) ghgItems.push({l:'Scope 2',v:d.ghg_scope2});
+      if(chk(d.ghg_scope3)) ghgItems.push({l:'Scope 3',v:d.ghg_scope3});
+      if(ghgItems.length) ghgBody+=BARCHART(ghgItems,'GHG Emissions by Scope (tCO₂e)',C.red);
+      ghgBody += FIELD('GHG Reduction Initiatives',chk(d.ghg_initiatives))+'</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 12: WATER
+      ══════════════════════════════════════════════════ */
+      var waterBody = '<div style="'+PP+'">'
+        + HDR('Environmental Performance: Water',1)
+        + ROW2(
+            FIELD('Total Water Consumed (m³)',chk(d.water_m3))
+           +FIELD('Water Source',chk(d.water_source))
+           +FIELD('Water Recycled (m³)',chk(d.water_recycled))
+           +FIELD('Water Recycling Rate (%)',chk(d.water_recycled_pct)),
+            FIELD('Wastewater Discharged (m³)',chk(d.wastewater_m3))
+           +FIELD('BOD Level (mg/L)',chk(d.bod))
+           +FIELD('COD Level (mg/L)',chk(d.cod))
+           +FIELD('Water Intensity',chk(d.water_intensity))
+          )
+        + FIELD('Wastewater Treatment Method',chk(d.wastewater_treatment))
+        + FIELD('Water Conservation Measures',chk(d.water_conservation))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 13: WASTE & AIR
+      ══════════════════════════════════════════════════ */
+      var wasteBody = '<div style="'+PP+'">'
+        + HDR('Environmental Performance: Waste & Air Quality',1)
+        + HDR('Solid Waste Management',2)
+        + ROW2(
+            FIELD('Total Waste Generated (tonnes)',chk(d.waste_total))
+           +FIELD('Scheduled Waste (tonnes)',chk(d.waste_scheduled))
+           +FIELD('Recycled Waste (tonnes)',chk(d.waste_recycled))
+           +FIELD('Landfill Disposal (tonnes)',chk(d.waste_landfill)),
+            FIELD('Hazardous Waste (tonnes)',chk(d.waste_hazardous))
+           +FIELD('Recycling Rate (%)',chk(d.recycling_rate))
+           +FIELD('Licensed Waste Contractor',chk(d.waste_contractor))
+           +FIELD('Waste Reduction Target',chk(d.waste_target))
+          )
+        + HDR('Air Quality & Stack Emissions',2)
+        + ROW2(
+            FIELD('PM10 (mg/m³)',chk(d.pm10))
+           +FIELD('SO₂ Emission Factor',chk(d.so2_ef))
+           +FIELD('NOₓ Emission Factor',chk(d.nox_ef)),
+            FIELD('Stack Height (m)',chk(d.stack_height))
+           +FIELD('Monitoring Frequency',chk(d.air_monitoring_freq))
+           +FIELD('Monitoring Body',chk(d.air_monitoring_body))
+          )
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 14: EIA PROJECT DETAILS
+      ══════════════════════════════════════════════════ */
+      var eiaBody = '<div style="'+PP+'">'
+        + HDR('Project Details (EIA)',1)
+        + ROW2(
+            FIELD('Project Name',chk(d.proj_name))
+           +FIELD('Project Type / Category',chk(d.proj_type))
+           +FIELD('EIA Category',chk(d.proj_eia_category))
+           +FIELD('Project Location',chk(d.proj_location)),
+            FIELD('Total Project Cost (RM)',chk(d.proj_cost))
+           +FIELD('Site Area (ha)',chk(d.proj_area))
+           +FIELD('Construction Start',chk(d.proj_start))
+           +FIELD('Expected Completion',chk(d.proj_end))
+          )
+        + FIELD('Project Description',chk(d.proj_description)||chk(d.description))
+        + HDR('Sensitive Environmental Receivers',2)
+        + ROW2(
+            FIELD('Nearest Waterbody',chk(d.proj_waterbody))
+           +FIELD('Proximity to Forest Reserve (km)',chk(d.proj_forest)),
+            FIELD('Buffer Radius (km)',chk(d.proj_buffer))
+           +FIELD('Sensitive Habitats',chk(d.proj_habitat))
+          )
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 15: ENVIRONMENTAL BASELINE
+      ══════════════════════════════════════════════════ */
+      var baselineBody = '<div style="'+PP+'">'
+        + HDR('Environmental Baseline Data',1)
+        + HDR('Ambient Air Quality',2)
+        + TBL(['Parameter','Measured Value','Standard/Limit','Status'],
+          [
+            ['PM10 (µg/m³)',chk(d.air_quality_pm10)||'—',chk(d.pm10_standard)||'150 µg/m³',chk(d.pm10_status)||'—'],
+            ['PM2.5 (µg/m³)',chk(d.air_quality_pm25)||'—',chk(d.pm25_standard)||'35 µg/m³',chk(d.pm25_status)||'—'],
+            ['SO₂ (µg/m³)',chk(d.air_quality_so2)||'—',chk(d.so2_standard)||'250 µg/m³',chk(d.so2_status)||'—'],
+            ['NO₂ (µg/m³)',chk(d.air_quality_no2)||'—',chk(d.no2_standard)||'200 µg/m³',chk(d.no2_status)||'—'],
+            ['CO (µg/m³)',chk(d.air_quality_co)||'—','10,000 µg/m³','—']
+          ],{hBg:C.teal})
+        + HDR('Noise Level Baseline',2)
+        + TBL(['Location','Daytime (dB(A))','Night (dB(A))','Standard (dB(A))'],
+          [
+            ['Project Site',chk(d.noise_level)||'—',chk(d.noise_night)||'—',chk(d.noise_standard)||'65 / 55'],
+            ['Nearest Sensitive Receiver',chk(d.noise_receiver)||'—','—','—']
+          ],{hBg:C.teal})
+        + HDR('Surface Water & Soil Quality',2)
+        + ROW2(
+            FIELD('River Water Quality Class',chk(d.water_class))
+           +FIELD('Surface Water BOD (mg/L)',chk(d.surface_bod))
+           +FIELD('Surface Water pH',chk(d.surface_ph)),
+            FIELD('Soil Type',chk(d.soil_type))
+           +FIELD('Soil pH',chk(d.soil_ph))
+           +FIELD('Contamination Status',chk(d.soil_contamination))
+          )
+        + FIELD('Flora / Fauna Notes',chk(d.biodiversity))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 16: EIA IMPACT MATRIX
+      ══════════════════════════════════════════════════ */
+      var impactMatrix=[
+        ['Air Quality Degradation','Construction','High','Regular dust suppression, water spraying'],
+        ['Noise & Vibration','Construction','High','Restricted working hours, barriers'],
+        ['Surface Water Contamination','Construction/Ops','Medium','Silt traps, oil interceptors'],
+        ['Soil Erosion','Construction','High','Sediment control, revegetation'],
+        ['Loss of Biodiversity','Construction','Medium','Habitat surveys, compensatory planting'],
+        ['Increase in Solid Waste','Operations','Medium','Waste segregation, licensed disposal'],
+        ['GHG Emissions Increase','Operations','Medium','Energy efficiency, renewable integration'],
+        ['Community Disturbance','Construction','Low','Consultation, complaint mechanism'],
+        ['Employment Opportunities','Operations','Positive','Local hiring preference'],
+        ['Economic Growth','Operations','Positive','Local procurement policy']
+      ];
+      var impactBody = '<div style="'+PP+'">'
+        + HDR('EIA Impact Assessment Matrix',1)
+        + PARA('The following matrix identifies potential environmental and social impacts associated with the project, their significance and proposed mitigation measures.')
+        + TBL(
+          ['Impact','Phase','Significance','Mitigation Measure'],
+          impactMatrix.map(function(r){
+            var col=r[2]==='High'?C.red:r[2]==='Medium'?'#f97316':r[2]==='Positive'?C.green:C.navy;
+            return[r[0],r[1],'<span style="background:'+col+';color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;">'+r[2]+'</span>',r[3]];
+          }),
+          {hBg:C.navy}
+        )
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 17: SOCIAL — WORKFORCE
+      ══════════════════════════════════════════════════ */
+      var socialBody = '<div style="'+PP+'">'
+        + HDR('Social Performance: Workforce',1)
+        + ROW2(
+            FIELD('Total Workforce',chk(d.total_workforce))
+           +FIELD('Male Employees',chk(d.male_employees))
+           +FIELD('Female Employees',chk(d.female_employees))
+           +FIELD('Permanent Employees',chk(d.permanent_employees)),
+            FIELD('Contract Employees',chk(d.contract_employees))
+           +FIELD('New Hires (reporting year)',chk(d.new_hires))
+           +FIELD('Employee Turnover Rate (%)',chk(d.turnover_rate))
+           +FIELD('Average Training Hours',chk(d.training_hours))
+          )
+        + ROW2(
+            FIELD('Local Employees (%)',chk(d.local_pct))
+           +FIELD('Women in Management (%)',chk(d.women_mgmt)),
+            FIELD('Persons with Disabilities',chk(d.pwd_count))
+           +FIELD('Foreign Workers',chk(d.foreign_count))
+          )
+        + FIELD('Collective Bargaining / Union',chk(d.union_status))
+        + FIELD('Employee Welfare Programs',chk(d.welfare_programs))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 18: OHS
+      ══════════════════════════════════════════════════ */
+      var ohsBody = '<div style="'+PP+'">'
+        + HDR('Social Performance: Occupational Health & Safety',1)
+        + ROW2(
+            FIELD('Recordable Incidents',chk(d.recordable_incidents))
+           +FIELD('Lost Time Injuries (LTI)',chk(d.lti_count))
+           +FIELD('Lost Time Injury Rate (LTIR)',chk(d.ltir))
+           +FIELD('Fatalities',chk(d.fatalities)||'0'),
+            FIELD('Near Miss Reports',chk(d.near_miss))
+           +FIELD('Safety Training (hrs/employee)',chk(d.safety_training_hrs))
+           +FIELD('Emergency Drills Conducted',chk(d.drills_count))
+           +FIELD('OHS Certification',chk(d.cert_iso45001))
+          )
+        + FIELD('OHS Management Approach',chk(d.ohs_approach))
+        + FIELD('Significant Hazards Identified',chk(d.ohs_hazards))
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 19: CSR
+      ══════════════════════════════════════════════════ */
+      var csrBody = '<div style="'+PP+'">'
+        + HDR('CSR & Community Investment',1)
+        + ROW2(
+            FIELD('Annual CSR Budget (RM)',chk(d.csr_budget))
+           +FIELD('Total Beneficiaries',chk(d.csr_beneficiaries)),
+            FIELD('NGO / Community Partners',chk(d.csr_ngo))
+           +FIELD('CSR Focus Areas',chk(d.csr_focus))
+          );
+      if(csrList.length){
+        csrBody += HDR('CSR Program Register',2)
+          + TBL(['Program','Period','Beneficiaries','Description'],
+            csrList.map(function(c){return[val(c.name),val(c.period),val(c.bene),val(c.desc)];}),
+            {hBg:C.teal});
+      }
+      csrBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 20: RISK ASSESSMENT
+      ══════════════════════════════════════════════════ */
+      var riskBody = '<div style="'+PP+'">'
+        + HDR('Risk Assessment Register',1)
+        + PARA('The following risk register identifies key environmental, social, governance and climate-related risks. Risk scores are calculated as Likelihood × Severity (scale 1–5).');
+      if(risks.length){
+        riskBody += TBL(
+          ['Risk Description','Category','Likelihood','Severity','Risk Score','Mitigation'],
+          risks.map(function(r){
+            var score=(parseInt(r.like)||1)*(parseInt(r.sev)||1);
+            var col=score>=16?C.red:score>=9?'#f97316':score>=4?'#facc15':C.green;
+            return[val(r.desc),val(r.cat),val(r.like),val(r.sev),'<span style="background:'+col+';color:'+(score>=4?'#fff':'#1e293b')+';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">'+score+'</span>',val(r.mit)];
+          }),
+          {hBg:C.navy}
+        );
+        riskBody += '<div style="margin-top:12px;">'+RISKHEATMAP(risks)+'</div>';
+      } else {
+        riskBody += PARA('Risk assessment data not provided.');
+      }
+      riskBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 21: RECOMMENDATIONS
+      ══════════════════════════════════════════════════ */
+      var recoBody = '<div style="'+PP+'">'
+        + HDR('Recommendations & Future Roadmap',1)
+        + PARA(chk(d.rpt_recommendations)||'Based on this assessment, the following key recommendations are proposed to enhance sustainability performance, reduce environmental footprint and strengthen ESG governance:')
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;">';
+      var defaultRecos = [
+        {icon:'🌱',title:'Transition to Renewable Energy',desc:'Install solar PV systems to achieve minimum 30% renewable share by 2027'},
+        {icon:'💧',title:'Water Stewardship Programme',desc:'Implement closed-loop cooling systems and target 20% water reduction by 2026'},
+        {icon:'♻️',title:'Zero Waste Initiative',desc:'Achieve 80% solid waste diversion from landfill by 2027'},
+        {icon:'📊',title:'ESG Reporting Enhancement',desc:'Align reporting with GRI Standards and introduce third-party assurance'},
+        {icon:'👥',title:'Workforce Development',desc:'Increase women in management to 30% and expand skills training programme'},
+        {icon:'🛡️',title:'Risk Monitoring System',desc:'Implement real-time environmental monitoring for all critical parameters'}
+      ];
+      defaultRecos.forEach(function(r){
+        recoBody+='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;">'
+          +'<div style="font-size:24px;margin-bottom:6px;">'+r.icon+'</div>'
+          +'<div style="font-weight:700;font-size:13px;color:'+C.navy+';margin-bottom:4px;">'+r.title+'</div>'
+          +'<div style="font-size:12px;color:#64748b;line-height:1.5;">'+r.desc+'</div>'
+          +'</div>';
+      });
+      recoBody+='</div>';
+      recoBody += HDR('3-Year Sustainability Roadmap',2)
+        + TBL(['Initiative','Year 1','Year 2','Year 3','KPI'],
+          [
+            ['Renewable Energy','Feasibility Study','Install 500kW Solar','Achieve 30% RE Share','RE % of total energy'],
+            ['Water Management','Audit & Baseline','Recycling System Install','20% Reduction Target','m³ per unit output'],
+            ['Waste Reduction','Segregation Policy','Composting / Recycling','80% Diversion Rate','% diverted from landfill'],
+            ['ESG Reporting','GRI Gap Analysis','First GRI Report','External Assurance','GRI compliance score'],
+            ['Employee Training','Needs Assessment','30hrs/employee','Certification Programme','Training hrs/employee']
+          ],
+          {hBg:C.teal});
+      recoBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 22: AWARDS & CERTIFICATIONS
+      ══════════════════════════════════════════════════ */
+      var awardBody = '<div style="'+PP+'">'
+        + HDR('Awards, Certifications & Recognition',1)
+        + HDR('ISO & Management System Certifications',2)
+        + TBL(['Certification','Details'],
+          [
+            ['ISO 14001:2015 (Environmental)',chk(d.cert_iso14001)||NA],
+            ['ISO 9001:2015 (Quality)',chk(d.cert_iso9001)||NA],
+            ['ISO 45001:2018 (OHS)',chk(d.cert_iso45001)||NA],
+            ['ISO 50001:2018 (Energy)',chk(d.cert_iso50001)||NA],
+            ['Other Certifications',chk(d.cert_other)||NA]
+          ].filter(function(r){return r[1]!==NA;}),
+          {hBg:C.teal});
+      if(awards.length){
+        awardBody += HDR('Awards & Industry Recognition',2)
+          + TBL(['Award / Recognition','Awarding Body','Year','Type'],
+            awards.map(function(a){return[val(a.title),val(a.by),val(a.year),val(a.type)];}),
+            {hBg:C.navy});
+      }
+      awardBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 23: POLICIES & COMPLIANCE
+      ══════════════════════════════════════════════════ */
+      var polBody = '<div style="'+PP+'">'
+        + HDR('Company Policies & Regulatory Compliance',1)
+        + HDR('Active Policies',2);
+      var polList=[];
+      if(d.pol_env) polList.push('Environmental Policy');
+      if(d.pol_energy) polList.push('Energy Policy');
+      if(d.pol_safety) polList.push('Health & Safety Policy');
+      if(d.pol_hr) polList.push('Human Rights Policy');
+      if(d.pol_csr) polList.push('CSR / Community Policy');
+      if(d.pol_wb) polList.push('Whistleblower Policy');
+      if(polList.length){
+        polBody += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+        polList.forEach(function(p){
+          polBody+='<span style="background:'+C.teal+';color:#fff;padding:4px 12px;border-radius:16px;font-size:12px;font-weight:600;">✓ '+p+'</span>';
+        });
+        polBody+='</div>';
+      }
+      if(chk(d.pol_summary)) polBody += PARA(d.pol_summary);
+      polBody += HDR('Regulatory Compliance Status',2)
+        + TBL(['Compliance Item','Status / Details'],
+          [
+            ['EIA Approval',chk(d.comp_eia_status)||'—'],
+            ['EIA Reference Number',chk(d.comp_eia_ref)||'—'],
+            ['Operating Licence',chk(d.comp_licence)||'—'],
+            ['Last Compliance Audit',chk(d.comp_audit_date)||'—'],
+            ['Non-Conformances / Violations',chk(d.comp_violations)||'None reported']
+          ],
+          {hBg:C.navy})
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 24: DAILY MONITORING APPENDIX
+      ══════════════════════════════════════════════════ */
+      var dailyBody = '<div style="'+PP+'">'
+        + HDR('Daily Environmental Monitoring — Appendix',1)
+        + PARA('The following table presents daily environmental monitoring data logged during the reporting period. Data was recorded on-site and compiled electronically.');
+      if(dailyLog.length){
+        dailyBody += '<div style="overflow-x:auto;">'
+          + TBL(
+            ['Date','Weather','Workers','PM2.5','PM10','SO₂','NO₂','Noise dB','Energy kWh','Water m³','Waste kg','Incidents'],
+            dailyLog.slice(0,50).map(function(e){
+              return[e.date,e.weather||'—',e.workers||'—',e.pm25||'—',e.pm10||'—',e.so2||'—',e.no2||'—',e.noise||'—',e.energy||'—',e.water||'—',e.waste||'—',e.incidents||'0'];
+            }),
+            {hBg:C.navy}
+          )
+          + '</div>';
+        if(dailyLog.length>50) dailyBody+='<p style="font-size:11px;color:#94a3b8;text-align:center;">Showing first 50 of '+dailyLog.length+' entries.</p>';
+        var totalEnergy=dailyLog.reduce(function(a,e){return a+(parseFloat(e.energy)||0);},0).toFixed(1);
+        var totalWater=dailyLog.reduce(function(a,e){return a+(parseFloat(e.water)||0);},0).toFixed(1);
+        var totalWaste=dailyLog.reduce(function(a,e){return a+(parseFloat(e.waste)||0);},0).toFixed(1);
+        var totalInc=dailyLog.reduce(function(a,e){return a+(parseInt(e.incidents)||0);},0);
+        dailyBody += STATS([
+          {v:dailyLog.length,l:'Days Monitored'},
+          {v:totalEnergy+' kWh',l:'Total Energy'},
+          {v:totalWater+' m³',l:'Total Water'},
+          {v:totalWaste+' kg',l:'Total Waste'},
+          {v:totalInc,l:'Total Incidents'}
+        ]);
+      } else {
+        dailyBody += PARA('No daily monitoring entries recorded.');
+      }
+      dailyBody += '</div>';
+
+      /* ══════════════════════════════════════════════════
+         PAGE 25: GRI INDEX
+      ══════════════════════════════════════════════════ */
+      var griIndex=[
+        ['GRI 2-1','Organizational details','Company Profile','5'],
+        ['GRI 2-2','Entities included in reporting','About This Report','2'],
+        ['GRI 2-3','Reporting period, frequency and contact point','Cover / TOC','1-3'],
+        ['GRI 2-6','Activities, value chain and other relationships','Company Profile','5'],
+        ['GRI 2-9','Governance structure and composition','Corporate Governance','7'],
+        ['GRI 2-22','Statement on sustainable development strategy','ESG Strategy','9'],
+        ['GRI 2-25','Processes to remediate negative impacts','Risk Assessment','22'],
+        ['GRI 2-29','Approach to stakeholder engagement','Stakeholder Engagement','8'],
+        ['GRI 302-1','Energy consumption within organization','Energy Performance','12'],
+        ['GRI 302-3','Energy intensity','Energy Performance','12'],
+        ['GRI 303-1','Interactions with water as a shared resource','Water Performance','14'],
+        ['GRI 303-3','Water withdrawal','Water Performance','14'],
+        ['GRI 305-1','Direct (Scope 1) GHG emissions','GHG Emissions','13'],
+        ['GRI 305-2','Energy indirect (Scope 2) GHG emissions','GHG Emissions','13'],
+        ['GRI 305-4','GHG emissions intensity','GHG Emissions','13'],
+        ['GRI 306-3','Waste generated','Waste & Air','15'],
+        ['GRI 401-1','New employee hires and employee turnover','Workforce','19'],
+        ['GRI 403-1','OHS management system','OHS','20'],
+        ['GRI 403-9','Work-related injuries','OHS','20'],
+        ['GRI 413-1','Operations with local community engagement programs','CSR & Community','21']
+      ];
+      var griBody = '<div style="'+PP+'">'
+        + HDR('GRI Content Index',1)
+        + PARA('This report has been prepared with reference to the GRI Standards. The following index maps GRI disclosures to relevant sections of this report.')
+        + TBL(
+          ['GRI Disclosure','Description','Section','Page'],
+          griIndex.map(function(r){return[r[0],r[1],r[2],r[3]];}),
+          {hBg:C.navy}
+        )
+        + '</div>';
+
+      /* ══════════════════════════════════════════════════
+         BACK COVER
+      ══════════════════════════════════════════════════ */
+      var backCover = '<div class="rpt-page" style="page-break-after:always;background:'+C.navy+';width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;position:relative;font-family:Arial,Helvetica,sans-serif;overflow:hidden;">'
+        +'<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:1123px;padding:60px;text-align:center;">'
+        +(logo?'<img src="'+logo+'" style="height:80px;object-fit:contain;margin-bottom:28px;opacity:0.9;" alt="logo">':'')
+        +'<div style="width:50px;height:4px;background:'+C.yellow+';border-radius:2px;margin:0 auto 24px;"></div>'
+        +'<div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px;">'+(chk(d.org_name)||'')+'</div>'
+        +'<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px;">'+(chk(d.branding_tagline)||'')+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:16px;">'+(chk(d.address)||'')+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,0.5);">'+(chk(d.org_email)||'')+(chk(d.org_email)&&chk(d.org_website)?' &bull; ':'')+chk(d.org_website)+'</div>'
+        +'<div style="margin-top:40px;font-size:11px;color:rgba(255,255,255,0.35);">EIA Sustainability Report '+chk(d.branding_year)+' &bull; Generated by EcoSphere Platform</div>'
+        +'</div></div>';
+
+      /* ══════════════════════════════════════════════════
+         ASSEMBLE ALL PAGES
+      ══════════════════════════════════════════════════ */
+      var report = coverPage
+        + pg(p2Body)
+        + pg(tocBody)
+        + pg(ceoMsgBody)
+        + DIVIDER('Company Profile &amp; Governance','Transparency, Accountability &amp; Leadership',C.navy)
+        + pg(profileBody)
+        + pg(leaderBody)
+        + pg(govBody)
+        + DIVIDER('Stakeholder Engagement &amp; Strategy','Partnering for Sustainable Value',C.teal)
+        + pg(shBody)
+        + pg(esgStratBody)
+        + DIVIDER('Environmental Performance','Measuring Our Footprint',C.teal)
+        + pg(energyBody)
+        + pg(ghgBody)
+        + pg(waterBody)
+        + pg(wasteBody)
+        + DIVIDER('EIA — Project Assessment','Environmental Impact Analysis',C.red)
+        + pg(eiaBody)
+        + pg(baselineBody)
+        + pg(impactBody)
+        + DIVIDER('Social Performance &amp; Governance','People, Safety &amp; Community',C.navy)
+        + pg(socialBody)
+        + pg(ohsBody)
+        + pg(csrBody)
+        + DIVIDER('Risk, Recommendations &amp; Roadmap','Building Resilience for the Future',C.teal)
+        + pg(riskBody)
+        + pg(recoBody)
+        + DIVIDER('Certifications, Awards &amp; Compliance','Recognitions &amp; Accountability',C.navy)
+        + pg(awardBody)
+        + pg(polBody)
+        + DIVIDER('Appendix &amp; GRI Index','Supporting Data &amp; Disclosures',C.navy)
+        + pg(dailyBody)
+        + pg(griBody)
+        + backCover;
+
+      return report;
+    }

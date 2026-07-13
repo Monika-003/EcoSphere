@@ -1,0 +1,491 @@
+
+    /* ─── ERB helpers ─── */
+    function erbKey(k){ var d=getData(); return 'erb_'+(d.org_name||'default').replace(/\s+/g,'_')+'_'+k; }
+    function erbGet(k){ try{ return JSON.parse(localStorage.getItem(erbKey(k))||'null'); }catch(e){return null;} }
+    function erbSet(k,v){ localStorage.setItem(erbKey(k),JSON.stringify(v)); }
+
+    /* ─── Logo / Cover ─── */
+    function erbResizeImg(file,maxW,cb){
+      var r=new FileReader();
+      r.onload=function(e){
+        var img=new Image();
+        img.onload=function(){
+          var w=img.width,h=img.height;
+          if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+          var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+          cv.getContext('2d').drawImage(img,0,0,w,h);
+          cb(cv.toDataURL('image/jpeg',0.88));
+        };
+        img.src=e.target.result;
+      };
+      r.readAsDataURL(file);
+    }
+    window.erbUploadLogo=function(ev){
+      var f=ev.target.files[0]; if(!f) return;
+      erbResizeImg(f,400,function(b64){
+        erbSet('logo',b64);
+        var el=document.getElementById('erb-logo-preview');
+        if(el) el.innerHTML='<img src="'+b64+'" style="max-height:80px;max-width:100%;border-radius:6px;">';
+      });
+    };
+    window.erbUploadCover=function(ev){
+      var f=ev.target.files[0]; if(!f) return;
+      erbResizeImg(f,1200,function(b64){
+        erbSet('cover',b64);
+        var el=document.getElementById('erb-cover-preview');
+        if(el) el.innerHTML='<img src="'+b64+'" style="max-height:80px;max-width:100%;border-radius:6px;">';
+      });
+    };
+    function erbLoadBrandImages(){
+      var logo=erbGet('logo'),cover=erbGet('cover');
+      var lp=document.getElementById('erb-logo-preview');
+      var cp=document.getElementById('erb-cover-preview');
+      if(lp&&logo) lp.innerHTML='<img src="'+logo+'" style="max-height:80px;max-width:100%;border-radius:6px;">';
+      if(cp&&cover) cp.innerHTML='<img src="'+cover+'" style="max-height:80px;max-width:100%;border-radius:6px;">';
+    }
+
+    /* ─── Leadership ─── */
+    var _ldrIdx=0;
+    window.erbAddLeader=function(){
+      var i=_ldrIdx++;
+      var list=document.getElementById('erb-leaders-list'); if(!list) return;
+      var div=document.createElement('div');
+      div.id='erb-leader-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:10px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:600;font-size:14px;color:#334155;">Leader #'+(i+1)+'</span><button type="button" onclick="erbDelLeader('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+        +'<div><label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Full Name</label><input type="text" id="ldr-name-'+i+'" placeholder="Name" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:8px;font-size:13px;" oninput="erbSaveLeaders()"></div>'
+        +'<div><label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Designation</label><input type="text" id="ldr-role-'+i+'" placeholder="e.g. Group CEO" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:8px;font-size:13px;" oninput="erbSaveLeaders()"></div>'
+        +'<div><label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Qualification</label><input type="text" id="ldr-qual-'+i+'" placeholder="e.g. MBA, PhD" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:8px;font-size:13px;" oninput="erbSaveLeaders()"></div>'
+        +'<div><label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Photo</label><input type="file" accept="image/*" onchange="erbLeaderPhoto(event,'+i+')" style="font-size:12px;"></div>'
+        +'</div>'
+        +'<div style="margin-top:8px;"><label style="font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Message / Profile</label><textarea id="ldr-msg-'+i+'" rows="2" placeholder="Brief message or profile..." style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:8px;font-size:13px;" oninput="erbSaveLeaders()"></textarea></div>';
+      list.appendChild(div);
+    };
+    window.erbDelLeader=function(i){
+      var el=document.getElementById('erb-leader-'+i); if(el) el.remove();
+      erbSaveLeaders();
+    };
+    window.erbLeaderPhoto=function(ev,i){
+      var f=ev.target.files[0]; if(!f) return;
+      erbResizeImg(f,400,function(b64){
+        var ldrs=erbGet('leaders')||[];
+        var found=ldrs.find(function(l){return l._i===i;});
+        if(found) found.photo=b64; else ldrs.push({_i:i,photo:b64});
+        erbSet('leaders_photos',ldrs);
+      });
+    };
+    window.erbSaveLeaders=function(){
+      var list=document.getElementById('erb-leaders-list'); if(!list) return;
+      var items=list.querySelectorAll('[id^="erb-leader-"]');
+      var arr=[];
+      items.forEach(function(el){
+        var i=parseInt(el.id.replace('erb-leader-',''));
+        var photos=erbGet('leaders_photos')||[];
+        var ph=photos.find(function(p){return p._i===i;});
+        arr.push({
+          _i:i,
+          name:   (document.getElementById('ldr-name-'+i)||{}).value||'',
+          role:   (document.getElementById('ldr-role-'+i)||{}).value||'',
+          qual:   (document.getElementById('ldr-qual-'+i)||{}).value||'',
+          msg:    (document.getElementById('ldr-msg-'+i)||{}).value||'',
+          photo:  ph?ph.photo:''
+        });
+      });
+      erbSet('leaders',arr);
+    };
+    function erbLoadLeaders(){
+      var arr=erbGet('leaders')||[]; if(!arr.length) return;
+      arr.forEach(function(l){
+        erbAddLeader();
+        var i=_ldrIdx-1;
+        if(document.getElementById('ldr-name-'+i)) document.getElementById('ldr-name-'+i).value=l.name||'';
+        if(document.getElementById('ldr-role-'+i)) document.getElementById('ldr-role-'+i).value=l.role||'';
+        if(document.getElementById('ldr-qual-'+i)) document.getElementById('ldr-qual-'+i).value=l.qual||'';
+        if(document.getElementById('ldr-msg-'+i)) document.getElementById('ldr-msg-'+i).value=l.msg||'';
+      });
+    }
+
+    /* ─── Daily Monitoring ─── */
+    var _dailyPhoto='';
+    window.erbDailyAS=function(){};
+    window.erbDailyPhoto=function(ev){
+      var f=ev.target.files[0]; if(!f) return;
+      erbResizeImg(f,1200,function(b64){ _dailyPhoto=b64; });
+    };
+    window.erbSaveDaily=function(){
+      var date=document.getElementById('erb-daily-date'); if(!date||!date.value){alert('Please select a date.');return;}
+      var gv=function(id){var e=document.getElementById(id);return e?e.value:'';};
+      var entry={
+        date:date.value, weather:gv('erb-daily-weather'), workers:gv('erb-daily-workers'),
+        pm25:gv('erb-daily-pm25'), pm10:gv('erb-daily-pm10'), so2:gv('erb-daily-so2'), no2:gv('erb-daily-no2'),
+        noise:gv('erb-daily-noise'), energy:gv('erb-daily-energy'), water:gv('erb-daily-water'), waste:gv('erb-daily-waste'),
+        incidents:gv('erb-daily-incidents'), notes:gv('erb-daily-notes'), photo:_dailyPhoto
+      };
+      var log=erbGet('daily_log')||[];
+      var existing=log.findIndex(function(e){return e.date===entry.date;});
+      if(existing>=0) log[existing]=entry; else log.push(entry);
+      log.sort(function(a,b){return a.date>b.date?-1:1;});
+      erbSet('daily_log',log);
+      _dailyPhoto='';
+      erbRenderDailyLog();
+      alert('Entry saved for '+entry.date);
+    };
+    window.erbClearDaily=function(){
+      var ids=['erb-daily-date','erb-daily-weather','erb-daily-workers','erb-daily-pm25','erb-daily-pm10','erb-daily-so2','erb-daily-no2','erb-daily-noise','erb-daily-energy','erb-daily-water','erb-daily-waste','erb-daily-incidents','erb-daily-notes'];
+      ids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+      _dailyPhoto='';
+    };
+    window.erbDelDaily=function(date){
+      var log=erbGet('daily_log')||[];
+      erbSet('daily_log',log.filter(function(e){return e.date!==date;}));
+      erbRenderDailyLog();
+    };
+    function erbRenderDailyLog(){
+      var container=document.getElementById('erb-daily-log'); if(!container) return;
+      var log=erbGet('daily_log')||[];
+      if(!log.length){container.innerHTML='<p style="color:#94a3b8;font-size:13px;">No entries yet.</p>';return;}
+      var html='<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+        +'<thead><tr style="background:#f1f5f9;">'
+        +'<th style="padding:8px;text-align:left;border:1px solid #e2e8f0;">Date</th>'
+        +'<th style="padding:8px;text-align:left;border:1px solid #e2e8f0;">Weather</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Workers</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">PM2.5</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Noise dB</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Energy kWh</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Water m³</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Waste kg</th>'
+        +'<th style="padding:8px;text-align:right;border:1px solid #e2e8f0;">Incidents</th>'
+        +'<th style="padding:8px;text-align:center;border:1px solid #e2e8f0;">Action</th>'
+        +'</tr></thead><tbody>';
+      log.forEach(function(e){
+        html+='<tr>'
+          +'<td style="padding:8px;border:1px solid #e2e8f0;">'+e.date+'</td>'
+          +'<td style="padding:8px;border:1px solid #e2e8f0;">'+(e.weather||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.workers||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.pm25||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.noise||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.energy||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.water||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.waste||'-')+'</td>'
+          +'<td style="padding:8px;text-align:right;border:1px solid #e2e8f0;">'+(e.incidents||'0')+'</td>'
+          +'<td style="padding:8px;text-align:center;border:1px solid #e2e8f0;"><button type="button" onclick="erbDelDaily(\''+e.date+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Del</button></td>'
+          +'</tr>';
+      });
+      html+='</tbody></table>';
+      container.innerHTML=html;
+    }
+
+    /* ─── ESG Goals ─── */
+    var _goalIdx=0;
+    window.erbAddGoal=function(){
+      var i=_goalIdx++;
+      var list=document.getElementById('erb-goals-list'); if(!list) return;
+      var div=document.createElement('div');
+      div.id='erb-goal-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;color:#334155;">Goal #'+(i+1)+'</span><button type="button" onclick="erbDelGoal('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:8px;">'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Goal / KPI</label><input type="text" id="goal-name-'+i+'" placeholder="e.g. Reduce GHG by 30%" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveGoals()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Baseline</label><input type="text" id="goal-base-'+i+'" placeholder="Current" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveGoals()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Current</label><input type="text" id="goal-cur-'+i+'" placeholder="Value" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveGoals()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Target</label><input type="text" id="goal-tgt-'+i+'" placeholder="e.g. 30%" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveGoals()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Deadline</label><input type="text" id="goal-dead-'+i+'" placeholder="2026" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveGoals()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Status</label><select id="goal-status-'+i+'" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" onchange="erbSaveGoals()"><option>On Track</option><option>Behind</option><option>Achieved</option><option>Not Started</option></select></div>'
+        +'</div>';
+      list.appendChild(div);
+    };
+    window.erbDelGoal=function(i){ var el=document.getElementById('erb-goal-'+i);if(el)el.remove();erbSaveGoals(); };
+    window.erbSaveGoals=function(){
+      var list=document.getElementById('erb-goals-list');if(!list)return;
+      var arr=[];
+      list.querySelectorAll('[id^="erb-goal-"]').forEach(function(el){
+        var i=parseInt(el.id.replace('erb-goal-',''));
+        arr.push({name:(document.getElementById('goal-name-'+i)||{}).value||'',base:(document.getElementById('goal-base-'+i)||{}).value||'',cur:(document.getElementById('goal-cur-'+i)||{}).value||'',tgt:(document.getElementById('goal-tgt-'+i)||{}).value||'',dead:(document.getElementById('goal-dead-'+i)||{}).value||'',status:(document.getElementById('goal-status-'+i)||{}).value||''});
+      });
+      erbSet('goals',arr);
+    };
+    function erbLoadGoals(){
+      var arr=erbGet('goals')||[];
+      arr.forEach(function(g){
+        erbAddGoal();var i=_goalIdx-1;
+        if(document.getElementById('goal-name-'+i)) document.getElementById('goal-name-'+i).value=g.name||'';
+        if(document.getElementById('goal-base-'+i)) document.getElementById('goal-base-'+i).value=g.base||'';
+        if(document.getElementById('goal-cur-'+i)) document.getElementById('goal-cur-'+i).value=g.cur||'';
+        if(document.getElementById('goal-tgt-'+i)) document.getElementById('goal-tgt-'+i).value=g.tgt||'';
+        if(document.getElementById('goal-dead-'+i)) document.getElementById('goal-dead-'+i).value=g.dead||'';
+        if(document.getElementById('goal-status-'+i)) document.getElementById('goal-status-'+i).value=g.status||'On Track';
+      });
+    }
+
+    /* ─── Stakeholders ─── */
+    var _shIdx=0;
+    window.erbAddSH=function(){
+      var i=_shIdx++;
+      var list=document.getElementById('erb-sh-list');if(!list)return;
+      var div=document.createElement('div');
+      div.id='erb-sh-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;color:#334155;">Stakeholder Group #'+(i+1)+'</span><button type="button" onclick="erbDelSH('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:8px;">'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Group</label><input type="text" id="sh-grp-'+i+'" placeholder="e.g. Employees" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveSH()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Method</label><input type="text" id="sh-method-'+i+'" placeholder="e.g. Surveys" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveSH()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Frequency</label><input type="text" id="sh-freq-'+i+'" placeholder="e.g. Annual" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveSH()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Key Topics</label><input type="text" id="sh-topics-'+i+'" placeholder="e.g. Job security, Benefits" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveSH()"></div>'
+        +'</div>';
+      list.appendChild(div);
+    };
+    window.erbDelSH=function(i){var el=document.getElementById('erb-sh-'+i);if(el)el.remove();erbSaveSH();};
+    window.erbSaveSH=function(){
+      var list=document.getElementById('erb-sh-list');if(!list)return;
+      var arr=[];
+      list.querySelectorAll('[id^="erb-sh-"]').forEach(function(el){
+        var i=parseInt(el.id.replace('erb-sh-',''));
+        arr.push({grp:(document.getElementById('sh-grp-'+i)||{}).value||'',method:(document.getElementById('sh-method-'+i)||{}).value||'',freq:(document.getElementById('sh-freq-'+i)||{}).value||'',topics:(document.getElementById('sh-topics-'+i)||{}).value||''});
+      });
+      erbSet('stakeholders',arr);
+    };
+    function erbLoadSH(){
+      var arr=erbGet('stakeholders')||[];
+      arr.forEach(function(s){
+        erbAddSH();var i=_shIdx-1;
+        if(document.getElementById('sh-grp-'+i)) document.getElementById('sh-grp-'+i).value=s.grp||'';
+        if(document.getElementById('sh-method-'+i)) document.getElementById('sh-method-'+i).value=s.method||'';
+        if(document.getElementById('sh-freq-'+i)) document.getElementById('sh-freq-'+i).value=s.freq||'';
+        if(document.getElementById('sh-topics-'+i)) document.getElementById('sh-topics-'+i).value=s.topics||'';
+      });
+    }
+
+    /* ─── CSR Programs ─── */
+    var _csrIdx=0;
+    window.erbAddCSR=function(){
+      var i=_csrIdx++;
+      var list=document.getElementById('erb-csr-list');if(!list)return;
+      var div=document.createElement('div');
+      div.id='erb-csr-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;color:#334155;">Program #'+(i+1)+'</span><button type="button" onclick="erbDelCSR('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Program Name</label><input type="text" id="csr-name-'+i+'" placeholder="e.g. Tree Planting Drive" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveCSR()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Period</label><input type="text" id="csr-period-'+i+'" placeholder="e.g. Q1 2024" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveCSR()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Beneficiaries</label><input type="text" id="csr-bene-'+i+'" placeholder="e.g. 500 children" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveCSR()"></div>'
+        +'</div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Description</label><textarea id="csr-desc-'+i+'" rows="2" placeholder="Brief description of the program..." style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveCSR()"></textarea></div>';
+      list.appendChild(div);
+    };
+    window.erbDelCSR=function(i){var el=document.getElementById('erb-csr-'+i);if(el)el.remove();erbSaveCSR();};
+    window.erbSaveCSR=function(){
+      var list=document.getElementById('erb-csr-list');if(!list)return;
+      var arr=[];
+      list.querySelectorAll('[id^="erb-csr-"]').forEach(function(el){
+        var i=parseInt(el.id.replace('erb-csr-',''));
+        arr.push({name:(document.getElementById('csr-name-'+i)||{}).value||'',period:(document.getElementById('csr-period-'+i)||{}).value||'',bene:(document.getElementById('csr-bene-'+i)||{}).value||'',desc:(document.getElementById('csr-desc-'+i)||{}).value||''});
+      });
+      erbSet('csr',arr);
+    };
+    function erbLoadCSR(){
+      var arr=erbGet('csr')||[];
+      arr.forEach(function(c){
+        erbAddCSR();var i=_csrIdx-1;
+        if(document.getElementById('csr-name-'+i)) document.getElementById('csr-name-'+i).value=c.name||'';
+        if(document.getElementById('csr-period-'+i)) document.getElementById('csr-period-'+i).value=c.period||'';
+        if(document.getElementById('csr-bene-'+i)) document.getElementById('csr-bene-'+i).value=c.bene||'';
+        if(document.getElementById('csr-desc-'+i)) document.getElementById('csr-desc-'+i).value=c.desc||'';
+      });
+    }
+
+    /* ─── Risk Assessment ─── */
+    var _riskIdx=0;
+    window.erbAddRisk=function(){
+      var i=_riskIdx++;
+      var list=document.getElementById('erb-risk-list');if(!list)return;
+      var div=document.createElement('div');
+      div.id='erb-risk-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;color:#334155;">Risk #'+(i+1)+'</span><button type="button" onclick="erbDelRisk('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Risk Description</label><input type="text" id="risk-desc-'+i+'" placeholder="e.g. Soil contamination from spill" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveRisks()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Category</label><select id="risk-cat-'+i+'" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" onchange="erbSaveRisks()"><option>Environmental</option><option>Social</option><option>Governance</option><option>Compliance</option><option>Climate</option><option>Operational</option></select></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Likelihood (1–5)</label><input type="number" id="risk-like-'+i+'" min="1" max="5" placeholder="1–5" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveRisks()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Severity (1–5)</label><input type="number" id="risk-sev-'+i+'" min="1" max="5" placeholder="1–5" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveRisks()"></div>'
+        +'</div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Mitigation Measure</label><textarea id="risk-mit-'+i+'" rows="2" placeholder="e.g. Install spill containment berms, daily inspection..." style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveRisks()"></textarea></div>';
+      list.appendChild(div);
+    };
+    window.erbDelRisk=function(i){var el=document.getElementById('erb-risk-'+i);if(el)el.remove();erbSaveRisks();};
+    window.erbSaveRisks=function(){
+      var list=document.getElementById('erb-risk-list');if(!list)return;
+      var arr=[];
+      list.querySelectorAll('[id^="erb-risk-"]').forEach(function(el){
+        var i=parseInt(el.id.replace('erb-risk-',''));
+        arr.push({desc:(document.getElementById('risk-desc-'+i)||{}).value||'',cat:(document.getElementById('risk-cat-'+i)||{}).value||'',like:(document.getElementById('risk-like-'+i)||{}).value||'3',sev:(document.getElementById('risk-sev-'+i)||{}).value||'3',mit:(document.getElementById('risk-mit-'+i)||{}).value||''});
+      });
+      erbSet('risks',arr);
+    };
+    function erbLoadRisks(){
+      var arr=erbGet('risks')||[];
+      arr.forEach(function(r){
+        erbAddRisk();var i=_riskIdx-1;
+        if(document.getElementById('risk-desc-'+i)) document.getElementById('risk-desc-'+i).value=r.desc||'';
+        if(document.getElementById('risk-cat-'+i)) document.getElementById('risk-cat-'+i).value=r.cat||'Environmental';
+        if(document.getElementById('risk-like-'+i)) document.getElementById('risk-like-'+i).value=r.like||'';
+        if(document.getElementById('risk-sev-'+i)) document.getElementById('risk-sev-'+i).value=r.sev||'';
+        if(document.getElementById('risk-mit-'+i)) document.getElementById('risk-mit-'+i).value=r.mit||'';
+      });
+    }
+
+    /* ─── Awards ─── */
+    var _awardIdx=0;
+    window.erbAddAward=function(){
+      var i=_awardIdx++;
+      var list=document.getElementById('erb-awards-list');if(!list)return;
+      var div=document.createElement('div');
+      div.id='erb-award-'+i;
+      div.style.cssText='border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;background:#f8fafc;';
+      div.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:600;font-size:13px;color:#334155;">Award #'+(i+1)+'</span><button type="button" onclick="erbDelAward('+i+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;">Remove</button></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;">'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Award / Recognition Title</label><input type="text" id="aw-title-'+i+'" placeholder="e.g. Best ESG Practice Award" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveAwards()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Awarding Body</label><input type="text" id="aw-by-'+i+'" placeholder="e.g. DOE Malaysia" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveAwards()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Year</label><input type="text" id="aw-year-'+i+'" placeholder="e.g. 2024" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" oninput="erbSaveAwards()"></div>'
+        +'<div><label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Type</label><select id="aw-type-'+i+'" style="width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:12px;" onchange="erbSaveAwards()"><option>Award</option><option>Certification</option><option>Recognition</option><option>Accreditation</option></select></div>'
+        +'</div>';
+      list.appendChild(div);
+    };
+    window.erbDelAward=function(i){var el=document.getElementById('erb-award-'+i);if(el)el.remove();erbSaveAwards();};
+    window.erbSaveAwards=function(){
+      var list=document.getElementById('erb-awards-list');if(!list)return;
+      var arr=[];
+      list.querySelectorAll('[id^="erb-award-"]').forEach(function(el){
+        var i=parseInt(el.id.replace('erb-award-',''));
+        arr.push({title:(document.getElementById('aw-title-'+i)||{}).value||'',by:(document.getElementById('aw-by-'+i)||{}).value||'',year:(document.getElementById('aw-year-'+i)||{}).value||'',type:(document.getElementById('aw-type-'+i)||{}).value||''});
+      });
+      erbSet('awards',arr);
+    };
+    function erbLoadAwards(){
+      var arr=erbGet('awards')||[];
+      arr.forEach(function(a){
+        erbAddAward();var i=_awardIdx-1;
+        if(document.getElementById('aw-title-'+i)) document.getElementById('aw-title-'+i).value=a.title||'';
+        if(document.getElementById('aw-by-'+i)) document.getElementById('aw-by-'+i).value=a.by||'';
+        if(document.getElementById('aw-year-'+i)) document.getElementById('aw-year-'+i).value=a.year||'';
+        if(document.getElementById('aw-type-'+i)) document.getElementById('aw-type-'+i).value=a.type||'Award';
+      });
+    }
+
+    /* ─── Review summary cards ─── */
+    function erbRenderReview(){
+      var c=document.getElementById('erb-review-cards');if(!c)return;
+      var d=getData();
+      var checks=[
+        {label:'Organization Info',  ok:!!(d.org_name),       tip:d.org_name||'Not entered'},
+        {label:'Project Info',       ok:!!(d.proj_name),      tip:d.proj_name||'Not entered'},
+        {label:'Env Baseline',       ok:!!(d.air_quality_pm25||d.noise_level), tip:'Baseline data'},
+        {label:'Resource Data',      ok:!!(d.energy_kwh||d.water_m3), tip:'Energy / Water data'},
+        {label:'Emissions / Waste',  ok:!!(d.ghg_scope1||d.waste_total), tip:'GHG / Waste data'},
+        {label:'Branding',           ok:!!(d.branding_vision||erbGet('logo')), tip:'Vision / Logo'},
+        {label:'Daily Monitoring',   ok:!!(erbGet('daily_log')&&erbGet('daily_log').length), tip:(erbGet('daily_log')||[]).length+' entries'},
+        {label:'ESG Goals',          ok:!!(erbGet('goals')&&erbGet('goals').length), tip:(erbGet('goals')||[]).length+' goals'},
+        {label:'CSR Programs',       ok:!!(erbGet('csr')&&erbGet('csr').length), tip:(erbGet('csr')||[]).length+' programs'},
+        {label:'Risk Assessment',    ok:!!(erbGet('risks')&&erbGet('risks').length), tip:(erbGet('risks')||[]).length+' risks'},
+        {label:'Certifications',     ok:!!(d.cert_iso14001||d.cert_iso9001), tip:'ISO data'},
+        {label:'Chairman Message',   ok:!!(d.rpt_chairman_msg), tip:'Message entered'}
+      ];
+      var html='';
+      checks.forEach(function(ch){
+        html+='<div style="border:1px solid '+(ch.ok?'#bbf7d0':'#fecaca')+';border-radius:8px;padding:12px;background:'+(ch.ok?'#f0fdf4':'#fff5f5')+';">'
+          +'<div style="font-size:18px;margin-bottom:4px;">'+(ch.ok?'&#x2705;':'&#x26A0;&#xFE0F;')+'</div>'
+          +'<div style="font-weight:600;font-size:13px;color:#0f172a;margin-bottom:2px;">'+ch.label+'</div>'
+          +'<div style="font-size:11px;color:#64748b;">'+ch.tip+'</div>'
+          +'</div>';
+      });
+      c.innerHTML=html;
+    }
+
+    /* ─── afterRenderStep hook ─── */
+    function afterRenderStep(n){
+      if(n===6){ erbLoadBrandImages(); erbLoadLeaders(); }
+      if(n===7){ erbRenderDailyLog(); }
+      if(n===8){ erbLoadGoals(); erbLoadSH(); }
+      if(n===9){ erbLoadCSR(); }
+      if(n===10){ erbLoadRisks(); }
+      if(n===11){ erbLoadAwards(); }
+      if(n===12){ erbRenderReview(); }
+    }
+
+    /* ─── SVG Chart Helpers ─── */
+    function BARCHART(items,title,color){
+      if(!items||!items.length) return '';
+      var maxV=Math.max.apply(null,items.map(function(x){return parseFloat(x.v)||0;}));
+      if(!maxV) maxV=1;
+      var W=480,H=200,padL=50,padB=40,padT=30,barW=Math.min(40,Math.floor((W-padL-20)/items.length-6));
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" style="font-family:Arial,sans-serif;">';
+      svg+='<text x="'+(W/2)+'" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">'+title+'</text>';
+      var chartH=H-padT-padB;
+      for(var i=0;i<items.length;i++){
+        var bh=Math.round(((parseFloat(items[i].v)||0)/maxV)*chartH);
+        var bx=padL+i*(barW+8);
+        var by=padT+chartH-bh;
+        svg+='<rect x="'+bx+'" y="'+by+'" width="'+barW+'" height="'+bh+'" fill="'+(color||'#1a7a6e')+'" rx="3"/>';
+        svg+='<text x="'+(bx+barW/2)+'" y="'+(H-padB+14)+'" text-anchor="middle" font-size="10" fill="#334155">'+items[i].l+'</text>';
+        svg+='<text x="'+(bx+barW/2)+'" y="'+(by-4)+'" text-anchor="middle" font-size="9" fill="#64748b">'+items[i].v+'</text>';
+      }
+      svg+='</svg>';
+      return svg;
+    }
+    function DONUT(segs,title){
+      if(!segs||!segs.length) return '';
+      var total=segs.reduce(function(a,b){return a+(parseFloat(b.v)||0);},0);
+      if(!total) total=1;
+      var cx=120,cy=100,r=70,ri=40;
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" style="font-family:Arial,sans-serif;">';
+      svg+='<text x="'+(cx)+'" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">'+title+'</text>';
+      var colors=['#1a7a6e','#B01020','#E8C317','#0f172a','#16a34a','#7c3aed','#0284c7','#ea580c'];
+      var startAngle=-Math.PI/2;
+      segs.forEach(function(s,idx){
+        var sliceAngle=(parseFloat(s.v)/total)*2*Math.PI;
+        var x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
+        var endAngle=startAngle+sliceAngle;
+        var x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
+        var ix1=cx+ri*Math.cos(startAngle),iy1=cy+ri*Math.sin(startAngle);
+        var ix2=cx+ri*Math.cos(endAngle),iy2=cy+ri*Math.sin(endAngle);
+        var large=sliceAngle>Math.PI?1:0;
+        var col=colors[idx%colors.length];
+        svg+='<path d="M'+ix1+','+iy1+' L'+x1+','+y1+' A'+r+','+r+' 0 '+large+',1 '+x2+','+y2+' L'+ix2+','+iy2+' A'+ri+','+ri+' 0 '+large+',0 '+ix1+','+iy1+' Z" fill="'+col+'"/>';
+        svg+='<rect x="190" y="'+(25+idx*22)+'" width="14" height="14" fill="'+col+'" rx="2"/>';
+        svg+='<text x="210" y="'+(36+idx*22)+'" font-size="11" fill="#334155">'+s.l+': '+s.v+'%</text>';
+        startAngle=endAngle;
+      });
+      svg+='</svg>';
+      return svg;
+    }
+    function RISKHEATMAP(risks){
+      var size=44,pad=30;
+      var W=pad+5*size+60,H=pad+5*size+50;
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" style="font-family:Arial,sans-serif;">';
+      svg+='<text x="'+(W/2)+'" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Risk Heat Map</text>';
+      var getColor=function(l,s){var rv=l*s;if(rv>=16)return '#dc2626';if(rv>=9)return '#f97316';if(rv>=4)return '#facc15';return '#86efac';};
+      for(var row=0;row<5;row++){
+        for(var col=0;col<5;col++){
+          var l=col+1,s=5-row;
+          svg+='<rect x="'+(pad+col*size)+'" y="'+(pad+row*size)+'" width="'+(size-2)+'" height="'+(size-2)+'" fill="'+getColor(l,s)+'" rx="4" opacity="0.75"/>';
+          svg+='<text x="'+(pad+col*size+size/2-1)+'" y="'+(pad+row*size+size/2+4)+'" text-anchor="middle" font-size="11" fill="#1e293b" font-weight="600">'+(l*s)+'</text>';
+        }
+      }
+      if(risks&&risks.length){
+        risks.forEach(function(r){
+          var l=Math.min(5,Math.max(1,parseInt(r.like)||3));
+          var s=Math.min(5,Math.max(1,parseInt(r.sev)||3));
+          var col=l-1,row=5-s;
+          svg+='<circle cx="'+(pad+col*size+size/2-1)+'" cy="'+(pad+row*size+size/2-4)+'" r="5" fill="#0f172a" opacity="0.8"/>';
+        });
+      }
+      svg+='<text x="'+(pad+2.5*size)+'" y="'+(pad+5*size+20)+'" text-anchor="middle" font-size="11" fill="#64748b">Likelihood (1=Low, 5=High)</text>';
+      for(var s2=1;s2<=5;s2++){
+        svg+='<text x="'+(pad-4)+'" y="'+(pad+(5-s2)*size+size/2+4)+'" text-anchor="end" font-size="10" fill="#64748b">'+s2+'</text>';
+      }
+      for(var l2=1;l2<=5;l2++){
+        svg+='<text x="'+(pad+(l2-1)*size+size/2-1)+'" y="'+(pad+5*size+12)+'" text-anchor="middle" font-size="10" fill="#64748b">'+l2+'</text>';
+      }
+      svg+='</svg>';
+      return svg;
+    }

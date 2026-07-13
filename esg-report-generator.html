@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ESG Report Generator — QMICS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#E2E8F0;color:#1E293B}
+
+/* ── Control Bar ── */
+#esgCtrl{
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:64px;
+  background:#0B1F3A;display:flex;align-items:center;
+  padding:0 28px;gap:20px;border-bottom:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 4px 24px rgba(0,0,0,0.3);
+}
+.ctrl-brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.btn-back{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.75);padding:6px 14px;border-radius:8px;
+  font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:7px;transition:.2s;
+}
+.btn-back:hover{background:rgba(255,255,255,0.14);color:#fff}
+.ctrl-logo-pill{
+  background:linear-gradient(135deg,#16A34A,#22C55E);
+  color:#fff;font-family:'Poppins',sans-serif;font-size:11px;font-weight:800;
+  padding:4px 10px;border-radius:6px;letter-spacing:1px;
+}
+.ctrl-title-block{display:flex;flex-direction:column}
+.ctrl-title{font-size:13px;font-weight:700;color:#fff;line-height:1.2}
+.ctrl-subtitle{font-size:10px;color:rgba(255,255,255,0.4);font-weight:500}
+.ctrl-center{flex:1;display:flex;align-items:center;justify-content:center;gap:10px}
+.ctrl-field{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:1.5px}
+.ctrl-date{
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;padding:5px 10px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:11px;
+}
+.ctrl-sep{color:rgba(255,255,255,0.3);font-size:12px}
+.ctrl-right{flex-shrink:0;display:flex;align-items:center;gap:8px}
+.esgbtn{
+  display:flex;align-items:center;gap:7px;padding:7px 16px;
+  border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid transparent;transition:.2s;
+}
+.btn-generate{background:linear-gradient(135deg,#16A34A,#22C55E);color:#fff;border-color:#16A34A}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,163,74,0.4)}
+.btn-pdf{background:#DC2626;color:#fff;border-color:#DC2626}
+.btn-docx{background:#2563EB;color:#fff;border-color:#2563EB}
+.btn-xlsx{background:#16A34A;color:#fff;border-color:#16A34A}
+
+/* ── Wrapper ── */
+#esgWrapper{margin-top:64px;padding:40px 0;min-height:calc(100vh - 64px)}
+#esgReport{display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* ── Placeholder ── */
+#esgPlaceholder{
+  max-width:600px;margin:80px auto;text-align:center;padding:48px 40px;
+  background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.06);
+}
+.ph-icon{font-size:56px;margin-bottom:20px}
+.ph-title{font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;color:#0B1F3A;margin-bottom:12px}
+.ph-desc{font-size:14px;color:#64748B;line-height:1.7;margin-bottom:8px}
+.ph-sub{font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:28px}
+.ph-steps{display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.ph-step{display:flex;align-items:center;gap:10px}
+.sn{width:32px;height:32px;border-radius:50%;background:#0B1F3A;color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:12px;font-weight:600;color:#374151}
+
+/* ── Loading ── */
+#esgLoading{
+  display:none;position:fixed;inset:0;z-index:2000;background:rgba(11,31,58,0.88);
+  align-items:center;justify-content:center;backdrop-filter:blur(6px);
+}
+.load-box{text-align:center;color:#fff}
+.load-spinner{
+  width:56px;height:56px;border:4px solid rgba(255,255,255,0.15);
+  border-top-color:#22C55E;border-radius:50%;
+  animation:spin 0.8s linear infinite;margin:0 auto 20px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700}
+.load-sub{font-size:12px;color:rgba(255,255,255,0.55);margin-top:6px}
+
+/* ── Page Wrapper ── */
+.erg-page{
+  width:794px;background:#fff;
+  box-shadow:0 4px 32px rgba(0,0,0,0.12);
+  margin:0 auto;page-break-after:always;break-after:page;
+  position:relative;overflow:hidden;
+}
+
+/* ── Cover Page ── */
+.cover-page{
+  height:1122px;
+  background:#0B1F3A;
+  display:flex;flex-direction:column;
+}
+.cover-geo-1{position:absolute;top:-120px;right:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(22,163,74,0.12) 0%,transparent 70%)}
+.cover-geo-2{position:absolute;bottom:200px;left:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,191,165,0.06) 0%,transparent 70%)}
+.cover-geo-3{position:absolute;top:300px;right:40px;width:180px;height:180px;border-radius:50%;border:1px solid rgba(22,163,74,0.08)}
+.cover-geo-4{position:absolute;bottom:140px;right:80px;width:80px;height:80px;border-radius:50%;border:1px solid rgba(34,197,94,0.15)}
+.cover-right-accent{position:absolute;right:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#22C55E 0%,#16A34A 50%,#14532D 100%)}
+.cover-top{
+  padding:36px 56px 0;display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:2;
+}
+.cover-logo-wrap{max-height:72px;max-width:180px;object-fit:contain}
+.cover-logo-placeholder{
+  width:140px;height:72px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;letter-spacing:1px;
+}
+.cover-esg-badge{
+  background:linear-gradient(135deg,#16A34A,#22C55E);
+  color:#fff;font-family:'Poppins',sans-serif;font-size:10px;font-weight:800;
+  padding:6px 16px;border-radius:8px;letter-spacing:2px;text-transform:uppercase;
+}
+.cover-main{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:0 56px;position:relative;z-index:2;
+}
+.cover-report-tag{
+  font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;
+  color:#22C55E;letter-spacing:4px;text-transform:uppercase;margin-bottom:18px;
+  display:flex;align-items:center;gap:12px;
+}
+.cover-report-tag::before{content:'';display:block;width:32px;height:2px;background:#22C55E;border-radius:1px}
+.cover-project-title{
+  font-family:'Poppins',sans-serif;font-size:44px;font-weight:900;
+  color:#fff;line-height:1.1;margin-bottom:16px;
+}
+.cover-report-subtitle{font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:28px;font-weight:400}
+.cover-accent-line{width:80px;height:4px;background:linear-gradient(90deg,#22C55E,#16A34A);border-radius:2px;margin-bottom:28px}
+.cover-org-name{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:10px}
+.cover-org-meta{font-size:12px;color:rgba(255,255,255,0.4);display:flex;align-items:center;gap:8px}
+.cover-meta-bar{
+  padding:28px 56px 40px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  background:rgba(0,0,0,0.15);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+  position:relative;z-index:2;
+}
+.cover-meta-block label{display:block;font-family:'Poppins',sans-serif;font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px}
+.cover-meta-block span{font-size:12px;color:#CBD5E1;font-weight:600}
+
+/* ── Inside Cover ── */
+.icover-page{width:794px;height:1122px;display:grid;grid-template-columns:300px 1fr;background:#fff}
+.icover-left{background:#0B1F3A;display:flex;flex-direction:column;padding:60px 36px;position:relative;overflow:hidden}
+.icover-left-geo{position:absolute;bottom:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(22,163,74,0.15) 0%,transparent 70%);border-radius:50%}
+.icover-accent-top{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#14532D,#22C55E)}
+.icover-tag{display:inline-block;background:rgba(22,163,74,0.2);border:1px solid rgba(34,197,94,0.25);color:#22C55E;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:28px}
+.icover-left h2{font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:6px}
+.icover-left .desc{color:rgba(255,255,255,0.4);font-size:12px;line-height:1.6;margin-bottom:40px}
+.icover-field{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.icover-field:last-of-type{border-bottom:none}
+.icover-field label{display:block;font-family:'Poppins',sans-serif;font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px}
+.icover-field span{font-size:12px;color:#E2E8F0;font-weight:600;line-height:1.5;display:block}
+.icover-right{padding:56px 48px;display:flex;flex-direction:column}
+.icover-right h3{font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;color:#0B1F3A;margin-bottom:4px}
+.icover-divider{width:48px;height:3px;background:linear-gradient(90deg,#16A34A,#22C55E);border-radius:2px;margin:14px 0 24px}
+.icover-cert-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}
+.icover-cert-card{background:#F8FAFC;border-radius:8px;padding:14px;border:1px solid #E2E8F0}
+.icover-cert-card label{display:block;font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;margin-bottom:4px}
+.icover-cert-card span{font-size:12px;color:#1E293B;font-weight:600}
+.icover-disclaimer-title{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;color:#0B1F3A;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;margin-top:24px}
+.icover-disclaimer-text{font-size:11px;color:#64748B;line-height:1.8}
+
+/* ── Framework Badges ── */
+.fw-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Poppins',sans-serif;margin:3px}
+.fw-gri{background:#DCFCE7;color:#166534;border:1px solid #86EFAC}
+.fw-sasb{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD}
+.fw-tcfd{background:#FEF9C3;color:#854D0E;border:1px solid #FDE047}
+.fw-brsr{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5}
+.fw-sdg{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0}
+.fw-iso{background:#F0F4FF;color:#1E3A8A;border:1px solid #BFDBFE}
+
+/* ── TOC ── */
+.toc-page{width:794px;height:1122px;display:flex;flex-direction:column;background:#fff}
+.toc-header{background:#0B1F3A;padding:60px 64px 52px;flex-shrink:0;position:relative;overflow:hidden}
+.toc-header-geo{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(22,163,74,0.1) 0%,transparent 70%);border-radius:50%}
+.toc-header-accent{position:absolute;bottom:0;left:64px;right:64px;height:1px;background:rgba(255,255,255,0.08)}
+.toc-header-tag{color:#22C55E;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.toc-header-tag::before{content:'';display:block;width:24px;height:2px;background:#22C55E;border-radius:1px}
+.toc-header h1{font-family:'Poppins',sans-serif;font-size:40px;font-weight:800;color:#fff;line-height:1}
+.toc-body{flex:1;padding:44px 64px;overflow:hidden}
+.toc-chapter-label{font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#94A3B8;padding:18px 0 8px;display:flex;align-items:center;gap:10px}
+.toc-chapter-label::after{content:'';flex:1;height:1px;background:#E2E8F0}
+.toc-entry{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #F1F5F9;cursor:default}
+.toc-entry-num{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:#16A34A;width:32px;flex-shrink:0}
+.toc-entry-title{flex:1;font-size:13px;font-weight:500;color:#1E293B}
+.toc-entry-sub{color:#94A3B8;font-size:11px;font-weight:400;margin-top:1px}
+.toc-dots{flex:1;margin:0 14px;border-bottom:1px dotted #CBD5E1;height:1px;max-width:120px}
+.toc-page-num{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:#0B1F3A;flex-shrink:0;width:24px;text-align:right}
+.toc-footer{padding:20px 64px;border-top:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.toc-footer-org{font-size:10px;color:#94A3B8;font-weight:500}
+.toc-footer-page{background:#0B1F3A;color:#fff;font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:12px}
+
+/* ── Section Opener ── */
+.section-opener{width:794px;height:1122px;display:grid;grid-template-columns:310px 1fr;background:#fff}
+.so-left{background:#0B1F3A;display:flex;flex-direction:column;justify-content:flex-end;padding:56px 40px;position:relative;overflow:hidden}
+.so-left-geo1{position:absolute;top:-80px;right:-80px;width:260px;height:260px;background:radial-gradient(circle,rgba(22,163,74,0.08) 0%,transparent 70%);border-radius:50%}
+.so-left-geo2{position:absolute;top:200px;left:0;right:0;height:1px;background:rgba(255,255,255,0.05)}
+.so-big-num{position:absolute;bottom:100px;right:-16px;font-family:'Poppins',sans-serif;font-size:160px;font-weight:900;color:rgba(255,255,255,0.04);line-height:1;pointer-events:none;user-select:none}
+.so-tag{display:inline-block;background:rgba(22,163,74,0.2);border:1px solid rgba(34,197,94,0.25);color:#22C55E;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:18px;width:fit-content;position:relative;z-index:2}
+.so-num{font-family:'Poppins',sans-serif;font-size:56px;font-weight:900;color:rgba(255,255,255,0.12);line-height:1;margin-bottom:12px;position:relative;z-index:2}
+.so-title{font-family:'Poppins',sans-serif;font-size:32px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:14px;position:relative;z-index:2}
+.so-divider{width:40px;height:3px;background:linear-gradient(90deg,#16A34A,#22C55E);border-radius:2px;margin-bottom:14px;position:relative;z-index:2}
+.so-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;position:relative;z-index:2}
+.so-right{background:#F8FAFC;display:flex;flex-direction:column;justify-content:center;padding:56px 48px}
+.so-right h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:#0B1F3A;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #E2E8F0}
+.so-points{list-style:none;padding:0}
+.so-points li{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #E2E8F0;font-size:12px;color:#475569;line-height:1.6}
+.so-points li:last-child{border-bottom:none}
+.so-dot{width:8px;height:8px;border-radius:50%;background:#16A34A;flex-shrink:0;margin-top:5px}
+.so-right-bottom{margin-top:32px;padding:20px 24px;background:#fff;border-radius:10px;border:1px solid #E2E8F0}
+.so-right-bottom label{display:block;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;color:#94A3B8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.so-right-bottom p{font-size:12px;color:#475569;line-height:1.7}
+
+/* ── Content Page ── */
+.content-page{width:794px;min-height:1122px;display:flex;flex-direction:column;background:#fff}
+.cp-header{background:#0B1F3A;padding:14px 44px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cp-header-left{font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.cp-header-left::before{content:'';display:block;width:16px;height:2px;background:linear-gradient(90deg,#16A34A,#22C55E);border-radius:1px}
+.cp-header-right{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;padding:3px 12px;border-radius:12px}
+.cp-content{flex:1;padding:32px 44px 20px}
+.cp-footer{padding:14px 44px;border-top:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#FAFBFC}
+.cp-footer-left{font-size:10px;color:#94A3B8;font-weight:500}
+.cp-footer-center{font-size:9px;color:#CBD5E1;font-weight:400}
+.cp-footer-right{background:#0B1F3A;color:#fff;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px}
+
+/* ── Typography & Components ── */
+.sec-heading{font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#0B1F3A;margin-bottom:4px}
+.sec-subheading{font-size:13px;color:#64748B;margin-bottom:6px}
+.sec-green-rule{width:48px;height:4px;background:linear-gradient(90deg,#16A34A,#22C55E);border-radius:2px;margin-bottom:24px}
+.sub-section-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:#0B1F3A;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #16A34A;display:flex;align-items:center;justify-content:space-between}
+.sub-section-tag{font-size:9px;color:#16A34A;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:#DCFCE7;padding:3px 8px;border-radius:10px}
+.body-text{font-size:12px;color:#374151;line-height:1.8;margin-bottom:16px}
+.callout-box{border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:16px;border-left:4px solid #16A34A;background:#F0FDF4}
+.callout-box.blue{background:#EFF6FF;border-color:#2563EB}
+.callout-box.purple{background:#F5F3FF;border-color:#7C3AED}
+.callout-box.amber{background:#FFFBEB;border-color:#D97706}
+.callout-box.navy{background:#F0F4FF;border-color:#0B1F3A}
+.callout-box p{font-size:12px;color:#1E293B;line-height:1.7}
+
+/* ── KPI Cards ── */
+.kpi-row{display:grid;gap:12px;margin-bottom:20px}
+.kpi-row-4{grid-template-columns:repeat(4,1fr)}
+.kpi-row-3{grid-template-columns:repeat(3,1fr)}
+.kpi-row-2{grid-template-columns:repeat(2,1fr)}
+.kpi-card{background:#F8FAFC;border-radius:10px;padding:16px 18px;border-top:3px solid #16A34A;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.kpi-card.navy{border-top-color:#0B1F3A}
+.kpi-card.blue{border-top-color:#2563EB}
+.kpi-card.purple{border-top-color:#7C3AED}
+.kpi-card.amber{border-top-color:#D97706}
+.kpi-card.red{border-top-color:#DC2626}
+.kpi-card .k-label{font-family:'Poppins',sans-serif;font-size:8.5px;font-weight:700;color:#94A3B8;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.kpi-card .k-value{font-family:'Poppins',sans-serif;font-size:28px;font-weight:800;color:#0B1F3A;line-height:1}
+.kpi-card .k-unit{font-size:11px;color:#64748B;font-weight:500;margin-top:3px}
+
+/* ── Info Grid ── */
+.info-grid{margin-bottom:20px;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden}
+.info-grid-row{display:grid;border-bottom:1px solid #E2E8F0}
+.info-grid-row:last-child{border-bottom:none}
+.info-grid-2{grid-template-columns:repeat(2,1fr)}
+.info-grid-3{grid-template-columns:repeat(3,1fr)}
+.info-cell{padding:13px 18px;border-right:1px solid #E2E8F0}
+.info-cell:last-child{border-right:none}
+.info-cell label{display:block;font-family:'Poppins',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94A3B8;margin-bottom:4px}
+.info-cell span{font-size:12px;color:#1E293B;font-weight:600;line-height:1.4;display:block}
+
+/* ── Tables ── */
+.erg-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}
+.erg-table thead tr{background:#0B1F3A}
+.erg-table thead th{padding:10px 14px;text-align:left;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#fff}
+.erg-table tbody tr:nth-child(even){background:#F8FAFC}
+.erg-table tbody td{padding:9px 14px;color:#374151;border-bottom:1px solid #F1F5F9;line-height:1.4}
+.erg-table .td-val{font-weight:600;color:#0B1F3A}
+.table-caption{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:#0B1F3A;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #16A34A;display:flex;align-items:center;justify-content:space-between}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;font-family:'Poppins',sans-serif}
+.badge-green{background:#DCFCE7;color:#166534}
+.badge-amber{background:#FEF9C3;color:#854D0E}
+.badge-red{background:#FEE2E2;color:#991B1B}
+.badge-blue{background:#DBEAFE;color:#1E40AF}
+.badge-purple{background:#F5F3FF;color:#5B21B6}
+.badge-gray{background:#F1F5F9;color:#475569}
+
+/* ── Two-col / Three-col ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+
+/* ── Progress bar ── */
+.prog-bar-wrap{margin-bottom:14px}
+.prog-bar-label{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#374151;margin-bottom:4px}
+.prog-bar-track{height:8px;background:#E2E8F0;border-radius:4px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#16A34A,#22C55E)}
+
+/* ── Highlight bar ── */
+.esg-stat-bar{background:#0B1F3A;border-radius:10px;padding:20px 24px;margin-bottom:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.esg-stat{text-align:center}
+.esg-stat .sv{font-family:'Poppins',sans-serif;font-size:28px;font-weight:900;color:#22C55E;line-height:1;margin-bottom:4px}
+.esg-stat .sl{font-size:9px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* ── Print ── */
+@media print{
+  #esgCtrl{display:none!important}
+  #esgWrapper{margin-top:0;padding:0;background:#fff}
+  #esgReport{background:#fff}
+  .erg-page,.content-page,.cover-page,.toc-page,.icover-page,.section-opener{box-shadow:none;page-break-after:always;break-after:page}
+  #esgLoading,#esgPlaceholder{display:none!important}
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#CBD5E1}
+::-webkit-scrollbar-thumb{background:#94A3B8;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ── CONTROL BAR ── -->
+<div id="esgCtrl">
+  <div class="ctrl-brand">
+    <button class="btn-back" id="esgBackBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Portal
+    </button>
+    <div class="ctrl-logo-pill">ESG</div>
+    <div class="ctrl-title-block">
+      <div class="ctrl-title">ESG Report Generator</div>
+      <div class="ctrl-subtitle">QMICS Environmental Portal</div>
+    </div>
+  </div>
+  <div class="ctrl-center">
+    <div class="ctrl-field">
+      <span class="ctrl-label">Period</span>
+      <input type="date" id="esgFrom" class="ctrl-date" title="Reporting period start">
+      <span class="ctrl-sep">—</span>
+      <input type="date" id="esgTo" class="ctrl-date" title="Reporting period end">
+    </div>
+    <button class="esgbtn btn-generate" onclick="window.esgGenerate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Generate Report
+    </button>
+  </div>
+  <div class="ctrl-right">
+    <div id="esgExportGroup" style="display:none;align-items:center;gap:8px;">
+      <button class="esgbtn btn-pdf" onclick="window.esgExportPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>
+        PDF
+      </button>
+      <button class="esgbtn btn-xlsx" onclick="window.esgExportXLSX()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+        XLSX
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── WRAPPER ── -->
+<div id="esgWrapper">
+  <div id="esgPlaceholder">
+    <div class="ph-icon">🌿</div>
+    <div class="ph-title">ESG Report Generator</div>
+    <p class="ph-desc">Generate a premium, publication-quality ESG Sustainability Report aligned with GRI Standards 2021, SEBI BRSR, TCFD, SASB &amp; UN SDGs.</p>
+    <p class="ph-sub">All content is automatically populated from your ESG Data Wizard submissions. Select the reporting period and click Generate Report.</p>
+    <div class="ph-steps">
+      <div class="ph-step"><div class="sn">1</div><div class="st">Select Reporting Period</div></div>
+      <div class="ph-step"><div class="sn">2</div><div class="st">Generate Report</div></div>
+      <div class="ph-step"><div class="sn">3</div><div class="st">Export as PDF / XLSX</div></div>
+    </div>
+  </div>
+  <div id="esgReport"></div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="esgLoading">
+  <div class="load-box">
+    <div class="load-spinner"></div>
+    <div class="load-title">Building Your ESG Report</div>
+    <div class="load-sub">Assembling sections and generating charts…</div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ── Constants ── */
+var NAVY   = '#0B1F3A';
+var GREEN  = '#16A34A';
+var LGREEN = '#22C55E';
+var TEAL   = '#00897B';
+var LTEAL  = '#00BFA5';
+var PURPLE = '#7C3AED';
+var BLUE   = '#2563EB';
+var AMBER  = '#D97706';
+var RED    = '#DC2626';
+
+/* ── State ── */
+var W = {};  /* wizard data */
+var MON = [];
+var REPORT_FROM = '';
+var REPORT_TO   = '';
+var ESG_SCORE = null;
+var ESG_SCORE_HIST = [];
+
+/* ── Data helpers ── */
+function loadData(){
+  try{ W = JSON.parse(sessionStorage.getItem('esgWizardData') || '{}'); }catch(e){ W = {}; }
+  if(!W || !Object.keys(W).length){
+    try{ W = JSON.parse(localStorage.getItem('esgWizardData') || '{}'); }catch(e){ W = {}; }
+  }
+  // also try esg_builder data
+  var orgId2 = sessionStorage.getItem('eco_org_id') || localStorage.getItem('eco_org_id') || 'default';
+  if(!W || !Object.keys(W).length){
+    try{ W = JSON.parse(localStorage.getItem('esg_builder_'+orgId2) || '{}'); }catch(e){ W = {}; }
+  }
+  try{ var db = JSON.parse(localStorage.getItem('eco_report_v2') || '{"entries":[]}');
+    MON = db.entries || []; }catch(e){ MON = []; }
+  // load ESG score from calculator
+  try{ ESG_SCORE = JSON.parse(localStorage.getItem('esg_score_latest_'+orgId2) || 'null'); }catch(e){ ESG_SCORE = null; }
+  try{ ESG_SCORE_HIST = JSON.parse(localStorage.getItem('esg_score_daily_'+orgId2) || '[]'); }catch(e){ ESG_SCORE_HIST = []; }
+  var orgId = sessionStorage.getItem('eco_org_id') || localStorage.getItem('eco_org_id') || 'default';
+  REPORT_FROM = document.getElementById('esgFrom').value;
+  REPORT_TO   = document.getElementById('esgTo').value;
+}
+
+function w(key, def){ return W[key] || def || ''; }
+
+function monRows(){
+  return MON.filter(function(e){
+    return e.source==='esg' &&
+      (!REPORT_FROM || e.date >= REPORT_FROM) &&
+      (!REPORT_TO   || e.date <= REPORT_TO);
+  });
+}
+
+function sum(arr, fn){ return arr.reduce(function(s,e){ return s+(+fn(e)||0); }, 0); }
+function last(arr, fn){ for(var i=arr.length-1;i>=0;i--){var v=fn(arr[i]);if(v)return v;} return 0; }
+
+function today(){
+  var d=new Date(); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();
+}
+
+function esc(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function periodLabel(){
+  if(REPORT_FROM && REPORT_TO) return fmtDate(REPORT_FROM) + ' — ' + fmtDate(REPORT_TO);
+  var yr = new Date().getFullYear();
+  return 'April '+(yr-1)+' – March '+yr;
+}
+
+function fmtDate(s){
+  if(!s) return '';
+  var p = s.split('-');
+  if(p.length===3) return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1]+' '+p[0];
+  return s;
+}
+
+function pct(n,d){ if(!d||!n) return '—'; return ((n/d)*100).toFixed(1)+'%'; }
+
+/* ── Shared Page Header / Footer ── */
+function pageHeader(section){
+  var org = w('s1_orgName', sessionStorage.getItem('ecoOrgName') || 'Organization');
+  return '<div class="cp-header"><div class="cp-header-left">'+esc(org)+'&nbsp;&nbsp;&bull;&nbsp;&nbsp;ESG Sustainability Report '+new Date().getFullYear()+'</div><div class="cp-header-right">'+esc(section)+'</div></div>';
+}
+function pageFooter(pg, section){
+  return '<div class="cp-footer"><div class="cp-footer-left">GRI Standards 2021 | SEBI BRSR | TCFD | SASB | UN SDGs</div><div class="cp-footer-center">CONFIDENTIAL — FOR AUTHORIZED USE ONLY</div><div class="cp-footer-right">'+pg+'</div></div>';
+}
+
+/* ── Section Opener ── */
+function soPage(num, title, desc, points, accent){
+  accent = accent || GREEN;
+  var h = '<div class="erg-page section-opener" id="esgS'+num+'">';
+  h += '<div class="so-left">';
+  h += '<div class="so-left-geo1"></div><div class="so-left-geo2"></div>';
+  h += '<div class="so-big-num">'+esc(num)+'</div>';
+  h += '<div class="so-tag" style="background:rgba(22,163,74,0.2);border-color:rgba(34,197,94,0.25);color:#22C55E">Section '+esc(num)+'</div>';
+  h += '<div class="so-num">'+esc(num)+'</div>';
+  h += '<div class="so-title">'+esc(title)+'</div>';
+  h += '<div class="so-divider"></div>';
+  h += '<div class="so-desc">'+esc(desc)+'</div>';
+  h += '</div>';
+  h += '<div class="so-right">';
+  h += '<h3>This section covers</h3>';
+  h += '<ul class="so-points">';
+  points.forEach(function(pt){
+    h += '<li><div class="so-dot" style="background:'+accent+'"></div><span>'+esc(pt)+'</span></li>';
+  });
+  h += '</ul>';
+  h += '<div class="so-right-bottom"><label>Reporting Period</label><p>'+esc(periodLabel())+'</p></div>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
+/* ── KPI card helper ── */
+function kpiCard(label, value, unit, cls){
+  cls = cls || '';
+  return '<div class="kpi-card '+cls+'"><div class="k-label">'+esc(label)+'</div><div class="k-value">'+esc(value)+'</div>'+(unit?'<div class="k-unit">'+esc(unit)+'</div>':'')+'</div>';
+}
+
+/* ── Progress bar helper ── */
+function progBar(label, val, max, color){
+  color = color || GREEN;
+  var pct = max ? Math.min(100, Math.round((val/max)*100)) : 0;
+  return '<div class="prog-bar-wrap"><div class="prog-bar-label"><span>'+esc(label)+'</span><span>'+pct+'%</span></div><div class="prog-bar-track"><div class="prog-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
+}
+
+/* ── Table helper ── */
+function table(headers, rows){
+  var h = '<table class="erg-table"><thead><tr>';
+  headers.forEach(function(hd){ h += '<th>'+esc(hd)+'</th>'; });
+  h += '</tr></thead><tbody>';
+  rows.forEach(function(row){
+    h += '<tr>';
+    row.forEach(function(cell,i){
+      h += '<td'+(i===0?' class="td-val"':'')+'>'+(cell||'—')+'</td>';
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   PAGE 1 — COVER
+═══════════════════════════════════════════ */
+function pageCover(){
+  var org  = w('s1_orgName', sessionStorage.getItem('ecoOrgName') || 'Your Organization');
+  var ind  = w('s1_industry', sessionStorage.getItem('ecoIndustry') || 'Industry');
+  var yr   = new Date().getFullYear();
+  var rev  = w('s1_revenue', '');
+  var emp  = w('s1_employees', '');
+  var sites= w('s1_sites', '');
+
+  var h = '<div class="erg-page cover-page">';
+  h += '<div class="cover-geo-1"></div><div class="cover-geo-2"></div><div class="cover-geo-3"></div><div class="cover-geo-4"></div>';
+  h += '<div class="cover-right-accent"></div>';
+  // SVG grid
+  h += '<svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.03;pointer-events:none" xmlns="http://www.w3.org/2000/svg" width="794" height="1122">';
+  var i;
+  for(i=0;i<794;i+=60) h += '<line x1="'+i+'" y1="0" x2="'+i+'" y2="1122" stroke="#fff" stroke-width="0.5"/>';
+  for(i=0;i<1122;i+=60) h += '<line x1="0" y1="'+i+'" x2="794" y2="'+i+'" stroke="#fff" stroke-width="0.5"/>';
+  h += '</svg>';
+  // Top bar
+  h += '<div class="cover-top" style="position:relative;z-index:2">';
+  h += '<div style="display:flex;align-items:center;gap:12px">';
+  h += '<div style="width:48px;height:48px;background:linear-gradient(135deg,#16A34A,#22C55E);border-radius:12px;display:flex;align-items:center;justify-content:center">';
+  h += '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12l3 3 5-5"/></svg>';
+  h += '</div>';
+  h += '<div style="font-family:Poppins,sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,0.7)">QMICS Environmental Portal</div>';
+  h += '</div>';
+  h += '<div class="cover-esg-badge">ESG Report</div>';
+  h += '</div>';
+  // Main
+  h += '<div class="cover-main">';
+  h += '<div class="cover-report-tag">Sustainability &amp; ESG Disclosure Report</div>';
+  h += '<div class="cover-project-title">'+esc(org)+'</div>';
+  h += '<div class="cover-report-subtitle">Comprehensive ESG Sustainability Report — GRI Standards 2021 | SEBI BRSR | TCFD | SASB | UN SDGs</div>';
+  h += '<div class="cover-accent-line"></div>';
+  h += '<div class="cover-org-name">'+esc(ind)+'</div>';
+  h += '<div class="cover-org-meta" style="margin-top:8px"><span style="color:#22C55E">&#9679;</span>&nbsp;'+esc(yr)+' Annual ESG Report&nbsp;&nbsp;<span style="color:rgba(255,255,255,0.2)">|</span>&nbsp;&nbsp;'+esc(periodLabel())+'</div>';
+  h += '</div>';
+  // Meta bar
+  h += '<div class="cover-meta-bar">';
+  h += '<div class="cover-meta-block"><label>Reporting Year</label><span>'+yr+'</span></div>';
+  h += '<div class="cover-meta-block"><label>Employees</label><span>'+(emp||'—')+'</span></div>';
+  h += '<div class="cover-meta-block"><label>Revenue</label><span>'+(rev||'—')+'</span></div>';
+  h += '<div class="cover-meta-block"><label>Report Date</label><span>'+today()+'</span></div>';
+  h += '</div>';
+  h += '</div>'; // .cover-page
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   PAGE 2 — INSIDE COVER
+═══════════════════════════════════════════ */
+function pageInsideCover(){
+  var org  = w('s1_orgName', 'Organization');
+  var ind  = w('s1_industry', 'Industry');
+  var emp  = w('s1_employees', '—');
+  var sites= w('s1_sites', '—');
+  var yr   = new Date().getFullYear();
+  var assurer = w('s7_assurer','Third-Party Assurance Provider');
+  var assLvl  = w('s7_assuranceLevel','Limited Assurance');
+  var assStd  = w('s7_assuranceStd','ISAE 3000');
+  var gri  = W['s2_gri']  !== false;
+  var sasb = W['s2_sasb'] !== false;
+  var tcfd = W['s2_tcfd'] !== false;
+  var sdg  = W['s2_sdg']  !== false;
+  var brsr = W['s2_brsr'] !== false;
+  var iso  = W['s2_iso'];
+
+  var h = '<div class="erg-page icover-page">';
+  // Left
+  h += '<div class="icover-left">';
+  h += '<div class="icover-left-geo"></div>';
+  h += '<div class="icover-accent-top"></div>';
+  h += '<div class="icover-tag">About This Report</div>';
+  h += '<h2>ESG<br>Sustainability<br>Report '+yr+'</h2>';
+  h += '<p class="desc">Published in accordance with GRI Standards 2021, SEBI BRSR Framework, TCFD Recommendations, and SASB Standards.</p>';
+  h += '<div class="icover-field"><label>Organization</label><span>'+esc(org)+'</span></div>';
+  h += '<div class="icover-field"><label>Industry Sector</label><span>'+esc(ind)+'</span></div>';
+  h += '<div class="icover-field"><label>Employees</label><span>'+esc(emp)+'</span></div>';
+  h += '<div class="icover-field"><label>Operating Sites</label><span>'+esc(sites)+'</span></div>';
+  h += '<div class="icover-field"><label>Reporting Period</label><span>'+esc(periodLabel())+'</span></div>';
+  h += '<div class="icover-field"><label>Report Date</label><span>'+today()+'</span></div>';
+  h += '</div>'; // .icover-left
+  // Right
+  h += '<div class="icover-right">';
+  h += '<h3>'+esc(org)+'</h3>';
+  h += '<div class="icover-divider"></div>';
+  h += '<div style="margin-bottom:20px">';
+  h += '<div class="icover-disclaimer-title">Reporting Frameworks</div>';
+  h += '<div style="margin-top:8px">';
+  if(gri)  h += '<span class="fw-badge fw-gri">GRI Standards 2021</span>';
+  if(brsr) h += '<span class="fw-badge fw-brsr">SEBI BRSR</span>';
+  if(tcfd) h += '<span class="fw-badge fw-tcfd">TCFD</span>';
+  if(sasb) h += '<span class="fw-badge fw-sasb">SASB</span>';
+  if(sdg)  h += '<span class="fw-badge fw-sdg">UN SDGs</span>';
+  if(iso)  h += '<span class="fw-badge fw-iso">ISO 14001</span>';
+  h += '</div></div>';
+  h += '<div class="icover-disclaimer-title">Scope of Report</div>';
+  var scope = w('s7_assuranceScope', 'All owned and operated facilities for the reporting period.');
+  h += '<p class="icover-disclaimer-text">'+esc(scope)+'</p>';
+  h += '<div class="icover-disclaimer-title">Third-Party Assurance</div>';
+  h += '<p class="icover-disclaimer-text">This report has been provided with <strong>'+esc(assLvl)+'</strong> by <strong>'+esc(assurer)+'</strong> in accordance with '+esc(assStd)+'. The assurance statement is available upon request.</p>';
+  h += '<div class="icover-disclaimer-title">Disclaimer</div>';
+  h += '<p class="icover-disclaimer-text">This ESG Sustainability Report has been prepared in good faith based on available information. Forward-looking statements reflect current intentions and may differ from actual outcomes. Reproduction without written consent is prohibited.</p>';
+  h += '<div class="icover-cert-grid">';
+  h += '<div class="icover-cert-card"><label>Document Version</label><span>1.0</span></div>';
+  h += '<div class="icover-cert-card"><label>Status</label><span>Final</span></div>';
+  h += '<div class="icover-cert-card"><label>Classification</label><span>Public</span></div>';
+  h += '<div class="icover-cert-card"><label>Language</label><span>English</span></div>';
+  h += '</div>';
+  h += '</div>'; // .icover-right
+  h += '</div>'; // .icover-page
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   PAGE 3 — TABLE OF CONTENTS
+═══════════════════════════════════════════ */
+function pageTOC(){
+  var org = w('s1_orgName','');
+  var entries = [
+    {num:'',   title:'FRONT MATTER', isLabel:true},
+    {num:'—',  title:'Executive Summary',           sub:'Key highlights and sustainability pillars',       pg:'4'},
+    {num:'—',  title:'Organization Profile',         sub:'About the company and operations',               pg:'6'},
+    {num:'',   title:'ENVIRONMENTAL',                isLabel:true},
+    {num:'03', title:'Energy & GHG Emissions',       sub:'Scope 1, 2 & 3 — energy mix and carbon data',   pg:'8'},
+    {num:'04', title:'Water & Waste Management',     sub:'Consumption, recycling, disposal targets',       pg:'10'},
+    {num:'',   title:'SOCIAL',                       isLabel:true},
+    {num:'05', title:'Workforce & Diversity',        sub:'Employment, gender, DEI and training',           pg:'12'},
+    {num:'06', title:'Safety, Health & CSR',         sub:'OHS performance and community investment',       pg:'14'},
+    {num:'',   title:'GOVERNANCE',                   isLabel:true},
+    {num:'07', title:'Governance Framework',         sub:'Board composition, ethics and compliance',       pg:'16'},
+    {num:'08', title:'ESG Targets & Roadmap',        sub:'Short, medium and long-term commitments',        pg:'18'},
+    {num:'',   title:'ANNEXURES',                    isLabel:true},
+    {num:'09', title:'Frameworks Index',             sub:'GRI, SASB, TCFD, SEBI BRSR disclosures',        pg:'20'}
+  ];
+  var h = '<div class="erg-page toc-page">';
+  h += '<div class="toc-header"><div class="toc-header-geo"></div><div class="toc-header-accent"></div>';
+  h += '<div class="toc-header-tag">Contents</div><h1>Table of<br>Contents</h1></div>';
+  h += '<div class="toc-body">';
+  entries.forEach(function(e){
+    if(e.isLabel){ h += '<div class="toc-chapter-label">'+esc(e.title)+'</div>'; return; }
+    h += '<div class="toc-entry">';
+    h += '<div class="toc-entry-num">'+esc(e.num)+'</div>';
+    h += '<div><div class="toc-entry-title">'+esc(e.title)+'</div>';
+    if(e.sub) h += '<div class="toc-entry-sub">'+esc(e.sub)+'</div>';
+    h += '</div><div class="toc-dots"></div>';
+    h += '<div class="toc-page-num">'+esc(e.pg)+'</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<div class="toc-footer"><div class="toc-footer-org">'+esc(org)+'</div><div class="toc-footer-page">3</div></div>';
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 01 — EXECUTIVE SUMMARY
+═══════════════════════════════════════════ */
+function pageExecOpener(){
+  return soPage('01','Executive Summary','A comprehensive overview of ESG performance, sustainability highlights, and our commitment to responsible business.', [
+    'CEO and Board sustainability statement',
+    'Four sustainability pillars performance overview',
+    'Key ESG metrics and year-on-year progress',
+    'Material topics and stakeholder priorities',
+    'Alignment with UN Sustainable Development Goals'
+  ]);
+}
+
+function pageExecContent(){
+  var org = w('s1_orgName','the organization');
+  var ceo = w('s1_ceoStatement','');
+  var board = w('s1_boardStatement','');
+  var vision = w('s1_vision','');
+  var highlights = w('s1_highlights','');
+  var yr = new Date().getFullYear();
+  var rows = monRows();
+  var tGrid = sum(rows, function(e){return e.energy&&e.energy.grid;});
+  var tRenew= sum(rows, function(e){return e.energy&&e.energy.renew;});
+  var tS1   = sum(rows, function(e){return e.ghg&&e.ghg.s1;});
+  var tS2   = sum(rows, function(e){return e.ghg&&e.ghg.s2;});
+  var lEmp  = last(rows, function(e){return e.social&&e.social.emp;});
+  var lFem  = last(rows, function(e){return e.social&&e.social.female;});
+  var tCSR  = sum(rows, function(e){return e.social&&e.social.csr;});
+  var renPct = (tGrid||tRenew) ? ((tRenew/(tGrid+tRenew))*100).toFixed(0)+'%' : w('s3_renewShare','—')+'%';
+  var femPct = lEmp ? ((lFem/lEmp)*100).toFixed(0)+'%' : (w('s4_womenPct')?w('s4_womenPct')+'%':'—');
+  var scope12 = (tS1||tS2) ? (tS1+tS2).toFixed(0)+' tCO₂e' : (w('s3_scope1')||w('s3_scope2') ? ((+w('s3_scope1',0))+(+w('s3_scope2',0))).toFixed(0)+' tCO₂e' : '—');
+
+  var h = '<div class="erg-page content-page" id="esgS01c">';
+  h += pageHeader('Executive Summary');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Executive Summary</div>';
+  h += '<div class="sec-subheading">Sustainability highlights and leadership commitments — '+yr+'</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  // Stat bar
+  h += '<div class="esg-stat-bar">';
+  h += '<div class="esg-stat"><div class="sv">'+esc(renPct)+'</div><div class="sl">Renewable Energy Share</div></div>';
+  h += '<div class="esg-stat"><div class="sv">'+esc(scope12)+'</div><div class="sl">Scope 1+2 Emissions</div></div>';
+  h += '<div class="esg-stat"><div class="sv">'+esc(femPct)+'</div><div class="sl">Women in Workforce</div></div>';
+  h += '<div class="esg-stat"><div class="sv">'+(tCSR?'₹'+tCSR.toLocaleString():w('s4_csr','—'))+'</div><div class="sl">CSR Investment</div></div>';
+  h += '</div>';
+
+  // ── ESG Score Dashboard (from score calculator daily save) ──
+  if(ESG_SCORE){
+    var sc = ESG_SCORE;
+    var rCol = sc.rating==='A+'?'#16a34a':sc.rating==='A'?'#22c55e':sc.rating==='B+'?'#2563eb':sc.rating==='B'?'#3b82f6':sc.rating==='C+'?'#d97706':sc.rating==='C'?'#f59e0b':'#dc2626';
+    h += '<div class="sub-section-title">ESG Score &amp; Rating<span class="sub-section-tag">As of '+esc(sc.date||today())+'</span></div>';
+    h += '<div style="background:linear-gradient(135deg,#0B1F3A,#1e3a5f);border-radius:14px;padding:24px 28px;margin-bottom:18px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">';
+    // Score circle
+    h += '<div style="text-align:center;flex-shrink:0">';
+    h += '<div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,'+rCol+'cc,'+rCol+');display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 8px;box-shadow:0 6px 24px rgba(0,0,0,.3)">';
+    h += '<div style="font-family:Poppins,sans-serif;font-size:2rem;font-weight:900;color:#fff;line-height:1">'+sc.overall+'</div>';
+    h += '<div style="font-size:10px;color:rgba(255,255,255,.75);font-weight:600">/ 100</div></div>';
+    h += '<div style="display:inline-block;background:'+rCol+';color:#fff;border-radius:8px;padding:5px 18px;font-family:Poppins,sans-serif;font-size:16px;font-weight:900;letter-spacing:1px">'+esc(sc.rating)+'</div>';
+    h += '</div>';
+    // Pillars
+    h += '<div style="display:flex;gap:14px;flex:1;flex-wrap:wrap">';
+    var pils=[{l:'Environmental',v:sc.E,c:'#22c55e',w:'40%'},{l:'Social',v:sc.S,c:'#60a5fa',w:'35%'},{l:'Governance',v:sc.G,c:'#c084fc',w:'25%'}];
+    pils.forEach(function(p){
+      h += '<div style="flex:1;min-width:80px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 12px;text-align:center">';
+      h += '<div style="font-family:Poppins,sans-serif;font-size:1.5rem;font-weight:900;color:'+p.c+'">'+p.v+'</div>';
+      h += '<div style="font-size:9px;color:rgba(255,255,255,.55);font-weight:700;text-transform:uppercase;letter-spacing:.5px">'+esc(p.l)+'</div>';
+      h += '<div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px">Weight: '+p.w+'</div>';
+      // progress bar
+      h += '<div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:8px;overflow:hidden">';
+      h += '<div style="width:'+p.v+'%;height:4px;background:'+p.c+';border-radius:2px"></div></div>';
+      h += '</div>';
+    });
+    h += '</div>';
+    // History mini (last 5)
+    if(ESG_SCORE_HIST && ESG_SCORE_HIST.length > 1){
+      h += '<div style="flex-shrink:0;min-width:160px">';
+      h += '<div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Recent Trend</div>';
+      ESG_SCORE_HIST.slice(0,5).forEach(function(h2){
+        h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
+        h += '<span style="font-size:10px;color:rgba(255,255,255,.5)">'+esc(h2.date)+'</span>';
+        h += '<span style="font-size:10px;font-weight:800;color:#fff">'+h2.overall+'/100</span>';
+        h += '<span style="font-size:9px;background:rgba(255,255,255,.12);color:#e9d5ff;border-radius:4px;padding:1px 6px">'+esc(h2.rating)+'</span>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+
+  if(vision){
+    h += '<div class="callout-box navy"><p><strong>Our Vision: </strong>'+esc(vision)+'</p></div>';
+  }
+  if(ceo){
+    h += '<div class="sub-section-title">CEO Statement<span class="sub-section-tag">Leadership Message</span></div>';
+    h += '<p class="body-text">'+esc(ceo)+'</p>';
+  }
+  if(board){
+    h += '<div class="sub-section-title">Board Statement<span class="sub-section-tag">Governance</span></div>';
+    h += '<p class="body-text">'+esc(board)+'</p>';
+  }
+  if(highlights){
+    h += '<div class="sub-section-title">Sustainability Highlights</div>';
+    h += '<p class="body-text">'+esc(highlights)+'</p>';
+  }
+
+  // Pillars
+  h += '<div class="sub-section-title">Four Sustainability Pillars</div>';
+  var pillars=[
+    {num:'I',  title:'Ethical Governance',       desc:'Strong board oversight, anti-corruption policies, transparent disclosures and ethical business practices.',      col:BLUE,   cls:'blue'},
+    {num:'II', title:'Preserving Our Planet',    desc:'Climate action, energy efficiency, water stewardship, waste reduction and biodiversity commitments.',           col:GREEN,  cls:''},
+    {num:'III',title:'Our People, Our Strength', desc:'Workforce diversity, employee wellbeing, occupational safety, training and community development.',             col:PURPLE, cls:'purple'},
+    {num:'IV', title:'Steering Progress',        desc:'Sustainable supply chain, customer health & safety, access and affordable solutions for society.',             col:AMBER,  cls:'amber'},
+  ];
+  h += '<div class="kpi-row kpi-row-2">';
+  pillars.forEach(function(p){
+    h += '<div class="kpi-card '+p.cls+'" style="padding:18px">';
+    h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+    h += '<div style="width:36px;height:36px;border-radius:8px;background:'+p.col+';color:#fff;font-family:Poppins,sans-serif;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">'+esc(p.num)+'</div>';
+    h += '<div style="font-family:Poppins,sans-serif;font-size:12px;font-weight:700;color:#0B1F3A">'+esc(p.title)+'</div>';
+    h += '</div><p style="font-size:11px;color:#64748B;line-height:1.6">'+esc(p.desc)+'</p>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '</div>';
+  h += pageFooter(4,'Executive Summary');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 02 — ORGANIZATION PROFILE
+═══════════════════════════════════════════ */
+function pageOrgOpener(){
+  return soPage('02','Organization Profile','Corporate identity, operations, certifications and stakeholder engagement approach.',[
+    'Corporate identity and legal registration',
+    'Industry classification and business activities',
+    'Facility locations and operational boundaries',
+    'Key stakeholders and materiality assessment',
+    'UN Sustainable Development Goals alignment'
+  ]);
+}
+
+function pageOrgContent(){
+  var org   = w('s1_orgName','—');
+  var ind   = w('s1_industry','—');
+  var emp   = w('s1_employees','—');
+  var rev   = w('s1_revenue','—');
+  var sites = w('s1_sites','—');
+  var mat   = w('s2_materialTopics','');
+  var stake = w('s2_stakeholders','');
+  var engage= w('s2_engagementMethod','');
+  var sdgGoals = w('s2_sdgGoals','SDG 3, SDG 7, SDG 8, SDG 12, SDG 13, SDG 17');
+
+  var h = '<div class="erg-page content-page" id="esgS02c">';
+  h += pageHeader('Organization Profile');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Organization Profile</div>';
+  h += '<div class="sec-subheading">Corporate identity, operations and stakeholder engagement</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="info-grid">';
+  h += '<div class="info-grid-row info-grid-3"><div class="info-cell"><label>Organization</label><span>'+esc(org)+'</span></div><div class="info-cell"><label>Industry Sector</label><span>'+esc(ind)+'</span></div><div class="info-cell"><label>Employees</label><span>'+esc(emp)+'</span></div></div>';
+  h += '<div class="info-grid-row info-grid-3"><div class="info-cell"><label>Revenue</label><span>'+esc(rev)+'</span></div><div class="info-cell"><label>Operating Sites</label><span>'+esc(sites)+'</span></div><div class="info-cell"><label>Reporting Period</label><span>'+esc(periodLabel())+'</span></div></div>';
+  h += '</div>';
+
+  if(mat){
+    h += '<div class="sub-section-title">Material Topics<span class="sub-section-tag">GRI 3</span></div>';
+    h += '<p class="body-text">'+esc(mat)+'</p>';
+  }
+  if(stake){
+    h += '<div class="sub-section-title">Key Stakeholders<span class="sub-section-tag">GRI 2-29</span></div>';
+    h += '<p class="body-text">'+esc(stake)+'</p>';
+  }
+  if(engage){
+    h += '<div class="sub-section-title">Engagement Approach</div>';
+    h += '<p class="body-text">'+esc(engage)+'</p>';
+  }
+
+  h += '<div class="sub-section-title">UN SDG Alignment<span class="sub-section-tag">SDGs</span></div>';
+  h += '<p class="body-text">'+esc(org)+' aligns its sustainability strategy with the following United Nations Sustainable Development Goals: <strong>'+esc(sdgGoals)+'</strong>.</p>';
+
+  // Materiality matrix table
+  h += '<div class="sub-section-title">Materiality Assessment Summary</div>';
+  h += table(
+    ['Pillar','Material Topic','GRI Standard','Priority'],
+    [
+      ['Governance','Economic Performance','GRI 201','High'],
+      ['Governance','Anti-Corruption & Ethics','GRI 205-206','High'],
+      ['Environmental','Energy Management','GRI 302','High'],
+      ['Environmental','Climate Change & GHG Emissions','GRI 305','High'],
+      ['Environmental','Water & Effluents','GRI 303','High'],
+      ['Environmental','Waste Management','GRI 306','Medium'],
+      ['Social','Employment & Diversity','GRI 401 / 405','High'],
+      ['Social','Occupational Health & Safety','GRI 403','High'],
+      ['Social','Training & Development','GRI 404','High'],
+      ['Social','Community & CSR','GRI 413','Medium'],
+    ]
+  );
+  h += '</div>';
+  h += pageFooter(6,'Organization Profile');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 03 — ENVIRONMENTAL: ENERGY & GHG
+═══════════════════════════════════════════ */
+function pageEnvEnergyOpener(){
+  return soPage('03','Energy &amp; GHG Emissions','Comprehensive climate data including Scope 1, 2 &amp; 3 GHG emissions, energy mix, intensity and reduction roadmap.',[
+    'Grid electricity and renewable energy consumption',
+    'Scope 1 direct and Scope 2 indirect GHG emissions',
+    'Scope 3 value chain emissions categories',
+    'GHG emission intensity and reduction targets',
+    'Renewable energy transition progress'
+  ], GREEN);
+}
+
+function pageEnvEnergyContent(){
+  var rows = monRows();
+  var tGrid  = sum(rows, function(e){return e.energy&&e.energy.grid;});
+  var tRenew = sum(rows, function(e){return e.energy&&e.energy.renew;});
+  var tDiesel= sum(rows, function(e){return e.energy&&e.energy.diesel;});
+  var tS1    = sum(rows, function(e){return e.ghg&&e.ghg.s1;});
+  var tS2    = sum(rows, function(e){return e.ghg&&e.ghg.s2;});
+
+  var s1 = tS1 || +w('s3_scope1',0);
+  var s2 = tS2 || +w('s3_scope2',0);
+  var s3 = +w('s3_scope3',0);
+  var energy = +w('s3_energy',0) || tGrid+tRenew;
+  var renShare = w('s3_renewShare','') || (tGrid||tRenew ? ((tRenew/(tGrid+tRenew))*100).toFixed(1) : '—');
+  var ghgInt = w('s3_ghgIntensity','—');
+  var ghgTgt = w('s3_ghgTarget','25% Scope 1 & 2 Reduction by 2030');
+  var scope1src = w('s3_scope1src','Stationary combustion, process emissions');
+  var scope3cats= w('s3_scope3cats','Business travel, purchased goods, supply chain');
+  var energyInt = w('s3_energyIntensity','—');
+
+  // Metrics from wizard KPI section
+  var e1prev = w('m_e1_prev','—'); var e1curr = w('m_e1_curr','—'); var e1tgt = w('m_e1_target','—');
+  var e2prev = w('m_e2_prev','—'); var e2curr = w('m_e2_curr','—'); var e2tgt = w('m_e2_target','—');
+
+  var h = '<div class="erg-page content-page" id="esgS03c">';
+  h += pageHeader('Energy & GHG Emissions');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Energy &amp; GHG Emissions</div>';
+  h += '<div class="sec-subheading">Pillar II — Preserving Our Planet | GRI 302, GRI 305 | TCFD</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="kpi-row kpi-row-4">';
+  h += kpiCard('Scope 1 GHG', s1?s1.toFixed(0):'—','tCO₂e');
+  h += kpiCard('Scope 2 GHG', s2?s2.toFixed(0):'—','tCO₂e','blue');
+  h += kpiCard('Scope 3 GHG', s3?s3.toFixed(0):'—','tCO₂e','amber');
+  h += kpiCard('Renewable Share', renShare+'%','of energy mix');
+  h += '</div>';
+
+  h += '<div class="sub-section-title">Energy Consumption<span class="sub-section-tag">GRI 302</span></div>';
+  h += table(
+    ['Energy Metric','Previous Year','Current Year','Target','GRI Ref'],
+    [
+      ['Total Energy Consumption (GJ)',e1prev,e1curr,e1tgt,'GRI 302-1'],
+      ['Grid Electricity (kWh)',tGrid?tGrid.toLocaleString():'—','—','Reduce Y-o-Y','GRI 302-1'],
+      ['Renewable Energy (kWh)',tRenew?tRenew.toLocaleString():'—','—','25% by 2030','GRI 302-1'],
+      ['Diesel Consumption (Litres)',tDiesel?tDiesel.toFixed(0):'—','—','Minimize','GRI 302-1'],
+      ['Renewable Energy Share (%)',e2prev,e2curr,e2tgt,'GRI 302-4'],
+      ['Energy Intensity (GJ/INR Cr)','—',energyInt,'Improve Y-o-Y','GRI 302-3'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">GHG Emissions<span class="sub-section-tag">GRI 305 | TCFD</span></div>';
+  h += table(
+    ['Emissions Metric','Value','Unit','Source / Notes'],
+    [
+      ['Scope 1 — Direct Emissions',s1?s1.toFixed(2):'—','tCO₂e',esc(scope1src)],
+      ['Scope 2 — Indirect (Location-based)',s2?s2.toFixed(2):'—','tCO₂e','Grid electricity consumption'],
+      ['Scope 3 — Value Chain',s3?s3.toFixed(2):'—','tCO₂e',esc(scope3cats)],
+      ['Total Scope 1+2',(s1+s2)?(s1+s2).toFixed(2):'—','tCO₂e','Combined direct+indirect'],
+      ['GHG Intensity','—',ghgInt,'Per unit of revenue/production'],
+    ]
+  );
+
+  h += '<div class="callout-box"><p><strong>GHG Reduction Target: </strong>'+esc(ghgTgt)+'. Net Zero by 2045 committed across Scope 1 &amp; 2 emissions. Science-Based Target (SBT) alignment in progress.</p></div>';
+  h += '</div>';
+  h += pageFooter(8,'Energy & GHG Emissions');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 04 — ENVIRONMENTAL: WATER & WASTE
+═══════════════════════════════════════════ */
+function pageEnvWaterOpener(){
+  return soPage('04','Water &amp; Waste Management','Water stewardship, effluent management, waste minimization and circular economy commitments.',[
+    'Freshwater withdrawal and sources',
+    'Water recycling, reuse and treatment systems',
+    'Hazardous and non-hazardous waste generation',
+    'Waste disposal methods and diversion rates',
+    'Biodiversity and land-use commitments'
+  ], GREEN);
+}
+
+function pageEnvWaterContent(){
+  var rows = monRows();
+  var tFW  = sum(rows, function(e){return e.wcons&&e.wcons.fresh;});
+  var tRW  = sum(rows, function(e){return e.wcons&&e.wcons.recy;});
+  var tHaz = sum(rows, function(e){return e.waste&&e.waste.haz;});
+  var tNhaz= sum(rows, function(e){return e.waste&&e.waste.nhaz;});
+  var tRec = sum(rows, function(e){return e.waste&&e.waste.rec;});
+
+  var wiz_water  = +w('s3_water',0) || tFW;
+  var wiz_wrecyc = +w('s3_waterRecycle',0) || tRW;
+  var wiz_waste  = +w('s3_waste',0);
+  var wiz_diverted = +w('s3_wasteDiverted',0) || tRec;
+  var bio = w('s3_biodiversity','');
+
+  // KPI metrics
+  var e3prev = w('m_e3_prev','—'); var e3curr = w('m_e3_curr','—'); var e3tgt = w('m_e3_target','—');
+
+  var recycleRatio = (tFW||tRW) ? ((tRW/(tFW+tRW))*100).toFixed(1)+'%' : '—';
+  var diversionRate= (tHaz||tNhaz||tRec) ? ((tRec/(tHaz+tNhaz))*100).toFixed(1)+'%' : '—';
+
+  var h = '<div class="erg-page content-page" id="esgS04c">';
+  h += pageHeader('Water & Waste Management');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Water &amp; Waste Management</div>';
+  h += '<div class="sec-subheading">Pillar II — Preserving Our Planet | GRI 303, GRI 306</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="kpi-row kpi-row-4">';
+  h += kpiCard('Freshwater Withdrawal', tFW?tFW.toLocaleString():(wiz_water||'—'),'KL');
+  h += kpiCard('Water Recycled', tRW?tRW.toLocaleString():(wiz_wrecyc||'—'),'KL','blue');
+  h += kpiCard('Hazardous Waste', tHaz?tHaz.toFixed(1):'—','MT','red');
+  h += kpiCard('Waste Diverted', tRec?tRec.toFixed(1):(wiz_diverted||'—'),'MT');
+  h += '</div>';
+
+  h += '<div class="sub-section-title">Water Management<span class="sub-section-tag">GRI 303</span></div>';
+  h += table(
+    ['Water Metric','Previous Year','Current Year','Target'],
+    [
+      ['Total Freshwater Withdrawal (KL)',e3prev,e3curr,e3tgt],
+      ['Water Recycled/Reused (KL)',tRW?tRW.toLocaleString():'—','—','Increase Y-o-Y'],
+      ['Recycled Water Share (%)',recycleRatio,'—','Maximize'],
+      ['Effluent Discharge (treated) (KL)','—','—','Zero untreated discharge'],
+      ['Water Intensity (KL/unit)','—','—','Reduce Y-o-Y'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">Waste Management<span class="sub-section-tag">GRI 306</span></div>';
+  h += table(
+    ['Waste Category','Quantity','Unit','Disposal Method','Target'],
+    [
+      ['Hazardous Waste',tHaz?tHaz.toFixed(2):'—','MT','Authorized TSDF / licensed recycler','10% Reduction by 2028'],
+      ['Non-Hazardous Waste',tNhaz?tNhaz.toFixed(2):'—','MT','Recycling / composting','Zero Landfill by 2026'],
+      ['Waste Recycled / Recovered',tRec?tRec.toFixed(2):(wiz_diverted||'—'),'MT','Circular economy pathways','Maximize recovery'],
+      ['Landfill Diversion Rate',diversionRate,'%','—','100% by 2026'],
+      ['E-Waste','—','MT','Authorized e-waste recycler','Track & Report'],
+    ]
+  );
+
+  if(bio){
+    h += '<div class="sub-section-title">Biodiversity<span class="sub-section-tag">GRI 304</span></div>';
+    h += '<p class="body-text">'+esc(bio)+'</p>';
+  } else {
+    h += '<div class="callout-box"><p><strong>Biodiversity Commitment: </strong>'+w('s1_orgName','The organization')+' is committed to assessing and mitigating biodiversity impacts. Formal biodiversity assessments are planned as part of the sustainability roadmap.</p></div>';
+  }
+  h += '</div>';
+  h += pageFooter(10,'Water & Waste Management');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 05 — SOCIAL: WORKFORCE & DIVERSITY
+═══════════════════════════════════════════ */
+function pageSocialWorkforceOpener(){
+  return soPage('05','Workforce &amp; Diversity','Our people agenda — employment, gender equity, DEI initiatives, training and professional development.',[
+    'Total headcount, new hires and attrition',
+    'Gender diversity and women in leadership',
+    'DEI initiatives and equal opportunity',
+    'Employee training hours and learning programs',
+    'Labour standards and human rights commitments'
+  ], BLUE);
+}
+
+function pageSocialWorkforceContent(){
+  var rows = monRows();
+  var lEmp  = last(rows, function(e){return e.social&&e.social.emp;})  || +w('s4_headcount',0);
+  var lMale = last(rows, function(e){return e.social&&e.social.male;});
+  var lFem  = last(rows, function(e){return e.social&&e.social.female;});
+
+  var headcount  = lEmp || '—';
+  var womenPct   = w('s4_womenPct','') || (lEmp&&lFem ? ((lFem/lEmp)*100).toFixed(1) : '—');
+  var womenLeaders = w('s4_womenLeaders','—');
+  var newHires   = w('s4_newHires','—');
+  var turnover   = w('s4_turnover','—');
+  var trainHours = w('s4_trainHours','—');
+  var dei        = w('s4_deiInitiatives','');
+  var laborStd   = w('s4_laborStandards','');
+
+  var s1prev = w('m_s1_prev','—'); var s1curr = w('m_s1_curr','—'); var s1tgt = w('m_s1_target','—');
+
+  var h = '<div class="erg-page content-page" id="esgS05c">';
+  h += pageHeader('Workforce & Diversity');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Workforce &amp; Diversity</div>';
+  h += '<div class="sec-subheading">Pillar III — Our People, Our Strength | GRI 401, 404, 405</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="kpi-row kpi-row-4">';
+  h += kpiCard('Total Employees', String(headcount),'headcount','navy');
+  h += kpiCard('Women in Workforce', womenPct+'%','diversity','blue');
+  h += kpiCard('Women in Leadership', womenLeaders+'%','leadership','purple');
+  h += kpiCard('Training Hours', trainHours,'hours/employee','amber');
+  h += '</div>';
+
+  h += '<div class="sub-section-title">Employment Metrics<span class="sub-section-tag">GRI 401</span></div>';
+  h += table(
+    ['Metric','Previous Year','Current Year','Target'],
+    [
+      ['Total Employees',s1prev,s1curr,s1tgt],
+      ['Male Employees',lMale?String(lMale):'—','—','—'],
+      ['Female Employees',lFem?String(lFem):'—','—','—'],
+      ['New Hires',newHires,'—','Grow responsibly'],
+      ['Attrition Rate (%)',turnover+'%','—','Benchmark & Reduce'],
+      ['Persons with Disabilities','—','—','PwD Programme by 2026'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">Diversity &amp; Inclusion<span class="sub-section-tag">GRI 405</span></div>';
+  h += table(
+    ['DEI Metric','Value','Target','GRI Ref'],
+    [
+      ['Women in Workforce (%)',womenPct+'%','30% by 2030','GRI 405-1'],
+      ['Women in Senior Leadership (%)',womenLeaders+'%','25% by 2030','GRI 405-1'],
+      ['Gender Pay Equity Ratio','—','1:1 parity','GRI 405-2'],
+      ['Training Hours / Employee',trainHours,'Min. 40 hrs/yr','GRI 404-1'],
+      ['Employees with Performance Review','—','100%','GRI 404-3'],
+    ]
+  );
+
+  if(dei){
+    h += '<div class="sub-section-title">DEI Initiatives</div>';
+    h += '<p class="body-text">'+esc(dei)+'</p>';
+  }
+  if(laborStd){
+    h += '<div class="sub-section-title">Labour Standards<span class="sub-section-tag">GRI 402</span></div>';
+    h += '<p class="body-text">'+esc(laborStd)+'</p>';
+  }
+  h += '</div>';
+  h += pageFooter(12,'Workforce & Diversity');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 06 — SOCIAL: SAFETY & CSR
+═══════════════════════════════════════════ */
+function pageSocialSafetyOpener(){
+  return soPage('06','Safety, Health &amp; CSR','Occupational health & safety performance and community social responsibility investments.',[
+    'OHS management system and certifications',
+    'Lost time injuries, TRIR and LTIR metrics',
+    'Safety training, audits and near-miss reporting',
+    'CSR investment and community programs',
+    'SDG-aligned community development initiatives'
+  ], BLUE);
+}
+
+function pageSocialSafetyContent(){
+  var rows = monRows();
+  var tLTI   = sum(rows, function(e){return e.social&&e.social.lti;});
+  var tTrain = sum(rows, function(e){return e.social&&e.social.train;});
+  var tCSR   = sum(rows, function(e){return e.social&&e.social.csr;});
+
+  var trir    = w('s4_trir','—');
+  var ltir    = w('s4_ltir','—');
+  var fatal   = w('s4_fatalities','0');
+  var ohsCert = w('s4_ohsCert','');
+  var csr     = w('s4_csr','') || (tCSR?'₹'+tCSR.toLocaleString():'—');
+  var community= w('s4_community','');
+
+  var s2prev = w('m_s2_prev','—'); var s2curr = w('m_s2_curr','—'); var s2tgt = w('m_s2_target','—');
+
+  var h = '<div class="erg-page content-page" id="esgS06c">';
+  h += pageHeader('Safety, Health & CSR');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Safety, Health &amp; CSR</div>';
+  h += '<div class="sec-subheading">Pillar III — Our People | GRI 403, GRI 413</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="kpi-row kpi-row-4">';
+  h += kpiCard('Lost Time Injuries', tLTI?String(tLTI):'0','LTI count','red');
+  h += kpiCard('TRIR', trir,'per 200K hours');
+  h += kpiCard('LTIR', ltir,'per million hours','amber');
+  h += kpiCard('CSR Investment', csr,'total spend','purple');
+  h += '</div>';
+
+  h += '<div class="sub-section-title">Occupational Health &amp; Safety<span class="sub-section-tag">GRI 403</span></div>';
+  h += table(
+    ['OHS Metric','Previous Year','Current Year','Target'],
+    [
+      ['Safety Training Hours (CSR/OHS)',s2prev,s2curr,s2tgt],
+      ['Lost Time Injuries (LTI)',String(tLTI),'—','Zero LTI'],
+      ['Total Recordable Injury Rate (TRIR)',trir,'—','Year-on-Year Reduction'],
+      ['Lost Time Injury Rate (LTIR)',ltir,'—','Year-on-Year Reduction'],
+      ['Fatalities',fatal,'—','Zero Fatalities'],
+      ['Safety Audits Conducted','—','—','Quarterly minimum'],
+      ['Near Miss Incidents Reported','—','—','100% reporting culture'],
+    ]
+  );
+
+  if(ohsCert){
+    h += '<div class="callout-box blue"><p><strong>OHS Certifications: </strong>'+esc(ohsCert)+'</p></div>';
+  }
+
+  h += '<div class="sub-section-title">Community &amp; CSR Investment<span class="sub-section-tag">GRI 413</span></div>';
+  h += table(
+    ['CSR Metric','Value','Focus Areas'],
+    [
+      ['Total CSR Spend',csr,'Healthcare, Education, Environment, Rural Development'],
+      ['Community Programs Conducted','—','Health camps, tree plantations, skill development'],
+      ['Beneficiaries Reached','—','Track & Report Annually'],
+      ['CSR as % of Net Profit','—','≥2% as per Companies Act, 2013'],
+    ]
+  );
+
+  if(community){
+    h += '<div class="sub-section-title">Community Initiatives</div>';
+    h += '<p class="body-text">'+esc(community)+'</p>';
+  }
+  h += '</div>';
+  h += pageFooter(14,'Safety, Health & CSR');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 07 — GOVERNANCE
+═══════════════════════════════════════════ */
+function pageGovOpener(){
+  return soPage('07','Governance Framework','Board leadership, ethics, anti-corruption, compliance, and responsible business conduct across the value chain.',[
+    'Board composition, independence and diversity',
+    'ESG Committee structure and oversight',
+    'Executive remuneration and ESG linkage',
+    'Anti-corruption, whistleblower and ethics policies',
+    'Data security, privacy and cyber resilience'
+  ], PURPLE);
+}
+
+function pageGovContent(){
+  var boardSize  = w('s5_boardSize','—');
+  var boardIndep = w('s5_boardIndep','—');
+  var boardWomen = w('s5_boardWomen','—');
+  var esgComm    = w('s5_esgCommittee','');
+  var payRatio   = w('s5_payRatio','—');
+  var esgComp    = w('s5_esgComp','');
+  var violations = w('s5_violations','0');
+  var anticorr   = w('s5_anticorr','');
+  var whistle    = w('s5_whistle','');
+  var breaches   = w('s5_breaches','0');
+  var secFw      = w('s5_secFramework','');
+  var ethics     = w('s5_ethics','');
+
+  var g1prev = w('m_g1_prev','—'); var g1curr = w('m_g1_curr','—'); var g1tgt = w('m_g1_target','—');
+  var g2prev = w('m_g2_prev','—'); var g2curr = w('m_g2_curr','—'); var g2tgt = w('m_g2_target','—');
+
+  var h = '<div class="erg-page content-page" id="esgS07c">';
+  h += pageHeader('Governance Framework');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Governance Framework</div>';
+  h += '<div class="sec-subheading">Pillar I — Ethical Governance | GRI 205, 206 | SEBI BRSR</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="kpi-row kpi-row-4">';
+  h += kpiCard('Board Size', boardSize,'total directors','navy');
+  h += kpiCard('Independent Directors', boardIndep+'%','board independence','purple');
+  h += kpiCard('Women on Board', boardWomen+'%','gender diversity','blue');
+  h += kpiCard('Regulatory Violations', violations,'count (zero target)','red');
+  h += '</div>';
+
+  h += '<div class="sub-section-title">Board &amp; Governance Structure<span class="sub-section-tag">GRI 2-9 | BRSR</span></div>';
+  h += table(
+    ['Governance Metric','Previous Year','Current Year','Target'],
+    [
+      ['Board Independence (%)',g1prev,g1curr,g1tgt],
+      ['Women on Board (%)',g2prev,g2curr,g2tgt],
+      ['Board Meeting Attendance (%)','—','—','≥75%'],
+      ['CEO-Median Pay Ratio',payRatio,'—','Disclose annually'],
+      ['ESG Linked Executive Compensation','—','—','Yes, by 2025'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">ESG Governance Committee<span class="sub-section-tag">GRI 2-12</span></div>';
+  if(esgComm){
+    h += '<p class="body-text">'+esc(esgComm)+'</p>';
+  }
+  h += table(
+    ['Governance Body','Composition','Frequency','Responsibility'],
+    [
+      ['Board of Directors','Full board incl. independent directors','Quarterly','ESG strategy oversight'],
+      ['Sustainability Committee','C-suite + Sustainability Head','Monthly','KPI monitoring, implementation'],
+      ['Audit Committee','Independent directors majority','Quarterly','Risk, compliance, disclosures'],
+      ['Risk Management Committee','Board + Management','Half-yearly','ESG risk identification'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">Ethics &amp; Anti-Corruption<span class="sub-section-tag">GRI 205</span></div>';
+  if(anticorr){
+    h += '<p class="body-text">'+esc(anticorr)+'</p>';
+  }
+  if(whistle){
+    h += '<div class="callout-box purple"><p><strong>Whistleblower Policy: </strong>'+esc(whistle)+'</p></div>';
+  }
+  if(breaches){
+    h += '<div class="callout-box amber"><p><strong>Data/Security Breaches: </strong>'+esc(breaches)+' reported breach(es) during the reporting period. '+esc(secFw)+'</p></div>';
+  }
+  if(ethics){
+    h += '<div class="sub-section-title">Code of Ethics</div>';
+    h += '<p class="body-text">'+esc(ethics)+'</p>';
+  }
+  h += '</div>';
+  h += pageFooter(16,'Governance Framework');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 08 — ESG TARGETS & ROADMAP
+═══════════════════════════════════════════ */
+function pageTargetsOpener(){
+  return soPage('08','ESG Targets &amp; Roadmap','Short, medium and long-term sustainability commitments aligned with science-based targets and global frameworks.',[
+    'Near-term targets (2025–2027)',
+    'Medium-term targets (2027–2030)',
+    'Long-term net zero and sustainability goals',
+    'Science-based and SBTi aligned commitments',
+    'Progress tracking and accountability framework'
+  ], AMBER);
+}
+
+function pageTargetsContent(){
+  var targetYear = w('s2_targetYear','2030');
+  var targets    = w('s2_targets','');
+  var org = w('s1_orgName','the organization');
+
+  var h = '<div class="erg-page content-page" id="esgS08c">';
+  h += pageHeader('ESG Targets & Roadmap');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">ESG Targets &amp; Roadmap</div>';
+  h += '<div class="sec-subheading">Our sustainability commitments through '+esc(targetYear)+'</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  if(targets){
+    h += '<div class="callout-box"><p><strong>Custom Targets: </strong>'+esc(targets)+'</p></div>';
+  }
+
+  h += '<div class="sub-section-title">Environmental Targets<span class="sub-section-tag">Climate Action</span></div>';
+  h += table(
+    ['Target','Baseline Year','Target Year','Status'],
+    [
+      ['Net Zero (Scope 1 & 2)','2022','2045','Roadmap Ready'],
+      ['25% GHG Reduction (Scope 1+2)','2022','2030','In Progress'],
+      ['25% Renewable Energy Share','2022','2030','In Progress'],
+      ['33% Water Intensity Reduction','2022','2030','In Progress'],
+      ['Zero Landfill Waste','2022','2026','In Progress'],
+      ['10% Hazardous Waste Reduction','2022','2028','Planned'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">Social Targets<span class="sub-section-tag">People &amp; Community</span></div>';
+  h += table(
+    ['Target','Baseline Year','Target Year','Status'],
+    [
+      ['30% Women in Workforce','2022','2030','In Progress'],
+      ['25% Women in Senior Leadership','2022','2030','In Progress'],
+      ['Zero Lost Time Injuries','Ongoing','Ongoing','Priority'],
+      ['Min. 40 Training Hours / Employee','2023','2025','In Progress'],
+      ['PwD Employment Programme','2024','2026','Planned'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">Governance Targets<span class="sub-section-tag">Board &amp; Ethics</span></div>';
+  h += table(
+    ['Target','Baseline Year','Target Year','Status'],
+    [
+      ['40% Board Independence','2022','2025','In Progress'],
+      ['30% Women on Board','2022','2027','Planned'],
+      ['ESG-Linked Executive Compensation','2024','2025','In Progress'],
+      ['100% Supplier ESG Code of Conduct','2024','2026','Planned'],
+      ['Annual Third-Party Assurance (Limited)','2024','2025','In Progress'],
+    ]
+  );
+
+  // Progress bars for headline targets
+  h += '<div class="sub-section-title">Target Progress Overview</div>';
+  h += progBar('Renewable Energy — Target 25%', +(w('s3_renewShare',0)||0), 25, GREEN);
+  h += progBar('Women in Workforce — Target 30%', +(w('s4_womenPct',0)||0), 30, BLUE);
+  h += progBar('Board Independence — Target 40%', +(w('s5_boardIndep',0)||0), 40, PURPLE);
+
+  h += '</div>';
+  h += pageFooter(18,'ESG Targets & Roadmap');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   SECTION 09 — FRAMEWORKS INDEX
+═══════════════════════════════════════════ */
+function pageFrameworkOpener(){
+  return soPage('09','Frameworks Index','GRI Standards, SEBI BRSR, TCFD and SASB disclosure index for this report.',[
+    'GRI Standards 2021 — Universal and Topic Standards',
+    'SEBI BRSR Core — mandatory disclosures',
+    'TCFD — governance, strategy, risk, metrics',
+    'SASB — industry-specific material topics',
+    'UN SDGs — goals supported by operations'
+  ]);
+}
+
+function pageFrameworkContent(){
+  var gri = w('s7_griIndex','');
+  var sasb= w('s7_sasbTopics','');
+  var gloss= w('s7_glossary','');
+  var org = w('s1_orgName','Organization');
+
+  var h = '<div class="erg-page content-page" id="esgS09c">';
+  h += pageHeader('Frameworks Index');
+  h += '<div class="cp-content">';
+  h += '<div class="sec-heading">Frameworks Disclosure Index</div>';
+  h += '<div class="sec-subheading">GRI Standards 2021 | SEBI BRSR | TCFD | SASB | UN SDGs</div>';
+  h += '<div class="sec-green-rule"></div>';
+
+  h += '<div class="sub-section-title">GRI Standards Index<span class="sub-section-tag">GRI 2021</span></div>';
+  h += table(
+    ['GRI Standard','Disclosure','Report Section','Page'],
+    [
+      ['GRI 2: General Disclosures','Organizational details','Organization Profile','6'],
+      ['GRI 2: General Disclosures','Governance structure','Governance Framework','16'],
+      ['GRI 2: General Disclosures','Strategy & materiality','Executive Summary','4'],
+      ['GRI 3: Material Topics','Material topic list','Organization Profile','6'],
+      ['GRI 201: Economic Performance','Revenue, investments','Organization Profile','6'],
+      ['GRI 205: Anti-Corruption','Policies, training','Governance Framework','16'],
+      ['GRI 302: Energy','Energy consumption','Energy & GHG','8'],
+      ['GRI 303: Water & Effluents','Water withdrawal','Water & Waste','10'],
+      ['GRI 305: Emissions','Scope 1,2,3 GHG','Energy & GHG','8'],
+      ['GRI 306: Waste','Waste generation','Water & Waste','10'],
+      ['GRI 401: Employment','Headcount, turnover','Workforce & Diversity','12'],
+      ['GRI 403: OHS','TRIR, LTIR, fatalities','Safety, Health & CSR','14'],
+      ['GRI 404: Training','Hours, programs','Workforce & Diversity','12'],
+      ['GRI 405: Diversity','Gender, board diversity','Workforce & Diversity','12'],
+      ['GRI 413: Community','CSR spend, programs','Safety, Health & CSR','14'],
+    ]
+  );
+
+  if(gri){
+    h += '<div class="callout-box"><p><strong>Additional GRI Disclosures: </strong>'+esc(gri)+'</p></div>';
+  }
+
+  h += '<div class="sub-section-title">TCFD Disclosure Index<span class="sub-section-tag">TCFD</span></div>';
+  h += table(
+    ['TCFD Pillar','Disclosure','Report Section'],
+    [
+      ['Governance','Board oversight of climate risks','Governance Framework'],
+      ['Governance','Management role in climate risk','Governance Framework'],
+      ['Strategy','Climate risk/opportunity identification','Executive Summary'],
+      ['Strategy','Climate scenario analysis','ESG Targets & Roadmap'],
+      ['Risk Management','Climate risk identification process','Governance Framework'],
+      ['Metrics & Targets','Scope 1, 2 & 3 emissions','Energy & GHG Emissions'],
+      ['Metrics & Targets','GHG reduction targets','ESG Targets & Roadmap'],
+    ]
+  );
+
+  h += '<div class="sub-section-title">SEBI BRSR Core<span class="sub-section-tag">BRSR</span></div>';
+  h += table(
+    ['BRSR Category','Principle','Status'],
+    [
+      ['Business Conduct','Principle 1: Ethics & Transparency','Disclosed'],
+      ['Environmental','Principle 6: Environment Stewardship','Disclosed'],
+      ['Social — Employees','Principle 3 & 5: Employee wellbeing','Disclosed'],
+      ['Social — Community','Principle 8: Community Development','Disclosed'],
+      ['Governance','Principle 1: Good Governance','Disclosed'],
+      ['Value Chain','Principle 2: Sustainable Products','In Progress'],
+    ]
+  );
+
+  if(sasb){
+    h += '<div class="sub-section-title">SASB Topics</div>';
+    h += '<p class="body-text">'+esc(sasb)+'</p>';
+  }
+  if(gloss){
+    h += '<div class="sub-section-title">Glossary</div>';
+    h += '<p class="body-text">'+esc(gloss)+'</p>';
+  }
+  h += '</div>';
+  h += pageFooter(20,'Frameworks Index');
+  h += '</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════
+   ASSEMBLE REPORT
+═══════════════════════════════════════════ */
+window.esgGenerate = function(){
+  loadData();
+  var loading = document.getElementById('esgLoading');
+  loading.style.display = 'flex';
+
+  setTimeout(function(){
+    var html = '';
+    html += pageCover();
+    html += pageInsideCover();
+    html += pageTOC();
+    html += pageExecOpener();
+    html += pageExecContent();
+    html += pageOrgOpener();
+    html += pageOrgContent();
+    html += pageEnvEnergyOpener();
+    html += pageEnvEnergyContent();
+    html += pageEnvWaterOpener();
+    html += pageEnvWaterContent();
+    html += pageSocialWorkforceOpener();
+    html += pageSocialWorkforceContent();
+    html += pageSocialSafetyOpener();
+    html += pageSocialSafetyContent();
+    html += pageGovOpener();
+    html += pageGovContent();
+    html += pageTargetsOpener();
+    html += pageTargetsContent();
+    html += pageFrameworkOpener();
+    html += pageFrameworkContent();
+
+    var rpt = document.getElementById('esgReport');
+    rpt.innerHTML = html;
+    document.getElementById('esgPlaceholder').style.display = 'none';
+    rpt.style.display = 'flex';
+    loading.style.display = 'none';
+    document.getElementById('esgExportGroup').style.display = 'flex';
+    setTimeout(function(){ rpt.scrollIntoView({behavior:'smooth'}); }, 100);
+  }, 400);
+};
+
+/* ── PDF Export ── */
+window.esgExportPDF = function(){
+  var org = w('s1_orgName','Organization');
+  var yr  = new Date().getFullYear();
+  var loading = document.getElementById('esgLoading');
+  loading.style.display = 'flex';
+  loading.querySelector('.load-title').textContent = 'Exporting PDF…';
+  loading.querySelector('.load-sub').textContent = 'This may take 20–40 seconds for a multi-page report.';
+
+  var opt = {
+    margin: 0,
+    filename: org.replace(/[^a-z0-9]/gi,'_')+'_ESG_Report_'+yr+'.pdf',
+    image: { type:'jpeg', quality:0.92 },
+    html2canvas: { scale:2, useCORS:true, letterRendering:true },
+    jsPDF: { unit:'px', format:[794,1122], orientation:'portrait' },
+    pagebreak: { mode:['css','legacy'], before:'.erg-page' }
+  };
+  var el = document.getElementById('esgReport');
+  html2pdf().set(opt).from(el).save().then(function(){
+    loading.style.display = 'none';
+    loading.querySelector('.load-title').textContent = 'Building Your ESG Report';
+    loading.querySelector('.load-sub').textContent = 'Assembling sections and generating charts…';
+  }).catch(function(){
+    loading.style.display = 'none';
+  });
+};
+
+/* ── XLSX Export ── */
+window.esgExportXLSX = function(){
+  if(!window.XLSX){ alert('XLSX library not loaded.'); return; }
+  var rows = monRows();
+  var data = [['Date','Site','Grid kWh','Renew kWh','Diesel L','Scope1 tCO2e','Scope2 tCO2e','FreshWater KL','RecycWater KL','HazWaste MT','NHazWaste MT','RecovWaste MT','Employees','Male','Female','LTI','TrainHrs','CSR INR']];
+  rows.forEach(function(e){
+    data.push([
+      e.date||'', e.site||'',
+      e.energy&&e.energy.grid||'', e.energy&&e.energy.renew||'', e.energy&&e.energy.diesel||'',
+      e.ghg&&e.ghg.s1||'', e.ghg&&e.ghg.s2||'',
+      e.wcons&&e.wcons.fresh||'', e.wcons&&e.wcons.recy||'',
+      e.waste&&e.waste.haz||'', e.waste&&e.waste.nhaz||'', e.waste&&e.waste.rec||'',
+      e.social&&e.social.emp||'', e.social&&e.social.male||'', e.social&&e.social.female||'',
+      e.social&&e.social.lti||'', e.social&&e.social.train||'', e.social&&e.social.csr||''
+    ]);
+  });
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, 'ESG Data');
+  var org = w('s1_orgName','Organization');
+  XLSX.writeFile(wb, org.replace(/[^a-z0-9]/gi,'_')+'_ESG_Data.xlsx');
+};
+
+/* ── Back button ── */
+document.getElementById('esgBackBtn').addEventListener('click', function(){
+  history.back();
+});
+
+/* ── Default date range (current FY) ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var yr = new Date().getFullYear();
+  var mo = new Date().getMonth();
+  var fyStart = mo >= 3 ? yr : yr-1;
+  document.getElementById('esgFrom').value = params.get('from') || (fyStart+'-04-01');
+  document.getElementById('esgTo').value   = params.get('to')   || ((fyStart+1)+'-03-31');
+  if(params.get('autoGenerate')==='1'){ setTimeout(window.esgGenerate, 600); }
+})();
+
+})();
+</script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "ecosphere",
+  "version": "1.0.0",
+  "description": "EcoSphere Environmental Compliance SaaS — Full-stack application",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start":   "node backend/src/server.js",
+    "dev":     "cd backend && npx nodemon src/server.js --watch src",
+    "install:backend": "cd backend && npm install",
+    "prisma:generate": "cd backend && npx prisma generate",
+    "prisma:migrate":  "cd backend && npx prisma migrate deploy",
+    "prisma:seed":     "cd backend && npx prisma db seed"
+  }
+}

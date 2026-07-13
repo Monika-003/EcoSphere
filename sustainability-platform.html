@@ -1,0 +1,852 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EcoSphere Sustainability Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{--g:#16a34a;--dg:#0a3d2e;--p:#7c3aed;--b:#0891b2;--a:#f59e0b;--r:#dc2626;--dk:#1e293b;--md:#64748b;--lt:#f8fafc;--bd:#e2e8f0}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--lt);color:var(--dk)}
+.top{background:linear-gradient(135deg,#0a3d2e,#16a34a);color:#fff;padding:11px 20px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;height:52px}
+.top h1{font-size:1rem;font-weight:700}.top span{font-size:.7rem;opacity:.8;display:block}
+.top-right{display:flex;gap:10px;align-items:center}
+.top-right a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.75rem}
+.top-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:.75rem;font-weight:600}
+.layout{display:flex;margin-top:52px;min-height:calc(100vh - 52px)}
+.sb{width:210px;background:#0f2d1e;color:#fff;position:fixed;top:52px;left:0;bottom:0;overflow-y:auto;padding:8px 0}
+.sb-sec{padding:10px 14px 3px;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#4ade80;font-weight:700}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 15px;cursor:pointer;font-size:.8rem;color:#94a3b8;transition:all .15s;border-left:3px solid transparent}
+.ni:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.ni.on{background:rgba(22,163,74,.2);color:#4ade80;border-left-color:#4ade80}
+.ni .ic{width:16px;text-align:center;font-size:.9rem}
+.main{margin-left:210px;flex:1;padding:20px}
+.pn{display:none}.pn.on{display:block}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.ph h2{font-size:1.2rem;font-weight:700;color:#0a3d2e}
+.ph p{font-size:.75rem;color:var(--md);margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:10px;padding:14px;border:1px solid var(--bd);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kpi .lbl{font-size:.68rem;color:var(--md);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.kpi .val{font-size:1.5rem;font-weight:700}
+.kpi .sub{font-size:.68rem;color:var(--md);margin-top:3px}
+.card{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid var(--bd);box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:14px}
+.card h3{font-size:.9rem;font-weight:600;color:#0a3d2e;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.fg label{font-size:.72rem;font-weight:600;color:var(--md);display:block;margin-bottom:3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:7px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:.8rem;color:var(--dk);background:var(--lt);outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--g);background:#fff}
+.fg textarea{min-height:65px;resize:vertical}
+.fg.full input,.fg.full textarea{grid-column:1/-1}
+.btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .15s}
+.btn-g{background:var(--g);color:#fff}.btn-g:hover{background:#15803d}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:#6d28d9}
+.btn-b{background:var(--b);color:#fff}.btn-b:hover{background:#0e7490}
+.btn-a{background:var(--a);color:#fff}.btn-a:hover{background:#d97706}
+.btn-r{background:var(--r);color:#fff}.btn-r:hover{background:#b91c1c}
+.btn-o{background:transparent;border:1.5px solid var(--bd);color:var(--md)}.btn-o:hover{border-color:var(--g);color:var(--g)}
+.btn-sm{padding:5px 9px;font-size:.73rem}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.tbl th{background:#f1f5f9;padding:8px 10px;text-align:left;font-weight:600;color:var(--md);font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;border-bottom:2px solid var(--bd)}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.tbl tr:hover td{background:#f8fafc}
+.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--bd)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.66rem;font-weight:600}
+.bg{background:#dcfce7;color:#16a34a}.bp{background:#ede9fe;color:#7c3aed}
+.bb{background:#dbeafe;color:#2563eb}.ba{background:#fef3c7;color:#d97706}
+.br{background:#fee2e2;color:#dc2626}.bm{background:#f1f5f9;color:#64748b}
+.tabs{display:flex;gap:3px;margin-bottom:14px;border-bottom:2px solid var(--bd)}
+.tab{padding:7px 13px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--md);border:none;background:transparent}
+.tab.on{color:var(--g);border-bottom:2px solid var(--g);margin-bottom:-2px}
+.tc{display:none}.tc.on{display:block}
+.pg-bar{background:var(--bd);border-radius:10px;height:7px;overflow:hidden;margin-top:5px}
+.pg-fill{height:100%;border-radius:10px;transition:width .5s}
+#sp-toast{position:fixed;bottom:20px;right:20px;background:#0a3d2e;color:#fff;padding:9px 14px;border-radius:8px;font-size:.8rem;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+#sp-toast.show{opacity:1}
+.risk-grid{display:grid;grid-template-columns:repeat(5,50px);grid-template-rows:repeat(5,50px);gap:4px}
+.rc{display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:.6rem;font-weight:700;cursor:pointer;text-align:center;padding:2px}
+.y-lbl{display:grid;grid-template-rows:repeat(5,50px);gap:4px;align-items:center;font-size:.65rem;color:var(--md);text-align:right;padding-right:6px}
+.x-lbl{display:grid;grid-template-columns:repeat(5,50px);gap:4px;font-size:.65rem;color:var(--md);text-align:center;padding-top:4px;margin-left:42px}
+.pillar-band{border-radius:8px;padding:10px 14px;color:#fff;margin-bottom:8px}
+.sep{border:none;border-top:1px solid var(--bd);margin:14px 0}
+.mt-12{margin-top:12px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div><h1>🌿 EcoSphere Sustainability Platform</h1><span>Enterprise ESG & Sustainability Management</span></div>
+  <div class="top-right">
+    <a href="org-portal.html">← Back to Portal</a>
+    <button class="top-btn" onclick="sp('reporting')">📄 Generate Report</button>
+  </div>
+</div>
+<div class="layout">
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-sec">Overview</div>
+  <div class="ni on" onclick="sp('dashboard')" id="ni-dashboard"><span class="ic">📊</span> Dashboard</div>
+  <div class="sb-sec">Governance</div>
+  <div class="ni" onclick="sp('governance')" id="ni-governance"><span class="ic">🏛</span> Governance</div>
+  <div class="ni" onclick="sp('materiality')" id="ni-materiality"><span class="ic">🎯</span> Materiality</div>
+  <div class="ni" onclick="sp('stakeholders')" id="ni-stakeholders"><span class="ic">👥</span> Stakeholders</div>
+  <div class="sb-sec">Environment</div>
+  <div class="ni" onclick="sp('energy')" id="ni-energy"><span class="ic">⚡</span> Energy & Emissions</div>
+  <div class="ni" onclick="sp('water')" id="ni-water"><span class="ic">💧</span> Water</div>
+  <div class="ni" onclick="sp('waste')" id="ni-waste"><span class="ic">♻</span> Waste</div>
+  <div class="sb-sec">Social</div>
+  <div class="ni" onclick="sp('workforce')" id="ni-workforce"><span class="ic">👩‍💼</span> Workforce</div>
+  <div class="ni" onclick="sp('safety')" id="ni-safety"><span class="ic">🦺</span> Health & Safety</div>
+  <div class="ni" onclick="sp('training')" id="ni-training"><span class="ic">📚</span> Training</div>
+  <div class="sb-sec">Compliance</div>
+  <div class="ni" onclick="sp('compliance')" id="ni-compliance"><span class="ic">✅</span> Compliance</div>
+  <div class="ni" onclick="sp('supplychain')" id="ni-supplychain"><span class="ic">🔗</span> Supply Chain</div>
+  <div class="ni" onclick="sp('risk')" id="ni-risk"><span class="ic">⚠</span> Risk</div>
+  <div class="sb-sec">Output</div>
+  <div class="ni" onclick="sp('targets')" id="ni-targets"><span class="ic">🎯</span> Targets</div>
+  <div class="ni" onclick="sp('reporting')" id="ni-reporting"><span class="ic">📄</span> Reporting</div>
+</div>
+<!-- MAIN -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="pn on" id="pn-dashboard">
+  <div class="ph"><div><h2>Executive ESG Dashboard</h2><p>Live sustainability performance overview</p></div>
+  <button class="btn btn-g" onclick="sp('reporting')">Generate Report</button></div>
+  <div class="grid" id="db-kpis"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card"><h3>🎯 Target Progress (RAG)</h3><div id="db-targets"></div></div>
+    <div class="card"><h3>📋 Data Collection Status</h3><div id="db-status"></div></div>
+  </div>
+  <div class="card mt-12"><h3>🏛 Our Four Sustainability Pillars</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px">
+      <div class="pillar-band" style="background:#0891b2"><strong>I</strong><br><small>Ethical Governance</small></div>
+      <div class="pillar-band" style="background:#16a34a"><strong>II</strong><br><small>Preserving Our Planet</small></div>
+      <div class="pillar-band" style="background:#7c3aed"><strong>III</strong><br><small>Our People</small></div>
+      <div class="pillar-band" style="background:#f59e0b"><strong>IV</strong><br><small>Steering Progress</small></div>
+    </div>
+  </div>
+</div>
+
+<!-- GOVERNANCE -->
+<div class="pn" id="pn-governance">
+  <div class="ph"><div><h2>Sustainability Governance</h2><p>Committee structure, charter, ambassadors & champions</p></div></div>
+  <div class="card"><h3>Organization Profile</h3>
+    <div class="fg">
+      <div><label>Organization Name</label><input id="sp_org" placeholder="e.g. MSN Laboratories Ltd."></div>
+      <div><label>Industry</label><select id="sp_ind"><option>Pharmaceutical</option><option>Manufacturing</option><option>Chemical</option><option>FMCG</option><option>Other</option></select></div>
+      <div><label>Reporting Year</label><input id="sp_yr" type="number" placeholder="2024"></div>
+      <div><label>Reporting Period</label><input id="sp_period" placeholder="April 2023 – March 2024"></div>
+      <div><label>Headquarters</label><input id="sp_hq" placeholder="City, State"></div>
+      <div><label>Total Employees</label><input id="sp_emp" type="number" placeholder="0"></div>
+      <div><label>No. of Manufacturing Facilities</label><input id="sp_sites" type="number" placeholder="0"></div>
+      <div><label>CEO / MD Name</label><input id="sp_ceo" placeholder="Name"></div>
+    </div>
+    <div class="fg" style="margin-top:10px"><div style="grid-column:1/-1"><label>CEO / Leadership Message</label><textarea id="sp_ceomsg" rows="5" placeholder="Enter leadership sustainability message..."></textarea></div></div>
+    <div class="flex mt-12"><button class="btn btn-g" onclick="spSaveOrg()">Save Profile</button></div>
+  </div>
+  <div class="card"><h3>Sustainability Committee Members</h3>
+    <div class="fg" style="margin-bottom:10px">
+      <div><label>Name</label><input id="gc_name" placeholder="Full name"></div>
+      <div><label>Designation</label><input id="gc_desg" placeholder="e.g. VP – EHS"></div>
+      <div><label>Division / Function</label><input id="gc_div" placeholder="e.g. Operations"></div>
+      <div><label>Role in Committee</label><select id="gc_role"><option>Chairperson</option><option>Member</option><option>Ambassador</option><option>Champion</option><option>Secretary</option></select></div>
+    </div>
+    <button class="btn btn-b btn-sm" onclick="spAddMember()">+ Add Member</button>
+    <div class="tw mt-12"><table class="tbl"><thead><tr><th>Name</th><th>Designation</th><th>Division</th><th>Role</th><th>Action</th></tr></thead><tbody id="gc-tbody"></tbody></table></div>
+  </div>
+  <div class="card"><h3>Meeting Log</h3>
+    <div class="fg" style="margin-bottom:10px">
+      <div><label>Meeting Date</label><input id="gm_date" type="date"></div>
+      <div><label>Meeting Type</label><select id="gm_type"><option>Sustainability Steering Committee</option><option>Board ESG Review</option><option>Ambassador Meeting</option><option>Champion Meeting</option></select></div>
+      <div><label>Attendees (count)</label><input id="gm_att" type="number" placeholder="0"></div>
+      <div><label>Key Decisions / Outcomes</label><input id="gm_notes" placeholder="Summary of decisions"></div>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="spAddMeeting()">+ Log Meeting</button>
+    <div class="tw mt-12"><table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Attendees</th><th>Outcomes</th><th></th></tr></thead><tbody id="gm-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MATERIALITY -->
+<div class="pn" id="pn-materiality">
+  <div class="ph"><div><h2>Materiality Assessment</h2><p>18 material topics across 4 pillars — GRI double materiality</p></div></div>
+  <div class="card"><h3>Material Topics & Priority Scoring</h3>
+    <div class="tw"><table class="tbl" id="mat-tbl">
+      <thead><tr><th>Pillar</th><th>Material Topic</th><th>GRI Standard</th><th>Impact Score (1–5)</th><th>Financial Matl. (1–5)</th><th>Priority</th></tr></thead>
+      <tbody id="mat-tbody"></tbody>
+    </table></div>
+    <div class="flex mt-12"><button class="btn btn-g btn-sm" onclick="spSaveMat()">Save Scores</button></div>
+  </div>
+</div>
+
+<!-- STAKEHOLDERS -->
+<div class="pn" id="pn-stakeholders">
+  <div class="ph"><div><h2>Stakeholder Engagement</h2><p>Manage engagement, concerns & feedback</p></div></div>
+  <div class="card"><h3>Add Stakeholder Engagement Record</h3>
+    <div class="fg">
+      <div><label>Stakeholder Group</label><select id="sk_grp"><option>Employees</option><option>Investors</option><option>Customers</option><option>Suppliers</option><option>Regulators</option><option>Communities</option><option>Healthcare Professionals</option><option>Industry Associations</option></select></div>
+      <div><label>Engagement Date</label><input id="sk_date" type="date"></div>
+      <div><label>Engagement Method</label><select id="sk_meth"><option>Survey</option><option>Meeting</option><option>Interview</option><option>Workshop</option><option>Town Hall</option><option>Grievance</option></select></div>
+      <div><label>Key Concern / Topic</label><input id="sk_concern" placeholder="What was raised?"></div>
+      <div><label>Response / Action Taken</label><input id="sk_action" placeholder="How was it addressed?"></div>
+      <div><label>Status</label><select id="sk_status"><option>Open</option><option>In Progress</option><option>Closed</option></select></div>
+    </div>
+    <button class="btn btn-g btn-sm mt-12" onclick="spAddStake()">+ Add Record</button>
+  </div>
+  <div class="tw"><table class="tbl"><thead><tr><th>Group</th><th>Date</th><th>Method</th><th>Concern</th><th>Action</th><th>Status</th><th></th></tr></thead><tbody id="sk-tbody"></tbody></table></div>
+</div>
+
+<!-- ENERGY & EMISSIONS -->
+<div class="pn" id="pn-energy">
+  <div class="ph"><div><h2>Energy & GHG Emissions</h2><p>Pillar II — Preserving Our Planet</p></div></div>
+  <div class="tabs">
+    <button class="tab on" onclick="stab('en','energy-data')">Enter Data</button>
+    <button class="tab" onclick="stab('en','energy-hist')">History</button>
+  </div>
+  <div class="tc on" id="en-energy-data">
+    <div class="card"><h3>Monthly Energy & Emissions Entry</h3>
+      <div class="fg">
+        <div><label>Facility / Site</label><input id="en_site" placeholder="Plant / Office name"></div>
+        <div><label>Reporting Month</label><input id="en_date" type="month"></div>
+        <div><label>Grid Electricity (kWh)</label><input id="en_grid" type="number" placeholder="0"></div>
+        <div><label>Solar / Wind (kWh)</label><input id="en_renew" type="number" placeholder="0"></div>
+        <div><label>Diesel (Litres)</label><input id="en_diesel" type="number" placeholder="0"></div>
+        <div><label>CNG / Natural Gas (m³)</label><input id="en_cng" type="number" placeholder="0"></div>
+        <div><label>Coal (MT)</label><input id="en_coal" type="number" placeholder="0"></div>
+        <div><label>Scope 1 GHG (tCO2e)</label><input id="en_s1" type="number" step="0.01" placeholder="0"></div>
+        <div><label>Scope 2 GHG (tCO2e)</label><input id="en_s2" type="number" step="0.01" placeholder="0"></div>
+        <div><label>Scope 3 GHG (tCO2e)</label><input id="en_s3" type="number" step="0.01" placeholder="0"></div>
+      </div>
+      <div class="fg mt-12"><div><label>Evidence / Notes</label><input id="en_notes" placeholder="Utility bill ref, meter reading notes..."></div></div>
+      <div class="flex mt-12"><button class="btn btn-g" onclick="spSaveEnergy()">Save Entry</button></div>
+    </div>
+  </div>
+  <div class="tc" id="en-energy-hist">
+    <div class="card"><h3>Energy & Emissions History</h3>
+      <div class="grid" id="en-kpis"></div>
+      <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Site</th><th>Grid kWh</th><th>Renew kWh</th><th>Diesel L</th><th>Scope 1</th><th>Scope 2</th><th>Scope 3</th><th></th></tr></thead><tbody id="en-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- WATER -->
+<div class="pn" id="pn-water">
+  <div class="ph"><div><h2>Water Management</h2><p>Track freshwater, recycled water & effluent — GRI 303</p></div></div>
+  <div class="card"><h3>Monthly Water Entry</h3>
+    <div class="fg">
+      <div><label>Facility</label><input id="wt_site" placeholder="Plant name"></div>
+      <div><label>Month</label><input id="wt_date" type="month"></div>
+      <div><label>Freshwater — Municipal (KL)</label><input id="wt_mun" type="number" placeholder="0"></div>
+      <div><label>Freshwater — Groundwater (KL)</label><input id="wt_gw" type="number" placeholder="0"></div>
+      <div><label>Recycled / Reused Water (KL)</label><input id="wt_rec" type="number" placeholder="0"></div>
+      <div><label>Rainwater Harvested (KL)</label><input id="wt_rain" type="number" placeholder="0"></div>
+      <div><label>Total Effluent Discharged (KL)</label><input id="wt_eff" type="number" placeholder="0"></div>
+      <div><label>Effluent pH</label><input id="wt_ph" type="number" step="0.1" placeholder="7.0"></div>
+      <div><label>BOD (mg/L)</label><input id="wt_bod" type="number" placeholder="0"></div>
+      <div><label>COD (mg/L)</label><input id="wt_cod" type="number" placeholder="0"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-b" onclick="spSaveWater()">Save Entry</button></div>
+  </div>
+  <div class="card"><h3>Water History</h3>
+    <div class="grid" id="wt-kpis"></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Site</th><th>Municipal KL</th><th>Groundwater KL</th><th>Recycled KL</th><th>Effluent KL</th><th>pH</th><th>BOD</th><th></th></tr></thead><tbody id="wt-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- WASTE -->
+<div class="pn" id="pn-waste">
+  <div class="ph"><div><h2>Waste Management</h2><p>Zero Waste to Landfill by 2026 — GRI 306</p></div></div>
+  <div class="card"><h3>Monthly Waste Entry</h3>
+    <div class="fg">
+      <div><label>Facility</label><input id="ws_site" placeholder="Plant name"></div>
+      <div><label>Month</label><input id="ws_date" type="month"></div>
+      <div><label>Hazardous Waste (MT)</label><input id="ws_haz" type="number" step="0.01" placeholder="0"></div>
+      <div><label>Non-Hazardous Waste (MT)</label><input id="ws_nhaz" type="number" step="0.01" placeholder="0"></div>
+      <div><label>Waste Recycled / Recovered (MT)</label><input id="ws_rec" type="number" step="0.01" placeholder="0"></div>
+      <div><label>Waste to Landfill (MT)</label><input id="ws_land" type="number" step="0.01" placeholder="0"></div>
+      <div><label>Biomedical Waste (kg)</label><input id="ws_bio" type="number" placeholder="0"></div>
+      <div><label>E-Waste (kg)</label><input id="ws_ewaste" type="number" placeholder="0"></div>
+      <div><label>Disposal Method</label><select id="ws_disp"><option>TSDF</option><option>Authorized Recycler</option><option>CBWTF</option><option>Composting</option><option>Incineration</option><option>Landfill</option></select></div>
+      <div><label>TSDF / Recycler Name</label><input id="ws_tsdf" placeholder="Disposal facility name"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-a" onclick="spSaveWaste()">Save Entry</button></div>
+  </div>
+  <div class="card"><h3>Waste History</h3>
+    <div class="grid" id="ws-kpis"></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Site</th><th>Haz (MT)</th><th>Non-Haz (MT)</th><th>Recycled (MT)</th><th>Landfill (MT)</th><th>Method</th><th></th></tr></thead><tbody id="ws-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- WORKFORCE -->
+<div class="pn" id="pn-workforce">
+  <div class="ph"><div><h2>Workforce & Diversity</h2><p>30% Women target by 2030 — GRI 401, 405</p></div></div>
+  <div class="card"><h3>Workforce Data Entry</h3>
+    <div class="fg">
+      <div><label>Facility</label><input id="wf_site" placeholder="Plant / Office"></div>
+      <div><label>Period (Month)</label><input id="wf_date" type="month"></div>
+      <div><label>Total Permanent Employees</label><input id="wf_tot" type="number" placeholder="0"></div>
+      <div><label>Male Employees</label><input id="wf_male" type="number" placeholder="0"></div>
+      <div><label>Female Employees</label><input id="wf_fem" type="number" placeholder="0"></div>
+      <div><label>Contract / Temporary Workers</label><input id="wf_cont" type="number" placeholder="0"></div>
+      <div><label>Women in Senior Mgmt.</label><input id="wf_wsl" type="number" placeholder="0"></div>
+      <div><label>New Hires (this period)</label><input id="wf_hire" type="number" placeholder="0"></div>
+      <div><label>Attrition (this period)</label><input id="wf_attr" type="number" placeholder="0"></div>
+      <div><label>Persons with Disabilities</label><input id="wf_pwd" type="number" placeholder="0"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-p" onclick="spSaveWF()">Save Entry</button></div>
+  </div>
+  <div class="card"><h3>Workforce History</h3>
+    <div class="grid" id="wf-kpis"></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Period</th><th>Site</th><th>Total</th><th>Male</th><th>Female</th><th>Women %</th><th>Contract</th><th>Hires</th><th></th></tr></thead><tbody id="wf-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- HEALTH & SAFETY -->
+<div class="pn" id="pn-safety">
+  <div class="ph"><div><h2>Occupational Health & Safety</h2><p>Zero LTI target — GRI 403</p></div></div>
+  <div class="card"><h3>Monthly Safety Data</h3>
+    <div class="fg">
+      <div><label>Facility</label><input id="hs_site" placeholder="Plant name"></div>
+      <div><label>Period</label><input id="hs_date" type="month"></div>
+      <div><label>Lost Time Injuries (LTI)</label><input id="hs_lti" type="number" placeholder="0"></div>
+      <div><label>Lost Working Days</label><input id="hs_lwd" type="number" placeholder="0"></div>
+      <div><label>Near Miss Incidents</label><input id="hs_nm" type="number" placeholder="0"></div>
+      <div><label>First Aid Cases</label><input id="hs_fac" type="number" placeholder="0"></div>
+      <div><label>Fatalities</label><input id="hs_fat" type="number" placeholder="0"></div>
+      <div><label>Man-Hours Worked</label><input id="hs_mh" type="number" placeholder="0"></div>
+      <div><label>Safety Audits Conducted</label><input id="hs_aud" type="number" placeholder="0"></div>
+      <div><label>Safety Observations Raised</label><input id="hs_obs" type="number" placeholder="0"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-r" onclick="spSaveHS()">Save Entry</button></div>
+  </div>
+  <div class="card"><h3>OHS History</h3>
+    <div class="grid" id="hs-kpis"></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Period</th><th>Site</th><th>LTI</th><th>Lost Days</th><th>Near Miss</th><th>LTIFR</th><th>Audits</th><th></th></tr></thead><tbody id="hs-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- TRAINING -->
+<div class="pn" id="pn-training">
+  <div class="ph"><div><h2>Training & Education</h2><p>Min 2 days safety training per employee — GRI 404</p></div></div>
+  <div class="card"><h3>Training Record Entry</h3>
+    <div class="fg">
+      <div><label>Facility</label><input id="tr_site" placeholder="Plant / Office"></div>
+      <div><label>Month</label><input id="tr_date" type="month"></div>
+      <div><label>Training Program Name</label><input id="tr_name" placeholder="e.g. Safety Induction"></div>
+      <div><label>Training Category</label><select id="tr_cat"><option>Safety</option><option>ESG / Sustainability</option><option>Human Rights</option><option>Anti-Corruption</option><option>Technical / Skill</option><option>Leadership</option><option>Compliance</option></select></div>
+      <div><label>Total Hours Delivered</label><input id="tr_hrs" type="number" placeholder="0"></div>
+      <div><label>No. of Participants</label><input id="tr_part" type="number" placeholder="0"></div>
+      <div><label>% Coverage of Target Group</label><input id="tr_cov" type="number" placeholder="0"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-b" onclick="spSaveTrain()">Save Record</button></div>
+  </div>
+  <div class="card"><h3>Training History</h3>
+    <div class="grid" id="tr-kpis"></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Month</th><th>Site</th><th>Program</th><th>Category</th><th>Hours</th><th>Participants</th><th>Coverage %</th><th></th></tr></thead><tbody id="tr-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- COMPLIANCE -->
+<div class="pn" id="pn-compliance">
+  <div class="ph"><div><h2>Compliance & Governance</h2><p>Policy management, legal register, whistleblower</p></div></div>
+  <div class="tabs">
+    <button class="tab on" onclick="stab('cp','policies')">Policies</button>
+    <button class="tab" onclick="stab('cp','legal')">Legal Register</button>
+    <button class="tab" onclick="stab('cp','whistle')">Whistleblower</button>
+  </div>
+  <div class="tc on" id="cp-policies">
+    <div class="card"><h3>Policy Library</h3>
+      <div class="tw"><table class="tbl"><thead><tr><th>Policy</th><th>Category</th><th>Owner</th><th>Last Review</th><th>Status</th></tr></thead>
+      <tbody id="pol-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="tc" id="cp-legal">
+    <div class="card"><h3>Legal Compliance Register</h3>
+      <div class="fg" style="margin-bottom:10px">
+        <div><label>Regulation / Act</label><input id="lr_act" placeholder="e.g. Environment Protection Act 1986"></div>
+        <div><label>Jurisdiction</label><select id="lr_jur"><option>Central</option><option>State</option><option>International</option></select></div>
+        <div><label>Status</label><select id="lr_status"><option>Compliant</option><option>Non-Compliant</option><option>Under Review</option></select></div>
+        <div><label>Next Due Date</label><input id="lr_due" type="date"></div>
+        <div><label>Responsible Owner</label><input id="lr_owner" placeholder="Name / Department"></div>
+      </div>
+      <button class="btn btn-g btn-sm" onclick="spAddLegal()">+ Add</button>
+      <div class="tw mt-12"><table class="tbl"><thead><tr><th>Regulation</th><th>Jurisdiction</th><th>Status</th><th>Due Date</th><th>Owner</th><th></th></tr></thead><tbody id="lr-tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="tc" id="cp-whistle">
+    <div class="card"><h3>Whistleblower / Ethics Cases</h3>
+      <div class="fg" style="margin-bottom:10px">
+        <div><label>Case Reference</label><input id="wb_ref" placeholder="Auto or manual ref"></div>
+        <div><label>Reported Date</label><input id="wb_date" type="date"></div>
+        <div><label>Category</label><select id="wb_cat"><option>Fraud</option><option>Bribery / Corruption</option><option>Harassment</option><option>Safety Violation</option><option>Environmental</option><option>Other</option></select></div>
+        <div><label>Status</label><select id="wb_status"><option>Open</option><option>Under Investigation</option><option>Resolved</option><option>Closed</option></select></div>
+        <div><label>Resolution Summary</label><input id="wb_res" placeholder="Outcome summary (if closed)"></div>
+      </div>
+      <button class="btn btn-r btn-sm" onclick="spAddWB()">+ Add Case</button>
+      <div class="tw mt-12"><table class="tbl"><thead><tr><th>Ref</th><th>Date</th><th>Category</th><th>Status</th><th>Resolution</th><th></th></tr></thead><tbody id="wb-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPLY CHAIN -->
+<div class="pn" id="pn-supplychain">
+  <div class="ph"><div><h2>Supply Chain Sustainability</h2><p>100% strategic supplier Code acknowledgement by 2026 — GRI 308</p></div></div>
+  <div class="card"><h3>Supplier Registration</h3>
+    <div class="fg">
+      <div><label>Supplier Name</label><input id="su_name" placeholder="Company name"></div>
+      <div><label>Category</label><select id="su_cat"><option>Raw Material</option><option>Packaging</option><option>Services</option><option>Logistics</option><option>Utilities</option></select></div>
+      <div><label>Country / State</label><input id="su_loc" placeholder="Location"></div>
+      <div><label>Code of Conduct Accepted</label><select id="su_coc"><option>Yes</option><option>No</option><option>Pending</option></select></div>
+      <div><label>ISO 14001 Certified</label><select id="su_iso"><option>Yes</option><option>No</option><option>In Progress</option></select></div>
+      <div><label>ESG Risk Level</label><select id="su_risk"><option>Low</option><option>Medium</option><option>High</option></select></div>
+      <div><label>Last Audit Date</label><input id="su_aud" type="date"></div>
+      <div><label>Sustainability Score (0–100)</label><input id="su_score" type="number" min="0" max="100" placeholder="0"></div>
+    </div>
+    <div class="flex mt-12"><button class="btn btn-a" onclick="spAddSupplier()">+ Add Supplier</button></div>
+  </div>
+  <div class="card"><h3>Supplier Register</h3>
+    <div class="grid" id="su-kpis"></div>
+    <div class="tw mt-12"><table class="tbl"><thead><tr><th>Supplier</th><th>Category</th><th>Location</th><th>CoC</th><th>ISO 14001</th><th>Risk</th><th>Score</th><th></th></tr></thead><tbody id="su-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- RISK -->
+<div class="pn" id="pn-risk">
+  <div class="ph"><div><h2>ESG Risk Management</h2><p>Climate, compliance, resource, supply chain & social risks</p></div></div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start">
+    <div class="card" style="min-width:320px"><h3>Risk Heat Map</h3>
+      <p style="font-size:.72rem;color:var(--md);margin-bottom:10px">Likelihood (X) × Impact (Y)</p>
+      <div style="display:flex;gap:0">
+        <div><div class="y-lbl"><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div></div></div>
+        <div><div class="risk-grid" id="risk-hm"></div>
+        <div class="x-lbl"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;font-size:.68rem">
+        <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-weight:600">● High</span>
+        <span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">● Medium</span>
+        <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">● Low</span>
+      </div>
+    </div>
+    <div>
+      <div class="card"><h3>Add Risk</h3>
+        <div class="fg">
+          <div><label>Risk Description</label><input id="rk_desc" placeholder="e.g. Extreme weather events"></div>
+          <div><label>Category</label><select id="rk_cat"><option>Climate Physical</option><option>Climate Transition</option><option>Compliance</option><option>Resource</option><option>Supply Chain</option><option>OHS</option><option>Social</option><option>Reputational</option></select></div>
+          <div><label>Likelihood (1–5)</label><input id="rk_lik" type="number" min="1" max="5" placeholder="3"></div>
+          <div><label>Impact (1–5)</label><input id="rk_imp" type="number" min="1" max="5" placeholder="3"></div>
+          <div><label>Mitigation Measure</label><input id="rk_mit" placeholder="Control measure"></div>
+          <div><label>Owner</label><input id="rk_own" placeholder="Risk owner name"></div>
+        </div>
+        <button class="btn btn-r btn-sm mt-12" onclick="spAddRisk()">+ Add Risk</button>
+      </div>
+      <div class="card"><h3>Risk Register</h3>
+        <div class="tw"><table class="tbl"><thead><tr><th>Risk</th><th>Category</th><th>Likelihood</th><th>Impact</th><th>Score</th><th>Priority</th><th>Mitigation</th><th></th></tr></thead><tbody id="rk-tbody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TARGETS -->
+<div class="pn" id="pn-targets">
+  <div class="ph"><div><h2>Sustainability Targets</h2><p>Track all commitments against baselines</p></div></div>
+  <div class="card" id="tgt-card"></div>
+</div>
+
+<!-- REPORTING -->
+<div class="pn" id="pn-reporting">
+  <div class="ph"><div><h2>Reporting & Disclosures</h2><p>Generate comprehensive sustainability and EIA reports</p></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card">
+      <h3>📗 Comprehensive Sustainability Report</h3>
+      <p style="font-size:.78rem;color:var(--md);margin:8px 0 14px">GRI Standards 2021 | BRSR | TCFD | UN SDGs — Multi-page professional report covering all four pillars, materiality, environmental &amp; social performance, governance, targets &amp; GRI content index.</p>
+      <div class="fg" style="margin-bottom:12px">
+        <div><label>From Date</label><input id="rp_from" type="date"></div>
+        <div><label>To Date</label><input id="rp_to" type="date"></div>
+      </div>
+      <button class="btn btn-g" style="width:100%" onclick="ecoExport({title:'Sustainability Report',subtitle:'GRI Standards 2021 | BRSR | TCFD | UN SDGs',formats:['pdf','word','pptx','excel','csv'],onFormat:function(f){if(f==='pdf')spGenESG();else if(f==='word'||f==='pptx')window.open('sustainability-report.html','_blank');else spExportCSV();}})">⬇ Download Sustainability Report</button>
+    </div>
+    <div class="card">
+      <h3>📘 EIA Assessment Report</h3>
+      <p style="font-size:.78rem;color:var(--md);margin:8px 0 14px">MoEFCC EIA Notification 2006 | ISO 14001 | CPCB/SPCB Guidelines — Comprehensive EIA with baseline data, impact matrix, EMP, compliance framework &amp; monitoring plan.</p>
+      <div class="fg" style="margin-bottom:12px">
+        <div><label>From Date</label><input id="rp_eia_from" type="date"></div>
+        <div><label>To Date</label><input id="rp_eia_to" type="date"></div>
+      </div>
+      <button class="btn btn-b" style="width:100%" onclick="ecoExport({title:'EIA Assessment Report',subtitle:'MoEFCC EIA Notification 2006 | ISO 14001 | CPCB/SPCB',formats:['pdf','word','pptx','excel','csv'],onFormat:function(f){if(f==='pdf')spGenEIA();else if(f==='word'||f==='pptx')window.open('eia-report.html','_blank');else spExportCSV();}})">⬇ Download EIA Report</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+    <div class="card"><h3>📊 FRS Document</h3><p style="font-size:.75rem;color:var(--md);margin:8px 0 12px">Functional Requirement Specification — full platform requirements document.</p><button class="btn btn-p btn-sm" style="width:100%" onclick="ecoExport({title:'FRS Document',subtitle:'Functional Requirement Specification',formats:['pdf','word'],onFormat:function(f){spGenFRS();}})">⬇ Download FRS</button></div>
+    <div class="card"><h3>📋 Data Export</h3><p style="font-size:.75rem;color:var(--md);margin:8px 0 12px">Export all collected platform data as CSV for audit and third-party assurance.</p><button class="btn btn-a btn-sm" style="width:100%" onclick="spExportCSV()">Export All Data CSV</button></div>
+    <div class="card"><h3>🔄 Monitoring Data</h3><p style="font-size:.75rem;color:var(--md);margin:8px 0 12px">View daily monitoring data collected from the org-portal EIA &amp; ESG daily logs.</p><button class="btn btn-o btn-sm" style="width:100%" onclick="sp('targets')">View Targets Dashboard</button></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+<div id="sp-toast"></div>
+<script>
+/* ── Storage ── */
+var SPK='eco_sp_v1';
+function spDB(){try{return JSON.parse(localStorage.getItem(SPK))||{org:{},members:[],meetings:[],stakes:[],energy:[],water:[],waste:[],workforce:[],safety:[],training:[],legal:[],whistle:[],suppliers:[],risks:[],mat:{}};}catch(e){return {org:{},members:[],meetings:[],stakes:[],energy:[],water:[],waste:[],workforce:[],safety:[],training:[],legal:[],whistle:[],suppliers:[],risks:[],mat:{}};}}
+function spSave(d){localStorage.setItem(SPK,JSON.stringify(d));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function gv(id){var e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){var e=document.getElementById(id);if(e)e.value=val||'';}
+function spToast(m){var t=document.getElementById('sp-toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+/* ── Navigation ── */
+function sp(id){
+  document.querySelectorAll('.pn').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var p=document.getElementById('pn-'+id);if(p)p.classList.add('on');
+  var n=document.getElementById('ni-'+id);if(n)n.classList.add('on');
+  if(id==='dashboard')renderDashboard();
+  if(id==='energy'){renderEnKpis();renderEnHistory();}
+  if(id==='water'){renderWtKpis();renderWtHistory();}
+  if(id==='waste'){renderWsKpis();renderWsHistory();}
+  if(id==='workforce'){renderWfKpis();renderWfHistory();}
+  if(id==='safety'){renderHsKpis();renderHsHistory();}
+  if(id==='training'){renderTrKpis();renderTrHistory();}
+  if(id==='compliance'){renderPolicies();renderLegal();renderWB();}
+  if(id==='supplychain'){renderSuKpis();renderSuppliers();}
+  if(id==='risk'){renderRisk();renderHeatmap();}
+  if(id==='targets')renderTargets();
+  if(id==='materiality')renderMat();
+  if(id==='stakeholders')renderStakes();
+  if(id==='governance'){loadOrg();renderMembers();renderMeetings();}
+}
+
+/* ── Tab switcher ── */
+function stab(prefix,id){
+  document.querySelectorAll('[id^="'+prefix+'-"]').forEach(function(e){e.classList.remove('on');});
+  var el=document.getElementById(prefix+'-'+id);if(el)el.classList.add('on');
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  event.target.classList.add('on');
+}
+
+/* ── Governance ── */
+function loadOrg(){var d=spDB().org||{};sv('sp_org',d.name);sv('sp_ind',d.industry);sv('sp_yr',d.year);sv('sp_period',d.period);sv('sp_hq',d.hq);sv('sp_emp',d.emp);sv('sp_sites',d.sites);sv('sp_ceo',d.ceo);sv('sp_ceomsg',d.ceoMsg);}
+function spSaveOrg(){var d=spDB();d.org={name:gv('sp_org'),industry:gv('sp_ind'),year:gv('sp_yr'),period:gv('sp_period'),hq:gv('sp_hq'),emp:gv('sp_emp'),sites:gv('sp_sites'),ceo:gv('sp_ceo'),ceoMsg:gv('sp_ceomsg')};spSave(d);spToast('Organization profile saved.');}
+function spAddMember(){var d=spDB();d.members.push({id:uid(),name:gv('gc_name'),desg:gv('gc_desg'),div:gv('gc_div'),role:gv('gc_role')});spSave(d);renderMembers();spToast('Member added.');}
+function renderMembers(){var d=spDB();var t=document.getElementById('gc-tbody');if(!t)return;t.innerHTML=d.members.map(function(m){return '<tr><td>'+m.name+'</td><td>'+m.desg+'</td><td>'+m.div+'</td><td><span class="badge bb">'+m.role+'</span></td><td><button class="btn btn-r btn-sm" onclick="spDelMember(\''+m.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelMember(id){var d=spDB();d.members=d.members.filter(function(m){return m.id!==id;});spSave(d);renderMembers();}
+function spAddMeeting(){var d=spDB();d.meetings.push({id:uid(),date:gv('gm_date'),type:gv('gm_type'),att:gv('gm_att'),notes:gv('gm_notes')});spSave(d);renderMeetings();spToast('Meeting logged.');}
+function renderMeetings(){var d=spDB();var t=document.getElementById('gm-tbody');if(!t)return;t.innerHTML=d.meetings.map(function(m){return '<tr><td>'+m.date+'</td><td>'+m.type+'</td><td>'+m.att+'</td><td>'+m.notes+'</td><td><button class="btn btn-r btn-sm" onclick="spDelMeeting(\''+m.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelMeeting(id){var d=spDB();d.meetings=d.meetings.filter(function(m){return m.id!==id;});spSave(d);renderMeetings();}
+
+/* ── Materiality ── */
+var TOPICS=[
+  {pillar:'I — Ethical Governance',name:'Economic Performance',gri:'GRI 201'},
+  {pillar:'I — Ethical Governance',name:'Compliance',gri:'GRI 206'},
+  {pillar:'I — Ethical Governance',name:'Anti-Corruption',gri:'GRI 205'},
+  {pillar:'II — Preserving Our Planet',name:'Energy',gri:'GRI 302'},
+  {pillar:'II — Preserving Our Planet',name:'Climate Change & Emissions',gri:'GRI 305'},
+  {pillar:'II — Preserving Our Planet',name:'Water & Effluent',gri:'GRI 303'},
+  {pillar:'II — Preserving Our Planet',name:'Waste',gri:'GRI 306'},
+  {pillar:'II — Preserving Our Planet',name:'Biodiversity',gri:'GRI 304'},
+  {pillar:'III — Our People',name:'Employment',gri:'GRI 401'},
+  {pillar:'III — Our People',name:'Diversity & Equal Opportunity',gri:'GRI 405'},
+  {pillar:'III — Our People',name:'Occupational Health & Safety',gri:'GRI 403'},
+  {pillar:'III — Our People',name:'Labour Management Relations',gri:'GRI 402'},
+  {pillar:'III — Our People',name:'Training & Education',gri:'GRI 404'},
+  {pillar:'IV — Steering Progress',name:'Sustainable Supply Chain',gri:'GRI 308'},
+  {pillar:'IV — Steering Progress',name:'Customer Privacy',gri:'GRI 418'},
+  {pillar:'IV — Steering Progress',name:'Local Employment & Wages',gri:'GRI 202'},
+  {pillar:'IV — Steering Progress',name:'Customer Health & Safety',gri:'GRI 416'},
+  {pillar:'IV — Steering Progress',name:'Access to Healthcare',gri:'GRI 413'},
+];
+function renderMat(){var d=spDB();var scores=d.mat||{};var t=document.getElementById('mat-tbody');if(!t)return;t.innerHTML=TOPICS.map(function(tp,i){var imp=scores['imp_'+i]||4,fin=scores['fin_'+i]||4,pri=(imp+fin)>=8?'<span class="badge br">High</span>':(imp+fin)>=6?'<span class="badge ba">Medium</span>':'<span class="badge bg">Low</span>';return '<tr><td>'+tp.pillar+'</td><td><strong>'+tp.name+'</strong></td><td style="color:var(--g);font-weight:600">'+tp.gri+'</td><td><input type="number" min="1" max="5" value="'+imp+'" id="mat_imp_'+i+'" style="width:50px;padding:4px;border:1px solid var(--bd);border-radius:5px;text-align:center"></td><td><input type="number" min="1" max="5" value="'+fin+'" id="mat_fin_'+i+'" style="width:50px;padding:4px;border:1px solid var(--bd);border-radius:5px;text-align:center"></td><td>'+pri+'</td></tr>';}).join('');}
+function spSaveMat(){var d=spDB();d.mat={};TOPICS.forEach(function(_,i){d.mat['imp_'+i]=+gv('mat_imp_'+i)||4;d.mat['fin_'+i]=+gv('mat_fin_'+i)||4;});spSave(d);spToast('Materiality scores saved.');renderMat();}
+
+/* ── Stakeholders ── */
+function spAddStake(){var d=spDB();d.stakes.push({id:uid(),grp:gv('sk_grp'),date:gv('sk_date'),meth:gv('sk_meth'),concern:gv('sk_concern'),action:gv('sk_action'),status:gv('sk_status')});spSave(d);renderStakes();spToast('Engagement record added.');}
+function renderStakes(){var d=spDB();var t=document.getElementById('sk-tbody');if(!t)return;t.innerHTML=d.stakes.map(function(s){var bc=s.status==='Closed'?'bg':s.status==='In Progress'?'ba':'br';return '<tr><td>'+s.grp+'</td><td>'+s.date+'</td><td>'+s.meth+'</td><td>'+s.concern+'</td><td>'+s.action+'</td><td><span class="badge '+bc+'">'+s.status+'</span></td><td><button class="btn btn-r btn-sm" onclick="spDelStake(\''+s.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelStake(id){var d=spDB();d.stakes=d.stakes.filter(function(s){return s.id!==id;});spSave(d);renderStakes();}
+
+/* ── Energy ── */
+function spSaveEnergy(){var d=spDB();d.energy.push({id:uid(),site:gv('en_site'),date:gv('en_date'),grid:+gv('en_grid')||0,renew:+gv('en_renew')||0,diesel:+gv('en_diesel')||0,cng:+gv('en_cng')||0,coal:+gv('en_coal')||0,s1:+gv('en_s1')||0,s2:+gv('en_s2')||0,s3:+gv('en_s3')||0,notes:gv('en_notes')});spSave(d);renderEnKpis();renderEnHistory();spToast('Energy entry saved.');}
+function renderEnKpis(){var d=spDB();var e=d.energy||[];var tg=e.reduce(function(s,x){return s+x.grid;},0),tr=e.reduce(function(s,x){return s+x.renew;},0),ts1=e.reduce(function(s,x){return s+x.s1;},0),ts2=e.reduce(function(s,x){return s+x.s2;},0);var rp=tg>0?((tr/(tg+tr))*100).toFixed(1)+'%':'—';document.getElementById('en-kpis').innerHTML='<div class="kpi"><div class="lbl">Grid kWh</div><div class="val">'+tg.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Renewable kWh</div><div class="val">'+tr.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Renew %</div><div class="val" style="color:var(--g)">'+rp+'</div><div class="sub">Target: 25% by 2030</div></div><div class="kpi"><div class="lbl">Scope 1 tCO2e</div><div class="val">'+ts1.toFixed(2)+'</div></div><div class="kpi"><div class="lbl">Scope 2 tCO2e</div><div class="val">'+ts2.toFixed(2)+'</div></div><div class="kpi"><div class="lbl">Total S1+S2</div><div class="val" style="color:var(--g)">'+(ts1+ts2).toFixed(2)+'</div><div class="sub">Target: -25% by 2030</div></div>';}
+function renderEnHistory(){var d=spDB();var t=document.getElementById('en-tbody');if(!t)return;t.innerHTML=d.energy.map(function(e){return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.grid.toLocaleString()+'</td><td>'+e.renew.toLocaleString()+'</td><td>'+e.diesel.toLocaleString()+'</td><td>'+e.s1+'</td><td>'+e.s2+'</td><td>'+e.s3+'</td><td><button class="btn btn-r btn-sm" onclick="spDelEn(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelEn(id){var d=spDB();d.energy=d.energy.filter(function(e){return e.id!==id;});spSave(d);renderEnKpis();renderEnHistory();}
+
+/* ── Water ── */
+function spSaveWater(){var d=spDB();d.water.push({id:uid(),site:gv('wt_site'),date:gv('wt_date'),mun:+gv('wt_mun')||0,gw:+gv('wt_gw')||0,rec:+gv('wt_rec')||0,rain:+gv('wt_rain')||0,eff:+gv('wt_eff')||0,ph:+gv('wt_ph')||0,bod:+gv('wt_bod')||0,cod:+gv('wt_cod')||0});spSave(d);renderWtKpis();renderWtHistory();spToast('Water entry saved.');}
+function renderWtKpis(){var d=spDB();var e=d.water||[];var tf=e.reduce(function(s,x){return s+x.mun+x.gw;},0),tr=e.reduce(function(s,x){return s+x.rec;},0);document.getElementById('wt-kpis').innerHTML='<div class="kpi"><div class="lbl">Total Freshwater KL</div><div class="val">'+tf.toLocaleString()+'</div><div class="sub">Target: -33% by 2030</div></div><div class="kpi"><div class="lbl">Recycled Water KL</div><div class="val" style="color:var(--b)">'+tr.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Recycle Rate</div><div class="val">'+(tf>0?((tr/(tf+tr))*100).toFixed(1)+'%':'—')+'</div></div>';}
+function renderWtHistory(){var d=spDB();var t=document.getElementById('wt-tbody');if(!t)return;t.innerHTML=d.water.map(function(e){return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.mun+'</td><td>'+e.gw+'</td><td>'+e.rec+'</td><td>'+e.eff+'</td><td>'+e.ph+'</td><td>'+e.bod+'</td><td><button class="btn btn-r btn-sm" onclick="spDelWt(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelWt(id){var d=spDB();d.water=d.water.filter(function(e){return e.id!==id;});spSave(d);renderWtKpis();renderWtHistory();}
+
+/* ── Waste ── */
+function spSaveWaste(){var d=spDB();d.waste.push({id:uid(),site:gv('ws_site'),date:gv('ws_date'),haz:+gv('ws_haz')||0,nhaz:+gv('ws_nhaz')||0,rec:+gv('ws_rec')||0,land:+gv('ws_land')||0,bio:+gv('ws_bio')||0,ewaste:+gv('ws_ewaste')||0,disp:gv('ws_disp'),tsdf:gv('ws_tsdf')});spSave(d);renderWsKpis();renderWsHistory();spToast('Waste entry saved.');}
+function renderWsKpis(){var d=spDB();var e=d.waste||[];var th=e.reduce(function(s,x){return s+x.haz;},0),tn=e.reduce(function(s,x){return s+x.nhaz;},0),tr=e.reduce(function(s,x){return s+x.rec;},0),tl=e.reduce(function(s,x){return s+x.land;},0);document.getElementById('ws-kpis').innerHTML='<div class="kpi"><div class="lbl">Hazardous MT</div><div class="val" style="color:var(--r)">'+th.toFixed(2)+'</div></div><div class="kpi"><div class="lbl">Non-Haz MT</div><div class="val">'+tn.toFixed(2)+'</div></div><div class="kpi"><div class="lbl">Recycled MT</div><div class="val" style="color:var(--g)">'+tr.toFixed(2)+'</div></div><div class="kpi"><div class="lbl">Landfill MT</div><div class="val" style="color:var(--r)">'+tl.toFixed(2)+'</div><div class="sub">Target: Zero by 2026</div></div>';}
+function renderWsHistory(){var d=spDB();var t=document.getElementById('ws-tbody');if(!t)return;t.innerHTML=d.waste.map(function(e){return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.haz+'</td><td>'+e.nhaz+'</td><td>'+e.rec+'</td><td>'+e.land+'</td><td>'+e.disp+'</td><td><button class="btn btn-r btn-sm" onclick="spDelWs(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelWs(id){var d=spDB();d.waste=d.waste.filter(function(e){return e.id!==id;});spSave(d);renderWsKpis();renderWsHistory();}
+
+/* ── Workforce ── */
+function spSaveWF(){var d=spDB();d.workforce.push({id:uid(),site:gv('wf_site'),date:gv('wf_date'),tot:+gv('wf_tot')||0,male:+gv('wf_male')||0,fem:+gv('wf_fem')||0,cont:+gv('wf_cont')||0,wsl:+gv('wf_wsl')||0,hire:+gv('wf_hire')||0,attr:+gv('wf_attr')||0,pwd:+gv('wf_pwd')||0});spSave(d);renderWfKpis();renderWfHistory();spToast('Workforce entry saved.');}
+function renderWfKpis(){var d=spDB();var e=d.workforce||[];var last=e.length?e[e.length-1]:{tot:0,fem:0};document.getElementById('wf-kpis').innerHTML='<div class="kpi"><div class="lbl">Total Employees</div><div class="val">'+last.tot.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Women %</div><div class="val" style="color:var(--p)">'+(last.tot?((last.fem/last.tot)*100).toFixed(1)+'%':'—')+'</div><div class="sub">Target: 30% by 2030</div></div><div class="kpi"><div class="lbl">PwD</div><div class="val">'+last.pwd+'</div></div>';}
+function renderWfHistory(){var d=spDB();var t=document.getElementById('wf-tbody');if(!t)return;t.innerHTML=d.workforce.map(function(e){return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.tot+'</td><td>'+e.male+'</td><td>'+e.fem+'</td><td>'+(e.tot?((e.fem/e.tot)*100).toFixed(1)+'%':'—')+'</td><td>'+e.cont+'</td><td>'+e.hire+'</td><td><button class="btn btn-r btn-sm" onclick="spDelWf(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelWf(id){var d=spDB();d.workforce=d.workforce.filter(function(e){return e.id!==id;});spSave(d);renderWfKpis();renderWfHistory();}
+
+/* ── H&S ── */
+function spSaveHS(){var d=spDB();d.safety.push({id:uid(),site:gv('hs_site'),date:gv('hs_date'),lti:+gv('hs_lti')||0,lwd:+gv('hs_lwd')||0,nm:+gv('hs_nm')||0,fac:+gv('hs_fac')||0,fat:+gv('hs_fat')||0,mh:+gv('hs_mh')||0,aud:+gv('hs_aud')||0,obs:+gv('hs_obs')||0});spSave(d);renderHsKpis();renderHsHistory();spToast('Safety entry saved.');}
+function renderHsKpis(){var d=spDB();var e=d.safety||[];var tl=e.reduce(function(s,x){return s+x.lti;},0),tm=e.reduce(function(s,x){return s+x.mh;},0);var ltifr=tm>0?((tl/tm)*1000000).toFixed(2):'—';document.getElementById('hs-kpis').innerHTML='<div class="kpi"><div class="lbl">Total LTI</div><div class="val" style="color:var(--r)">'+tl+'</div><div class="sub">Target: Zero</div></div><div class="kpi"><div class="lbl">LTIFR</div><div class="val">'+ltifr+'</div></div><div class="kpi"><div class="lbl">Near Misses</div><div class="val">'+e.reduce(function(s,x){return s+x.nm;},0)+'</div></div>';}
+function renderHsHistory(){var d=spDB();var t=document.getElementById('hs-tbody');if(!t)return;t.innerHTML=d.safety.map(function(e){var ltifr=e.mh>0?((e.lti/e.mh)*1000000).toFixed(2):'—';return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.lti+'</td><td>'+e.lwd+'</td><td>'+e.nm+'</td><td>'+ltifr+'</td><td>'+e.aud+'</td><td><button class="btn btn-r btn-sm" onclick="spDelHs(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelHs(id){var d=spDB();d.safety=d.safety.filter(function(e){return e.id!==id;});spSave(d);renderHsKpis();renderHsHistory();}
+
+/* ── Training ── */
+function spSaveTrain(){var d=spDB();d.training.push({id:uid(),site:gv('tr_site'),date:gv('tr_date'),name:gv('tr_name'),cat:gv('tr_cat'),hrs:+gv('tr_hrs')||0,part:+gv('tr_part')||0,cov:+gv('tr_cov')||0});spSave(d);renderTrKpis();renderTrHistory();spToast('Training record saved.');}
+function renderTrKpis(){var d=spDB();var e=d.training||[];var th=e.reduce(function(s,x){return s+x.hrs;},0),tp=e.reduce(function(s,x){return s+x.part;},0);document.getElementById('tr-kpis').innerHTML='<div class="kpi"><div class="lbl">Total Hours</div><div class="val">'+th.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Total Participants</div><div class="val">'+tp.toLocaleString()+'</div></div><div class="kpi"><div class="lbl">Programs</div><div class="val">'+e.length+'</div></div>';}
+function renderTrHistory(){var d=spDB();var t=document.getElementById('tr-tbody');if(!t)return;t.innerHTML=d.training.map(function(e){return '<tr><td>'+e.date+'</td><td>'+e.site+'</td><td>'+e.name+'</td><td><span class="badge bb">'+e.cat+'</span></td><td>'+e.hrs+'</td><td>'+e.part+'</td><td>'+e.cov+'%</td><td><button class="btn btn-r btn-sm" onclick="spDelTr(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelTr(id){var d=spDB();d.training=d.training.filter(function(e){return e.id!==id;});spSave(d);renderTrKpis();renderTrHistory();}
+
+/* ── Compliance ── */
+var POLICIES_PRESET=[
+  {name:'Anti-Bribery & Anti-Corruption Policy',cat:'Governance',owner:'Legal / Compliance'},
+  {name:'Human Rights Policy',cat:'Social',owner:'HR / Legal'},
+  {name:'Climate & Energy Policy',cat:'Environment',owner:'EHS Head'},
+  {name:'Code of Business Ethics',cat:'Governance',owner:'Legal / HR'},
+  {name:'CSR Policy',cat:'Social / Governance',owner:'CSR Committee'},
+  {name:'SHE Policy',cat:'Environment / Social',owner:'EHS Head'},
+  {name:'POSH Policy',cat:'Social',owner:'HR / IC Committee'},
+  {name:'Whistleblower Policy',cat:'Governance',owner:'Legal / Ethics Committee'},
+  {name:'Grievance Handling Policy',cat:'Social / Governance',owner:'HR'},
+  {name:'Child Labour Prohibition Policy',cat:'Social',owner:'HR / Legal'},
+  {name:'Supplier Code of Conduct',cat:'Supply Chain',owner:'Procurement'},
+];
+function renderPolicies(){var t=document.getElementById('pol-tbody');if(!t)return;t.innerHTML=POLICIES_PRESET.map(function(p){return '<tr><td><strong>'+p.name+'</strong></td><td>'+p.cat+'</td><td>'+p.owner+'</td><td>Annual</td><td><span class="badge bg">✓ In Place</span></td></tr>';}).join('');}
+function spAddLegal(){var d=spDB();d.legal.push({id:uid(),act:gv('lr_act'),jur:gv('lr_jur'),status:gv('lr_status'),due:gv('lr_due'),owner:gv('lr_owner')});spSave(d);renderLegal();spToast('Legal entry added.');}
+function renderLegal(){var d=spDB();var t=document.getElementById('lr-tbody');if(!t)return;t.innerHTML=d.legal.map(function(e){var bc=e.status==='Compliant'?'bg':e.status==='Non-Compliant'?'br':'ba';return '<tr><td>'+e.act+'</td><td>'+e.jur+'</td><td><span class="badge '+bc+'">'+e.status+'</span></td><td>'+e.due+'</td><td>'+e.owner+'</td><td><button class="btn btn-r btn-sm" onclick="spDelLegal(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelLegal(id){var d=spDB();d.legal=d.legal.filter(function(e){return e.id!==id;});spSave(d);renderLegal();}
+function spAddWB(){var d=spDB();d.whistle.push({id:uid(),ref:gv('wb_ref')||'WB-'+Date.now().toString(36).slice(-4).toUpperCase(),date:gv('wb_date'),cat:gv('wb_cat'),status:gv('wb_status'),res:gv('wb_res')});spSave(d);renderWB();spToast('Case logged.');}
+function renderWB(){var d=spDB();var t=document.getElementById('wb-tbody');if(!t)return;t.innerHTML=d.whistle.map(function(e){var bc=e.status==='Closed'?'bg':e.status==='Under Investigation'?'ba':'br';return '<tr><td>'+e.ref+'</td><td>'+e.date+'</td><td>'+e.cat+'</td><td><span class="badge '+bc+'">'+e.status+'</span></td><td>'+e.res+'</td><td><button class="btn btn-r btn-sm" onclick="spDelWB(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelWB(id){var d=spDB();d.whistle=d.whistle.filter(function(e){return e.id!==id;});spSave(d);renderWB();}
+
+/* ── Supply Chain ── */
+function spAddSupplier(){var d=spDB();d.suppliers.push({id:uid(),name:gv('su_name'),cat:gv('su_cat'),loc:gv('su_loc'),coc:gv('su_coc'),iso:gv('su_iso'),risk:gv('su_risk'),aud:gv('su_aud'),score:+gv('su_score')||0});spSave(d);renderSuKpis();renderSuppliers();spToast('Supplier added.');}
+function renderSuKpis(){var d=spDB();var e=d.suppliers||[];var tc=e.length,coc=e.filter(function(s){return s.coc==='Yes';}).length;document.getElementById('su-kpis').innerHTML='<div class="kpi"><div class="lbl">Total Suppliers</div><div class="val">'+tc+'</div></div><div class="kpi"><div class="lbl">Code of Conduct %</div><div class="val" style="color:var(--g)">'+(tc?((coc/tc)*100).toFixed(0):'0')+'%</div><div class="sub">Target: 100% by 2026</div></div><div class="kpi"><div class="lbl">High Risk</div><div class="val" style="color:var(--r)">'+e.filter(function(s){return s.risk==='High';}).length+'</div></div>';}
+function renderSuppliers(){var d=spDB();var t=document.getElementById('su-tbody');if(!t)return;t.innerHTML=d.suppliers.map(function(e){var rc=e.risk==='High'?'br':e.risk==='Medium'?'ba':'bg';return '<tr><td>'+e.name+'</td><td>'+e.cat+'</td><td>'+e.loc+'</td><td><span class="badge '+(e.coc==='Yes'?'bg':'br')+'">'+e.coc+'</span></td><td><span class="badge '+(e.iso==='Yes'?'bg':'ba')+'">'+e.iso+'</span></td><td><span class="badge '+rc+'">'+e.risk+'</span></td><td><strong>'+e.score+'</strong>/100</td><td><button class="btn btn-r btn-sm" onclick="spDelSu(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelSu(id){var d=spDB();d.suppliers=d.suppliers.filter(function(e){return e.id!==id;});spSave(d);renderSuKpis();renderSuppliers();}
+
+/* ── Risk ── */
+function spAddRisk(){var d=spDB();var lik=+gv('rk_lik')||3,imp=+gv('rk_imp')||3;d.risks.push({id:uid(),desc:gv('rk_desc'),cat:gv('rk_cat'),lik:lik,imp:imp,score:lik*imp,mit:gv('rk_mit'),own:gv('rk_own')});spSave(d);renderRisk();renderHeatmap();spToast('Risk added.');}
+function renderRisk(){var d=spDB();var t=document.getElementById('rk-tbody');if(!t)return;t.innerHTML=d.risks.map(function(e){var sc=e.lik*e.imp,pri=sc>=15?'<span class="badge br">High</span>':sc>=8?'<span class="badge ba">Medium</span>':'<span class="badge bg">Low</span>';return '<tr><td>'+e.desc+'</td><td><span class="badge bb">'+e.cat+'</span></td><td>'+e.lik+'</td><td>'+e.imp+'</td><td><strong>'+sc+'</strong></td><td>'+pri+'</td><td>'+e.mit+'</td><td><button class="btn btn-r btn-sm" onclick="spDelRisk(\''+e.id+'\')">✕</button></td></tr>';}).join('');}
+function spDelRisk(id){var d=spDB();d.risks=d.risks.filter(function(e){return e.id!==id;});spSave(d);renderRisk();renderHeatmap();}
+function renderHeatmap(){var d=spDB();var hm=document.getElementById('risk-hm');if(!hm)return;var cells=[];for(var imp=5;imp>=1;imp--){for(var lik=1;lik<=5;lik++){var sc=lik*imp;var col=sc>=15?'#fee2e2':sc>=8?'#fef3c7':'#dcfce7';var tcol=sc>=15?'#dc2626':sc>=8?'#d97706':'#16a34a';var risks=d.risks.filter(function(r){return r.lik===lik&&r.imp===imp;});cells.push('<div class="rc" style="background:'+col+';color:'+tcol+'" title="L:'+lik+' x I:'+imp+' = '+sc+'">'+(risks.length?risks.length+'●':'')+'</div>');}}hm.innerHTML=cells.join('');}
+
+/* ── Targets ── */
+var TARGETS=[
+  {cat:'Climate',name:'Net Zero GHG Emissions',yr:'2045',status:'Roadmap Ready',progress:5},
+  {cat:'Climate',name:'25% Scope 1 & 2 Reduction vs FY2022',yr:'2030',status:'In Progress',progress:12},
+  {cat:'Energy',name:'25% Renewable Energy Share',yr:'2030',status:'In Progress',progress:8},
+  {cat:'Water',name:'33% Freshwater Reduction vs FY2022',yr:'2030',status:'In Progress',progress:10},
+  {cat:'Waste',name:'Zero Waste to Landfill',yr:'2026',status:'In Progress',progress:45},
+  {cat:'Waste',name:'10% Total Waste Reduction vs FY2022',yr:'2028',status:'Tracking',progress:4},
+  {cat:'Diversity',name:'30% Women in Workforce',yr:'2030',status:'In Progress',progress:22},
+  {cat:'Diversity',name:'Increase Women in Leadership',yr:'Ongoing',status:'Ongoing',progress:35},
+  {cat:'Safety',name:'Min 2 Days Safety Training / Employee',yr:'Annual',status:'Ongoing',progress:65},
+  {cat:'Supply Chain',name:'100% Strategic Supplier CoC Acknowledgement',yr:'2026',status:'In Progress',progress:60},
+  {cat:'Supply Chain',name:'Sustainability Clauses in All Contracts',yr:'2028',status:'Planned',progress:15},
+  {cat:'Supply Chain',name:'Full Scope 3 Measurement',yr:'2025',status:'In Progress',progress:40},
+];
+function renderTargets(){var c=document.getElementById('tgt-card');if(!c)return;c.innerHTML='<h3>🎯 Sustainability Targets & Progress ('+new Date().getFullYear()+')</h3><div style="margin-top:8px">'+TARGETS.map(function(t){var col=t.status==='Ongoing'||t.status==='Roadmap Ready'?'#16a34a':t.status==='In Progress'?'#d97706':t.status==='Tracking'?'#0891b2':'#7c3aed';var fc=t.progress>=80?'#16a34a':t.progress>=50?'#d97706':'#dc2626';return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:.8rem;font-weight:600">'+t.name+'</span><span style="font-size:.72rem;color:'+col+';font-weight:700">'+t.status+' | '+t.yr+'</span></div><div class="pg-bar"><div class="pg-fill" style="width:'+t.progress+'%;background:'+fc+'"></div></div><div style="font-size:.68rem;color:var(--md);margin-top:2px">'+t.cat+' · '+t.progress+'% progress</div></div>';}).join('')+'</div>';}
+
+/* ── Dashboard ── */
+function renderDashboard(){
+  var d=spDB(),en=d.energy||[],wf=d.workforce||[],hs=d.safety||[],ws=d.waste||[];
+  var tg=en.reduce(function(s,x){return s+x.grid;},0),tr=en.reduce(function(s,x){return s+x.renew;},0);
+  var ts1=en.reduce(function(s,x){return s+x.s1;},0),ts2=en.reduce(function(s,x){return s+x.s2;},0);
+  var lw=wf.length?wf[wf.length-1]:{tot:0,fem:0};
+  var tl=hs.reduce(function(s,x){return s+x.lti;},0);
+  var tland=ws.reduce(function(s,x){return s+x.land;},0);
+  document.getElementById('db-kpis').innerHTML=[
+    ['Total Employees',lw.tot?lw.tot.toLocaleString():'—','var(--p)',''],
+    ['Women in Workforce',lw.tot?((lw.fem/lw.tot)*100).toFixed(1)+'%':'—','var(--p)','Target: 30% by 2030'],
+    ['Scope 1+2 tCO2e',(ts1+ts2).toFixed(2),'var(--g)','Target: -25% by 2030'],
+    ['Renewable Energy %',tg>0?((tr/(tg+tr))*100).toFixed(1)+'%':'—','var(--g)','Target: 25% by 2030'],
+    ['Total LTI',tl,'var(--r)','Target: Zero LTI'],
+    ['Waste to Landfill',tland.toFixed(2)+' MT','var(--a)','Target: Zero by 2026'],
+    ['Platform Entries',en.length+d.water.length+ws.length+wf.length+hs.length,'var(--b)','All modules'],
+    ['Compliance Status',d.legal.filter(function(l){return l.status==='Non-Compliant';}).length===0?'Clean':'⚠ Issues','var(--g)','Legal register'],
+  ].map(function(k){return '<div class="kpi"><div class="lbl">'+k[0]+'</div><div class="val" style="color:'+k[2]+'">'+k[1]+'</div>'+(k[3]?'<div class="sub">'+k[3]+'</div>':'')+'</div>';}).join('');
+  var tgts=document.getElementById('db-targets');if(tgts)tgts.innerHTML=TARGETS.slice(0,6).map(function(t){var fc=t.progress>=80?'#16a34a':t.progress>=50?'#d97706':'#dc2626';return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.75rem"><span>'+t.name.substring(0,38)+'…</span><span style="color:'+fc+';font-weight:700">'+t.progress+'%</span></div><div class="pg-bar" style="height:5px"><div class="pg-fill" style="width:'+t.progress+'%;background:'+fc+'"></div></div></div>';}).join('');
+  var st=document.getElementById('db-status');if(st){var checks=[['Energy entries',en.length,'en'],['Water entries',d.water.length,'water'],['Waste entries',ws.length,'waste'],['Workforce entries',wf.length,'workforce'],['Safety entries',hs.length,'safety'],['Training records',d.training.length,'training'],['Suppliers registered',d.suppliers.length,'supplychain'],['Risks logged',d.risks.length,'risk']];st.innerHTML=checks.map(function(c){var ok=c[1]>0;return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:.78rem"><span onclick="sp(\''+c[2]+'\')" style="cursor:pointer;color:var(--b)">'+c[0]+'</span><span style="font-weight:700;color:'+(ok?'var(--g)':'var(--r)')+'">'+c[1]+(ok?' ✓':' — add data')+'</span></div>';}).join('');}
+}
+
+/* ── CSV Export ── */
+function spExportCSV(){
+  var d=spDB();
+  var rows=[['Module','Date','Site','Field','Value']];
+  d.energy.forEach(function(e){rows.push(['Energy',e.date,e.site,'Grid kWh',e.grid],['Energy',e.date,e.site,'Renew kWh',e.renew],['Energy',e.date,e.site,'Scope1 tCO2e',e.s1],['Energy',e.date,e.site,'Scope2 tCO2e',e.s2]);});
+  d.water.forEach(function(e){rows.push(['Water',e.date,e.site,'Freshwater KL',e.mun+e.gw],['Water',e.date,e.site,'Recycled KL',e.rec]);});
+  d.waste.forEach(function(e){rows.push(['Waste',e.date,e.site,'Haz MT',e.haz],['Waste',e.date,e.site,'Non-Haz MT',e.nhaz],['Waste',e.date,e.site,'Landfill MT',e.land]);});
+  d.workforce.forEach(function(e){rows.push(['Workforce',e.date,e.site,'Total',e.tot],['Workforce',e.date,e.site,'Female',e.fem]);});
+  d.safety.forEach(function(e){rows.push(['Safety',e.date,e.site,'LTI',e.lti],['Safety',e.date,e.site,'Near Miss',e.nm]);});
+  var csv=rows.map(function(r){return r.join(',');}).join('\n');
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='EcoSphere_Platform_Data.csv';a.click();
+  spToast('CSV exported!');
+}
+
+/* ── PDF Generators (delegate to org-portal functions if available) ── */
+function spGenESG(){
+  var from=gv('rp_from'),to=gv('rp_to');
+  var d=spDB(),org=d.org||{};
+  /* Pre-fill org-portal fields if available */
+  if(document.getElementById('esg_s1_orgName')&&org.name) document.getElementById('esg_s1_orgName').value=org.name;
+  if(document.getElementById('esgFromDate2')) document.getElementById('esgFromDate2').value=from;
+  if(document.getElementById('esgToDate2')) document.getElementById('esgToDate2').value=to;
+  if(typeof generateESGReport==='function'){generateESGReport();return;}
+  spGenESGLocal(from,to,org);
+}
+function spGenEIA(){
+  var from=gv('rp_eia_from'),to=gv('rp_eia_to');
+  if(document.getElementById('eiaFromDate')) document.getElementById('eiaFromDate').value=from;
+  if(document.getElementById('eiaToDate')) document.getElementById('eiaToDate').value=to;
+  if(typeof generateEIAReport==='function'){generateEIAReport();return;}
+  spToast('Please use the EIA section in the org portal to generate the PDF.');
+}
+
+/* ── Standalone ESG PDF (if org-portal functions not available) ── */
+function spGenESGLocal(from,to,orgData){
+  if(!window.jspdf){alert('jsPDF not loaded.');return;}
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,H=297,GRN=[22,163,74],DGN=[10,61,46],MID=[71,85,105],DRK=[30,41,59];
+  var org=orgData&&orgData.name?orgData.name:'Organization';
+  var yr=new Date().getFullYear();
+  var period=from&&to?from+' to '+to:'FY '+yr;
+  var d=spDB(),en=d.energy||[],wf=d.workforce||[],hs=d.safety||[],ws=d.waste||[];
+  var tg=en.reduce(function(s,x){return s+x.grid;},0),tr=en.reduce(function(s,x){return s+x.renew;},0);
+  var ts1=en.reduce(function(s,x){return s+x.s1;},0),ts2=en.reduce(function(s,x){return s+x.s2;},0);
+  var lw=wf.length?wf[wf.length-1]:{tot:0,fem:0};
+  var th=ws.reduce(function(s,x){return s+x.haz;},0),tl_waste=ws.reduce(function(s,x){return s+x.land;},0);
+
+  /* Cover */
+  doc.setFillColor.apply(doc,DGN);doc.rect(0,0,W,H*.55,'F');
+  doc.setFillColor.apply(doc,GRN);doc.rect(0,H*.55,W,3,'F');
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(255,255,255);
+  doc.text('SUSTAINABILITY REPORT',W/2,32,{align:'center'});
+  doc.setFontSize(22);doc.setFont('helvetica','bold');
+  doc.text(org,W/2,52,{align:'center',maxWidth:170});
+  doc.setFontSize(36);doc.setFont('helvetica','bold');doc.setTextColor(74,222,128);
+  doc.text(String(yr),W/2,88,{align:'center'});
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(255,255,255);
+  doc.text(period,W/2,98,{align:'center'});
+  doc.setFillColor(248,250,252);doc.rect(0,H*.58,W,H*.42,'F');
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor.apply(doc,DGN);
+  doc.text('GRI Standards 2021 | BRSR | TCFD | UN SDGs | ISO 14001',W/2,H-14,{align:'center'});
+
+  /* KPI Summary page */
+  doc.addPage();
+  doc.setFillColor.apply(doc,DGN);doc.rect(0,0,W,11,'F');
+  doc.setFontSize(7);doc.setTextColor(255,255,255);doc.text(org,10,7.5);doc.text('Sustainability Report '+yr,W-10,7.5,{align:'right'});
+  doc.setFontSize(14);doc.setFont('helvetica','bold');doc.setTextColor.apply(doc,DGN);
+  doc.text('Key Performance Summary',15,22);
+  doc.setDrawColor.apply(doc,GRN);doc.line(15,24,195,24);
+  doc.autoTable({
+    startY:28,
+    head:[['Pillar','Metric','Value','Target','Status']],
+    body:[
+      ['Environment','Grid Electricity (kWh)',tg.toLocaleString(),'Track & Reduce','Tracking'],
+      ['Environment','Renewable Energy (kWh)',tr.toLocaleString(),'25% share by 2030','In Progress'],
+      ['Environment','Scope 1 GHG (tCO2e)',ts1.toFixed(2),'25% reduction by 2030','In Progress'],
+      ['Environment','Scope 2 GHG (tCO2e)',ts2.toFixed(2),'25% reduction by 2030','In Progress'],
+      ['Environment','Hazardous Waste (MT)',th.toFixed(2),'10% reduction by 2028','In Progress'],
+      ['Environment','Waste to Landfill (MT)',tl_waste.toFixed(2),'Zero by 2026','In Progress'],
+      ['Social','Total Employees',lw.tot.toLocaleString(),'Grow responsibly','—'],
+      ['Social','Women in Workforce (%)',lw.tot?((lw.fem/lw.tot)*100).toFixed(1)+'%':'—','30% by 2030','In Progress'],
+      ['Social','Total LTI',hs.reduce(function(s,x){return s+x.lti;},0),'Zero LTI','Tracking'],
+      ['Social','Training Hours',d.training.reduce(function(s,x){return s+x.hrs;},0).toLocaleString(),'Min 2 days/person/yr','Ongoing'],
+    ],
+    theme:'grid',
+    headStyles:{fillColor:DGN,textColor:[255,255,255],fontSize:7.5,fontStyle:'bold'},
+    bodyStyles:{fontSize:7.5},
+    alternateRowStyles:{fillColor:[248,250,252]},
+    didParseCell:function(c){
+      if(c.column.index===0&&c.section==='body'){if(c.cell.raw==='Environment')c.cell.styles.textColor=GRN;else if(c.cell.raw==='Social')c.cell.styles.textColor=[124,58,237];}
+      if(c.column.index===4&&c.section==='body'){var col={'In Progress':[217,119,6],'Tracking':[8,145,178],'Ongoing':[22,163,74]};c.cell.styles.textColor=col[c.cell.raw]||DRK;}
+    },
+    margin:{left:15,right:15}
+  });
+  doc.save(org.replace(/\s/g,'_')+'_Sustainability_Report_'+yr+'.pdf');
+  spToast('Sustainability Report PDF downloaded!');
+}
+
+/* ── FRS PDF ── */
+function spGenFRS(){
+  if(!window.jspdf){alert('jsPDF not loaded.');return;}
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,H=297,GRN=[22,163,74],DGN=[10,61,46],MID=[71,85,105],DRK=[30,41,59];
+  var yr=new Date().getFullYear();
+  /* Cover */
+  doc.setFillColor.apply(doc,DGN);doc.rect(0,0,W,H*.4,'F');
+  doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('FUNCTIONAL REQUIREMENT SPECIFICATION',W/2,40,{align:'center'});
+  doc.setFontSize(18);doc.text('EcoSphere Enterprise',W/2,56,{align:'center'});
+  doc.text('Sustainability & ESG Platform',W/2,68,{align:'center'});
+  doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(74,222,128);
+  doc.text('Version 1.0 | '+yr,W/2,80,{align:'center'});
+  doc.setFillColor(248,250,252);doc.rect(0,H*.4,W,H*.6,'F');
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor.apply(doc,DRK);
+  var frsItems=[['Governance','Sustainability committee, charter, ambassadors, champions, board oversight'],['Materiality','Double materiality — 18 topics across 4 pillars, GRI / BRSR aligned'],['Environmental','Energy, GHG Scope 1/2/3, water, waste, biodiversity with targets'],['Social','Workforce, diversity, OHS, training, human rights, CSR'],['Compliance','Policy library, legal register, whistleblower, grievance management'],['Supply Chain','Supplier portal, CoC, ESG scoring, Scope 3 tracking'],['Risk Management','ESG risk register, heat map, TCFD climate risk categories'],['Targets','14 pre-defined targets with progress tracking and RAG status'],['Reporting','GRI 2021, BRSR, TCFD, CDP, UN SDGs aligned report generation']];
+  var fy=H*.44;
+  frsItems.forEach(function(item){
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor.apply(doc,DGN);
+    doc.text('▸ '+item[0],18,fy);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor.apply(doc,MID);
+    doc.text(item[1],35,fy);fy+=7;
+  });
+  /* Modules page */
+  doc.addPage();
+  doc.setFillColor.apply(doc,DGN);doc.rect(0,0,W,11,'F');
+  doc.setFontSize(7);doc.setTextColor(255,255,255);doc.text('EcoSphere FRS v1.0',10,7.5);doc.text('Page 2',W-10,7.5,{align:'right'});
+  doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor.apply(doc,DGN);
+  doc.text('Module Summary & Requirements',15,22);
+  doc.setDrawColor.apply(doc,GRN);doc.line(15,24,195,24);
+  doc.autoTable({
+    startY:28,
+    head:[['Module','Key Requirements','Priority','GRI / Standard']],
+    body:[
+      ['Sustainability Governance','Committee mgmt, charter, meetings, action tracking, board oversight','Critical','GRI 2-9, 2-14'],
+      ['Materiality Assessment','Double materiality, 18 topics, stakeholder scoring, matrix','Critical','GRI 3-1, 3-2'],
+      ['Stakeholder Engagement','Engagement registry, surveys, concern tracking, grievances','High','GRI 2-29'],
+      ['Energy Management','All fuel types, GJ conversion, renewable %, intensity','Critical','GRI 302'],
+      ['GHG Emissions','Scope 1/2/3 with emission factors, Net Zero roadmap','Critical','GRI 305, TCFD'],
+      ['Water Management','Freshwater, recycled, effluent parameters, ZLD tracking','Critical','GRI 303'],
+      ['Waste Management','Hazardous, non-haz, landfill diversion, TSDF manifest','Critical','GRI 306'],
+      ['Workforce & Diversity','Headcount, gender, women leadership, PwD','Critical','GRI 401, 405'],
+      ['Occupational H&S','LTI, LTIFR, near miss, safety training, audits','Critical','GRI 403'],
+      ['Training & Education','Hours, categories, ESG/safety/human rights coverage','High','GRI 404'],
+      ['Compliance','Policy library, legal register, whistleblower, grievances','Critical','GRI 205, 206'],
+      ['Supply Chain','Supplier portal, CoC, ISO certs, ESG scoring, Scope 3','High','GRI 308'],
+      ['Risk Management','ESG risk register, heat map, TCFD categories, mitigations','Critical','TCFD, GRI 2-25'],
+      ['Targets Tracker','14 targets, baselines, progress, RAG, year projections','Critical','Internal'],
+      ['Reporting','Multi-framework PDF, GRI index, BRSR table, assurance pkg','Critical','GRI 2021, BRSR'],
+    ],
+    theme:'grid',
+    headStyles:{fillColor:DGN,textColor:[255,255,255],fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:6.8},
+    columnStyles:{0:{cellWidth:38,fontStyle:'bold'},1:{cellWidth:80},2:{cellWidth:18,halign:'center'},3:{cellWidth:30}},
+    didParseCell:function(c){if(c.column.index===2&&c.section==='body'){c.cell.styles.textColor=c.cell.raw==='Critical'?[220,38,38]:[217,119,6];}},
+    margin:{left:15,right:15}
+  });
+  doc.save('EcoSphere_FRS_v1.0_'+yr+'.pdf');
+  spToast('FRS Document PDF downloaded!');
+}
+
+/* ── Init ── */
+renderDashboard();
+renderHeatmap();
+/* Pre-set today's date in month inputs */
+var today=new Date().toISOString().slice(0,7);
+['en_date','wt_date','ws_date','wf_date','hs_date','tr_date'].forEach(function(id){sv(id,today);});
+var todayFull=new Date().toISOString().slice(0,10);
+['sk_date','gm_date','su_aud','wb_date','lr_due'].forEach(function(id){sv(id,todayFull);});
+</script>
+<script src="js/eco-export.js"></script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

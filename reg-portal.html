@@ -1,0 +1,1442 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoSphere — Regulatory Authority Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --reg:#d97706;--reg2:#b45309;--reg3:#1c1400;
+  --bg:#fffbeb;--white:#ffffff;
+  --gray1:#f8fafc;--gray2:#f1f5f9;--gray3:#e2e8f0;--gray4:#94a3b8;--gray5:#64748b;--gray6:#374151;--gray9:#0f172a;
+  --shadow:0 2px 12px rgba(217,119,6,.10);--shadow2:0 8px 32px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:#0f172a}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--reg);border-radius:3px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;background:linear-gradient(135deg,#1c1400 0%,#451a03 50%,#0f172a 100%);position:relative;overflow:hidden}
+.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 52px;position:relative;z-index:2}
+.ll-logo{background:rgba(255,255,255,.95);border-radius:12px;padding:6px 14px;display:inline-flex;margin-bottom:40px}
+.ll-logo img{height:46px;mix-blend-mode:multiply;display:block}
+.ll-title{font-family:'Poppins',sans-serif;font-size:clamp(2rem,3.5vw,2.8rem);font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px}
+.ll-title em{color:#fbbf24;font-style:normal;display:block}
+.ll-sub{font-size:1rem;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:36px;max-width:400px}
+.ll-feats{display:flex;flex-direction:column;gap:12px}
+.ll-feat{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600}
+.ll-feat i{width:32px;height:32px;border-radius:8px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.25);display:flex;align-items:center;justify-content:center;color:#fbbf24;flex-shrink:0;font-size:.85rem}
+
+.login-right{width:min(500px,48vw);background:var(--white);display:flex;flex-direction:column;justify-content:center;padding:48px 44px;position:relative;z-index:2}
+.lr-head{text-align:center;margin-bottom:28px}
+.lr-logo-pill{background:var(--bg);border:1px solid var(--gray3);border-radius:12px;overflow:hidden;width:190px;height:56px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.lr-logo-pill img{height:310px;width:310px;margin:-127px -60px;display:block;flex-shrink:0}
+.lr-title{font-family:'Poppins',sans-serif;font-size:1.5rem;font-weight:900;color:#1c1400;margin-bottom:5px}
+.lr-sub{font-size:.9rem;color:#d97706;font-weight:800;letter-spacing:.3px}
+
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.auth-btn{background:var(--gray1);border:1.5px solid var(--gray3);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;color:#0f172a;transition:.15s;font-family:'Inter',sans-serif}
+.auth-btn i{font-size:.9rem;width:18px;text-align:center}
+.auth-btn:hover{border-color:var(--reg);color:var(--reg)}
+.auth-btn.active{background:#fffbeb;border-color:var(--reg);color:var(--reg3);font-weight:800}
+.auth-btn.active i{color:var(--reg)}
+
+.fg{margin-bottom:15px}
+.fg label{display:flex;align-items:center;gap:5px;font-size:.78rem;font-weight:700;color:#0f172a;margin-bottom:6px}
+.fg label i{color:var(--reg);font-size:.72rem}
+.fi{width:100%;background:var(--white);border:1.5px solid var(--gray3);border-radius:9px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:.9rem;color:#0f172a;outline:none;transition:.15s}
+.fi:focus{border-color:var(--reg);box-shadow:0 0 0 3px rgba(217,119,6,.1)}
+/* org searchable dropdown */
+.org-drop-wrap{position:relative}
+.org-drop-wrap .org-drop-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;font-size:.76rem}
+.org-drop-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1.5px solid rgba(217,119,6,.35);border-radius:0 0 10px 10px;max-height:218px;overflow-y:auto;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.13);display:none;border-top:none}
+.org-drop-list.open{display:block}
+.org-drop-opt{padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--gray3)}
+.org-drop-opt:last-child{border-bottom:none}
+.org-drop-opt:hover{background:#fffbeb}
+.org-drop-opt-name{font-size:.84rem;font-weight:700;color:#0f172a}
+.org-drop-opt-ind{font-size:.7rem;color:#64748b;margin-top:1px}
+.pw-w{position:relative}.pw-w .fi{padding-right:42px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#475569;cursor:pointer;font-size:.9rem}
+
+.l-opts{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-size:.78rem}
+.l-rem{display:flex;align-items:center;gap:6px;color:#78350f;font-weight:700;cursor:pointer}
+.l-rem input{accent-color:var(--reg)}
+.l-fgt{color:var(--reg);font-weight:700;text-decoration:none}
+
+.l-submit{width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:800;background:linear-gradient(135deg,var(--reg),var(--reg2));color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.l-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(217,119,6,.35)}
+.l-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+.l-spin{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.l-footer{text-align:center;margin-top:18px;font-size:.78rem;color:#d97706;font-weight:600}
+.l-footer a{color:var(--reg);font-weight:700;text-decoration:none}
+.l-err{display:none;background:#fee2e2;border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:9px 13px;color:#b91c1c;font-size:.8rem;font-weight:600;margin-bottom:14px;align-items:center;gap:7px}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:58px;flex-shrink:0;background:linear-gradient(90deg,var(--reg3),#451a03);display:flex;align-items:center;padding:0 22px;gap:14px;box-shadow:0 3px 14px rgba(0,0,0,.2)}
+.tb-lp{background:rgba(255,255,255,.95);border-radius:8px;padding:3px 9px;display:flex;align-items:center}
+.tb-lp img{height:32px;mix-blend-mode:multiply;display:block}
+.tb-nm{font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:800;color:#fef9c3}
+.tb-nm em{color:#fbbf24;font-style:normal}
+.tb-chip{background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.35);border-radius:20px;padding:3px 12px;color:#fbbf24;font-size:.67rem;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-user{background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:8px}
+.tb-av{width:26px;height:26px;border-radius:50%;background:#fbbf24;color:var(--reg3);font-size:.7rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+.tb-user span{color:#fef9c3;font-size:.82rem;font-weight:700}
+.tb-bk{background:rgba(255,255,255,.14);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 14px;color:#fef9c3;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:.15s;font-family:'Inter',sans-serif}
+.tb-bk:hover{background:rgba(255,255,255,.24)}
+.tb-out{background:rgba(255,80,80,.14);border:1px solid rgba(255,80,80,.25);border-radius:8px;padding:6px 12px;color:#fca5a5;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif}
+
+.bwrap{display:flex;flex:1;overflow:hidden}
+.sidebar{width:215px;flex-shrink:0;background:linear-gradient(180deg,var(--reg3),#2c1b00);overflow-y:auto;display:flex;flex-direction:column}
+.sb-grp{padding:12px 16px 3px;font-size:.6rem;font-weight:900;color:rgba(255,255,255,.22);letter-spacing:3px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:9px;padding:10px 16px;color:rgba(255,255,255,.55);font-size:.84rem;font-weight:600;cursor:pointer;border-left:3px solid transparent;transition:.15s}
+.sb-item i{width:15px;text-align:center;font-size:.82rem}
+.sb-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.sb-item.on{background:rgba(251,191,36,.1);color:#fbbf24;border-left-color:var(--reg);font-weight:700}
+.sb-num{background:rgba(220,38,38,.28);color:#fca5a5;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:auto}
+.sb-foot{margin-top:auto;padding:12px 14px}
+.sb-out{width:100%;padding:9px;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);border-radius:8px;color:#fca5a5;font-size:.8rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;justify-content:center;font-family:'Inter',sans-serif}
+
+.content{flex:1;overflow-y:auto;padding:24px 28px;background:var(--bg)}
+.pg-hd{margin-bottom:18px}
+.pg-title{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:900;color:var(--reg3);margin-bottom:2px}
+.pg-sub{font-size:.84rem;color:#334155}
+.sec{display:none}.sec.show{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--white);border:1px solid #fde68a;border-radius:12px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--shadow2)}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:12px 12px 0 0}
+.s1::before{background:linear-gradient(90deg,#d97706,#fbbf24)}.s2::before{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.s3::before{background:linear-gradient(90deg,#dc2626,#f87171)}.s4::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.s5::before{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}.s6::before{background:linear-gradient(90deg,#0d9488,#2dd4bf)}
+.stat-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:9px}
+.s1 .stat-ico{background:#fef3c7;color:#d97706}.s2 .stat-ico{background:#dcfce7;color:#16a34a}.s3 .stat-ico{background:#fee2e2;color:#dc2626}
+.s4 .stat-ico{background:#ede9fe;color:#7c3aed}.s5 .stat-ico{background:#dbeafe;color:#1d4ed8}.s6 .stat-ico{background:#ccfbf1;color:#0d9488}
+.stat-num{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:900;color:#0f172a}
+.stat-lbl{font-size:.73rem;font-weight:600;color:#334155;margin-top:2px}
+.stat-up{font-size:.68rem;color:#16a34a;font-weight:700;margin-top:3px}
+
+.card{background:var(--white);border:1px solid #fde68a;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px}
+.card-hd{padding:14px 20px;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between}
+.card-hd h4{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:6px}
+.card-hd h4 i{color:var(--reg)}
+.charts2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+.chart-card{background:var(--white);border:1px solid #fde68a;border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.chart-card h4{font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:800;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.chart-card h4 i{color:var(--reg)}
+
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead tr{background:var(--bg)}
+.tbl th{padding:9px 14px;text-align:left;font-size:.66rem;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #fde68a;white-space:nowrap}
+.tbl td{padding:12px 14px;font-size:.83rem;color:#0f172a;border-bottom:1px solid var(--bg);vertical-align:middle}
+.tbl tbody tr:hover{background:var(--bg)}
+.tbl tbody tr:last-child td{border-bottom:none}
+
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.67rem;font-weight:800;white-space:nowrap}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.c-pend{background:#fef9c3;color:#a16207;border:1px solid rgba(161,98,7,.2)}.c-pend .cdot{background:#a16207;animation:blink 1.5s ease infinite}
+.c-rev{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.2)}.c-rev .cdot{background:#1d4ed8;animation:blink 1.2s ease infinite}
+.c-app{background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,.2)}.c-app .cdot{background:#15803d}
+.c-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(185,28,28,.2)}.c-rej .cdot{background:#b91c1c}
+.c-cert{background:#fdf4ff;color:#7e22ce;border:1px solid rgba(126,34,206,.2)}.c-cert .cdot{background:#7e22ce}
+.c-govt{background:#f0fdf4;color:#166534;border:1px solid rgba(22,101,52,.2)}.c-govt .cdot{background:#166534}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.btn{padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-size:.74rem;font-weight:700;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:4px;transition:.15s}
+.b-rev{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.25)}.b-rev:hover{background:#2563eb;color:#fff}
+.b-app{background:#dcfce7;color:#15803d;border:1px solid rgba(22,163,74,.25)}.b-app:hover{background:#16a34a;color:#fff}
+.b-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(220,38,38,.25)}.b-rej:hover{background:#dc2626;color:#fff}
+.b-not{background:#fef9c3;color:#a16207;border:1px solid rgba(161,98,7,.25)}.b-not:hover{background:#d97706;color:#fff}
+.b-ins{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.25)}.b-ins:hover{background:#2563eb;color:#fff}
+.b-vw{background:var(--gray2);color:#334155;border:1px solid var(--gray3)}.b-vw:hover{background:var(--gray3)}
+.b-ct{background:#fdf4ff;color:#7e22ce;border:1px solid rgba(126,34,206,.25)}.b-ct:hover{background:#7c3aed;color:#fff}
+.b-dl{background:var(--bg);color:var(--reg);border:1px solid rgba(217,119,6,.25)}.b-dl:hover{background:var(--reg);color:#fff}
+
+.act-btn{padding:11px 20px;border-radius:9px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:7px;transition:.2s}
+.ab-amber{background:linear-gradient(135deg,#d97706,#b45309);color:#fff}.ab-amber:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(217,119,6,.3)}
+.ab-purple{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}.ab-purple:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,58,237,.3)}
+.ab-notice{background:#fef9c3;color:#a16207;border:1px solid rgba(161,98,7,.25)}.ab-notice:hover{background:#d97706;color:#fff}
+.ab-ins{background:#dbeafe;color:#1d4ed8;border:1px solid rgba(29,78,216,.25)}.ab-ins:hover{background:#2563eb;color:#fff}
+.ab-rej{background:#fee2e2;color:#b91c1c;border:1px solid rgba(220,38,38,.25)}.ab-rej:hover{background:#dc2626;color:#fff}
+
+.rev-panel{background:var(--white);border:1px solid #fde68a;border-radius:12px;overflow:hidden;box-shadow:var(--shadow2)}
+.rev-hd{background:linear-gradient(90deg,var(--reg3),#451a03);padding:18px 22px}
+.rev-hd h3{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:800;color:#fef9c3;margin-bottom:3px}
+.rev-hd p{font-size:.74rem;color:rgba(254,243,199,.6)}
+.rev-body{padding:20px}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:18px}
+.sc{border-radius:11px;padding:14px;text-align:center;border:1px solid}
+.sc1{background:#ede9fe;border-color:#c4b5fd;color:#7c3aed}.sc2{background:#ccfbf1;border-color:#99f6e4;color:#0d9488}.sc3{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}.sc4{background:#dcfce7;border-color:#bbf7d0;color:#16a34a}
+.sv{font-family:'Poppins',sans-serif;font-size:1.55rem;font-weight:900;display:block}
+.sl{font-size:.7rem;font-weight:700;margin-top:3px;opacity:.75}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px;margin-bottom:14px}
+.meta-item{background:var(--bg);border:1px solid #fde68a;border-radius:9px;padding:11px}
+.meta-item label{font-size:.63rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
+.meta-item span{font-size:.85rem;font-weight:700;color:#0f172a}
+.cmt-wrap{margin:16px 0}
+.cmt-wrap label{font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;color:#0f172a;display:block;margin-bottom:7px}
+.cmt-wrap textarea{width:100%;padding:11px 14px;border:1.5px solid #fde68a;border-radius:9px;font-family:'Inter',sans-serif;font-size:.87rem;resize:vertical;min-height:80px;outline:none;color:#0f172a;background:var(--bg);transition:.15s}
+.cmt-wrap textarea:focus{border-color:var(--reg);box-shadow:0 0 0 3px rgba(217,119,6,.1)}
+.rev-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.cert-card{background:var(--white);border:2px solid #fde68a;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(217,119,6,.1);max-width:580px;margin-bottom:16px}
+.cert-top{background:linear-gradient(135deg,#1c1400,#451a03,#052e16);padding:24px;text-align:center;position:relative;overflow:hidden}
+.cert-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 35% 0%,rgba(217,119,6,.2),transparent 55%)}
+.cert-logo{height:32px;filter:brightness(0) invert(1) opacity(.85);margin:0 auto 10px;display:block}
+.cert-t{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:900;color:#fef9c3;position:relative;z-index:1}
+.cert-s{font-size:.72rem;color:rgba(254,243,199,.55);position:relative;z-index:1;margin-top:3px}
+.cert-seal{width:52px;height:52px;border-radius:50%;background:rgba(251,191,36,.12);border:3px solid #fbbf24;display:flex;align-items:center;justify-content:center;margin:12px auto 0;font-size:1.4rem;animation:sg 2.5s ease infinite;position:relative;z-index:1}
+@keyframes sg{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.4)}50%{box-shadow:0 0 0 10px rgba(251,191,36,0)}}
+.cert-body{padding:18px}
+.cert-stmp{background:linear-gradient(135deg,#1c1400,#451a03);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.cert-stmp i{color:#fbbf24;font-size:1rem}.cert-stmp span{font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:700;color:#fef9c3}
+.cert-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.cfi{background:var(--bg);border:1px solid #fde68a;border-radius:8px;padding:9px}
+.cfl{font-size:.62rem;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.cfv{font-size:.82rem;font-weight:700;color:#0f172a}
+.cert-qr{display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg);border-radius:9px;border:1px solid #fde68a}
+.qr-box{width:58px;height:58px;background:#1c1400;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-info h5{font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:800;color:#0f172a;margin-bottom:2px}
+.qr-info p{font-size:.72rem;color:#334155}
+.qr-hash{font-family:monospace;font-size:.65rem;color:#475569;background:var(--gray2);padding:2px 6px;border-radius:4px;margin-top:3px}
+.cert-actions{padding:0 18px 18px;display:flex;gap:9px}
+.cert-dl{flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;background:linear-gradient(135deg,var(--reg),var(--reg2));color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.cert-dl:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(217,119,6,.3)}
+.cert-vf{padding:10px 16px;border:2px solid var(--reg);border-radius:9px;background:transparent;color:var(--reg);cursor:pointer;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:5px;transition:.15s}
+.cert-vf:hover{background:#fef3c7}
+
+.audit-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bg)}
+.audit-row:last-child{border-bottom:none}
+.a-ico{width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+.a-g{background:#dcfce7;color:#16a34a}.a-p{background:#ede9fe;color:#7c3aed}
+.a-a{background:#fef3c7;color:#d97706}.a-r{background:#fee2e2;color:#dc2626}
+.a-txt strong{display:block;font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:700;color:#0f172a;margin-bottom:1px}
+.a-txt p{font-size:.74rem;color:#334155;line-height:1.5}
+.a-time{font-size:.64rem;color:#475569;margin-top:2px}
+
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:#1c1400;border:1px solid rgba(217,119,6,.4);border-radius:10px;padding:11px 16px;font-size:.84rem;font-weight:700;color:#fef9c3;max-width:300px;opacity:0;transform:translateY(16px);transition:.3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){.login-left{display:none}.login-right{width:100%;max-width:none}}
+@media(max-width:768px){.sidebar{display:none}.stats{grid-template-columns:repeat(2,1fr)}.charts2{grid-template-columns:1fr}.cert-fields{grid-template-columns:1fr}.meta-grid{grid-template-columns:1fr 1fr}}
+
+/* ── 3D canvas visibility fix ── */
+#loginPage{position:relative!important;z-index:10!important}
+#app{position:relative!important;z-index:10!important}
+.bwrap{position:relative;z-index:1}
+.content{position:relative;z-index:1;background:var(--bg)!important}
+.sidebar{position:relative;z-index:2}
+.topbar{position:relative;z-index:3}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginPage" style="display:flex">
+  <div class="login-left">
+    <div class="ll-logo"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    <div class="ll-title">Regulatory Authority<em>Government Portal</em></div>
+    <div class="ll-sub">Review laboratory-approved compliance reports, issue official certificates, and maintain government-level environmental oversight.</div>
+    <div class="ll-feats">
+      <div class="ll-feat"><i class="fas fa-gavel"></i>Final compliance approval authority</div>
+      <div class="ll-feat"><i class="fas fa-certificate"></i>Issue government-verified certificates</div>
+      <div class="ll-feat"><i class="fas fa-exclamation-circle"></i>Issue compliance notices & schedule inspections</div>
+      <div class="ll-feat"><i class="fas fa-chart-bar"></i>Regional analytics & compliance trends</div>
+    </div>
+    <div style="position:absolute;font-size:14rem;opacity:.04;right:-30px;bottom:-30px;pointer-events:none;user-select:none">🏛️</div>
+  </div>
+
+  <div class="login-right">
+    <div class="lr-head">
+      <div class="lr-logo-pill"><img src="assets/logo.png" alt="EcoSphere"/></div>
+      <div class="lr-title">Regulatory Sign In</div>
+      <div class="lr-sub">Select your authority type to continue</div>
+    </div>
+
+    <div id="serverWarnMsg" class="l-err" style="display:none;background:#fff3cd;border-color:#ffc107;color:#856404"><i class="fas fa-exclamation-triangle"></i> <strong>Server not reachable.</strong> Run <code style="background:#f8f9fa;padding:1px 5px;border-radius:3px">npm start</code> in the EcoSphere folder, then open <strong>http://localhost:5000</strong></div>
+    <div id="loginErr" class="l-err"><i class="fas fa-exclamation-circle"></i>Please fill in all fields.</div>
+
+    <p style="font-size:.75rem;font-weight:900;color:#d97706;margin-bottom:9px;letter-spacing:2px;text-transform:uppercase">AUTHORITY TYPE</p>
+    <div class="auth-grid">
+      <button class="auth-btn active" onclick="pickAuth(this,'Pollution Control Board')"><i class="fas fa-building-columns"></i>Pollution Control Board</button>
+      <button class="auth-btn" onclick="pickAuth(this,'Environmental Authority')"><i class="fas fa-leaf"></i>Environmental Authority</button>
+      <button class="auth-btn" onclick="pickAuth(this,'Carbon Authority')"><i class="fas fa-cloud"></i>Carbon Authority</button>
+      <button class="auth-btn" onclick="pickAuth(this,'Environmental Ministry')"><i class="fas fa-landmark"></i>Environmental Ministry</button>
+    </div>
+
+    <div class="fg">
+      <label><i class="fas fa-university"></i>Authority / Organisation</label>
+      <input class="fi" type="text" id="rOrg" placeholder="e.g. Telangana State PCB" value="Telangana State Pollution Control Board"/>
+    </div>
+    <div class="fg">
+      <label><i class="fas fa-envelope"></i>Official Email</label>
+      <input class="fi" type="email" id="rEmail" placeholder="officer@tspcb.gov.in"/>
+    </div>
+    <div class="fg">
+      <label><i class="fas fa-lock"></i>Password</label>
+      <div class="pw-w">
+        <input class="fi" type="password" id="rPw" placeholder="••••••••"/>
+        <button class="pw-eye" onclick="toggleEye('rPw','eyeR')"><i class="fas fa-eye" id="eyeR"></i></button>
+      </div>
+    </div>
+
+    <div class="l-opts">
+      <label class="l-rem"><input type="checkbox"/> Remember me</label>
+      <a href="#" class="l-fgt" onclick="event.preventDefault();_regForgotPassword()">Forgot password?</a>
+    </div>
+
+    <button class="l-submit" id="regBtn" onclick="doRegLogin()">
+      <span id="regBtnTxt"><i class="fas fa-sign-in-alt"></i> Sign In to Regulatory Portal</span>
+      <i class="fas fa-spinner l-spin" id="regSpin" style="display:none"></i>
+    </button>
+
+    <div class="l-footer"><a href="portal-select.html"><i class="fas fa-arrow-left"></i> Back to Portal Select</a></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <header class="topbar">
+    <div class="tb-lp"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    <div class="tb-nm">Eco<em>Sphere</em> · Regulatory Authority Portal</div>
+    <div class="tb-chip">GOVT PORTAL</div>
+    <div class="tb-right">
+      <a href="portal-select.html" class="tb-bk"><i class="fas fa-th-large"></i> Portal Select</a>
+      <div class="tb-user"><div class="tb-av" id="rAv">PC</div><span id="rLabel">Regulatory Officer</span></div>
+      <button class="tb-out" onclick="regLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </header>
+
+  <div class="bwrap">
+    <nav class="sidebar">
+      <div class="sb-grp">Main</div>
+      <div class="sb-item on" onclick="navTo('dashboard',this)"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+      <div class="sb-grp">Reviews</div>
+      <div class="sb-item" onclick="navTo('pending',this)"><i class="fas fa-inbox"></i> Pending Approvals <span class="sb-num" id="sbRegPending">0</span></div>
+      <div class="sb-item" onclick="navTo('approved',this)"><i class="fas fa-check-double"></i> Approved Reports</div>
+      <div class="sb-item" onclick="navTo('rejected',this)"><i class="fas fa-times-circle"></i> Rejected</div>
+      <div class="sb-item" onclick="navTo('notices',this)"><i class="fas fa-exclamation-triangle"></i> Notices Issued</div>
+      <div class="sb-grp">Certificates</div>
+      <div class="sb-item" onclick="navTo('certs',this)"><i class="fas fa-certificate"></i> Issue Certificates</div>
+      <div class="sb-grp">Records</div>
+      <div class="sb-item" onclick="navTo('analytics',this)"><i class="fas fa-chart-bar"></i> Analytics</div>
+      <div class="sb-item" onclick="navTo('audit',this)"><i class="fas fa-history"></i> Audit Trail</div>
+      <div class="sb-grp">Monitoring</div>
+      <div class="sb-item" onclick="navTo('monitoring',this)"><i class="fas fa-chart-line"></i> Org Monitoring</div>
+      <div class="sb-item" onclick="navTo('alerts',this)"><i class="fas fa-bell"></i> Alerts <span class="sb-num" id="alertBadge" style="display:none">0</span></div>
+      <div class="sb-grp">Organizations</div>
+      <div id="regOrgSidebarList">
+        <div class="sb-item on" id="regOrgAll" onclick="_regSelectSidebarOrg(null,this)" style="border-left-color:var(--reg)"><i class="fas fa-layer-group"></i> All Organizations</div>
+      </div>
+      <div class="sb-foot">
+        <button class="sb-out" onclick="regLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </nav>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <div class="sec show" id="sec-dashboard">
+        <div class="pg-hd"><div class="pg-title">Regulatory Authority Dashboard</div><div class="pg-sub" id="rWelcome">Government review — All Organizations</div></div>
+        <!-- Org filter banner -->
+        <div id="regCompanyBanner" style="display:none;margin-bottom:18px;background:linear-gradient(135deg,#2c1a00,#4a2c00);border-radius:13px;padding:16px 22px;align-items:center;gap:16px;border:1px solid rgba(245,158,11,.25);flex-wrap:wrap">
+          <div style="width:44px;height:44px;background:rgba(245,158,11,.18);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fas fa-building" style="color:#fbbf24;font-size:1.1rem"></i>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:.65rem;color:#fde68a;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:3px">Currently Reviewing</div>
+            <div id="regCompanyBannerName" style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#fff">—</div>
+          </div>
+          <button onclick="_regSelectSidebarOrg(null, document.getElementById('regOrgAll'))" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 13px;color:rgba(255,255,255,.7);font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit">
+            <i class="fas fa-layer-group" style="margin-right:5px"></i>View All
+          </button>
+        </div>
+        <div class="stats">
+          <div class="stat s1"><div class="stat-ico"><i class="fas fa-inbox"></i></div><div class="stat-num" id="statPending">0</div><div class="stat-lbl">Pending Approvals</div></div>
+          <div class="stat s2"><div class="stat-ico"><i class="fas fa-check-double"></i></div><div class="stat-num" id="statApproved">0</div><div class="stat-lbl">Approved Reports</div></div>
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-times-circle"></i></div><div class="stat-num" id="statRejected">0</div><div class="stat-lbl">Rejected Reports</div></div>
+          <div class="stat s4"><div class="stat-ico"><i class="fas fa-certificate"></i></div><div class="stat-num" id="statCerts">0</div><div class="stat-lbl">Certificates Issued</div></div>
+          <div class="stat s5"><div class="stat-ico"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-num" id="statNotices">0</div><div class="stat-lbl">Notices Issued</div></div>
+          <div class="stat s6"><div class="stat-ico"><i class="fas fa-calendar-check"></i></div><div class="stat-num" id="statInspect">0</div><div class="stat-lbl">Inspections Scheduled</div></div>
+        </div>
+        <div class="charts2">
+          <div class="chart-card"><h4><i class="fas fa-chart-bar"></i>Monthly Approvals</h4><canvas id="rc1" height="200"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-industry"></i>Industry-wise</h4><canvas id="rc2" height="200"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-clock"></i>Lab-Approved Reports — Awaiting Govt Review</h4><button class="btn b-rev" onclick="navTo('pending',null)">View All</button></div>
+          <table class="tbl">
+            <thead><tr><th>Report ID</th><th>Organization</th><th>Lab Approved</th><th>Type</th><th>Score</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="regRecentTbl">
+              <tr class="_empty-row"><td colspan="7" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-inbox" style="margin-right:6px"></i>Log in to load pending reports</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PENDING -->
+      <div class="sec" id="sec-pending">
+        <div class="pg-hd"><div class="pg-title">Pending Approvals</div><div class="pg-sub">Lab-approved reports awaiting Regulatory Authority review</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-inbox"></i>Reports Queue</h4><span id="regPendingCountBadge" style="background:#fef3c7;color:#a16207;border:1px solid rgba(161,98,7,.2);border-radius:7px;padding:3px 10px;font-size:.71rem;font-weight:800">0 pending</span></div>
+          <table class="tbl">
+            <thead><tr><th>Report ID</th><th>Organization</th><th>Industry</th><th>Lab Approved</th><th>Type</th><th>Score</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="regPendingQueueBody">
+              <tr class="_empty-row"><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;font-size:.84rem"><i class="fas fa-inbox" style="font-size:1.6rem;display:block;margin-bottom:10px;opacity:.4"></i>No pending approvals — log in to load the queue</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REVIEW PANEL -->
+      <div class="sec" id="sec-review">
+        <button class="btn b-vw" style="margin-bottom:16px" onclick="navTo('pending',null)"><i class="fas fa-arrow-left"></i> Back to Queue</button>
+        <div class="rev-panel">
+          <div class="rev-hd">
+            <h3><i class="fas fa-landmark" style="margin-right:7px;color:#fbbf24"></i>Government Compliance Review</h3>
+            <p>RPT-2025-0607 · Chemical Corp · Sustainability Report · Lab: EnviroTest Labs (NABL: CC-3456)</p>
+          </div>
+          <div class="rev-body">
+            <h4 style="font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;margin-bottom:10px"><i class="fas fa-star" style="color:var(--reg);margin-right:5px"></i>Compliance Scores</h4>
+            <div class="score-grid">
+              <div class="sc sc1"><span class="sv">74</span><div class="sl">ESG Score /100</div></div>
+              <div class="sc sc2"><span class="sv">87</span><div class="sl">Sustainability /100</div></div>
+              <div class="sc sc3"><span class="sv">82</span><div class="sl">Carbon Score /100</div></div>
+              <div class="sc sc4"><span class="sv">90</span><div class="sl">Compliance /100</div></div>
+            </div>
+            <h4 style="font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;margin:14px 0 10px"><i class="fas fa-building" style="color:var(--reg);margin-right:5px"></i>Organization & Report Details</h4>
+            <div class="meta-grid">
+              <div class="meta-item"><label>Company</label><span>Chemical Corp Ltd</span></div>
+              <div class="meta-item"><label>Industry</label><span>Chemical</span></div>
+              <div class="meta-item"><label>Reg. No.</label><span>U24110MH2010PLC208902</span></div>
+              <div class="meta-item"><label>Lab</label><span>EnviroTest Labs</span></div>
+              <div class="meta-item"><label>NABL No.</label><span>CC-3456</span></div>
+              <div class="meta-item"><label>Lab Approved</label><span>30 May 2025</span></div>
+              <div class="meta-item"><label>Report Type</label><span>Sustainability Report</span></div>
+              <div class="meta-item"><label>Period</label><span>Apr 2025</span></div>
+            </div>
+            <div class="cmt-wrap">
+              <label><i class="fas fa-landmark" style="color:var(--reg);margin-right:5px"></i>Government Review Notes</label>
+              <textarea>Report reviewed and found compliant with CPCB/SPCB norms. Sustainability score of 87/100 meets statutory requirements. Carbon emissions within permissible limits. Approved for certificate issuance.</textarea>
+            </div>
+            <div class="rev-actions">
+              <button class="act-btn ab-amber" onclick="regAct('approve')"><i class="fas fa-check-circle"></i> Approve</button>
+              <button class="act-btn ab-purple" onclick="regAct('cert')"><i class="fas fa-certificate"></i> Issue Certificate</button>
+              <button class="act-btn ab-notice" onclick="regAct('notice')"><i class="fas fa-exclamation-circle"></i> Issue Notice</button>
+              <button class="act-btn ab-ins" onclick="regAct('inspect')"><i class="fas fa-calendar-check"></i> Schedule Inspection</button>
+              <button class="act-btn ab-rej" onclick="regAct('reject')"><i class="fas fa-times-circle"></i> Reject</button>
+              <button class="btn b-vw" style="margin-left:auto" onclick="navTo('pending',null)"><i class="fas fa-arrow-left"></i> Back</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPROVED -->
+      <div class="sec" id="sec-approved">
+        <div class="pg-hd"><div class="pg-title">Approved Reports</div><div class="pg-sub">Government approved — certificates issued</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-check-double"></i>Approved</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Type</th><th>Approved On</th><th>Certificate</th><th>Action</th></tr></thead>
+          <tbody id="regApprovedBody">
+            <tr class="_empty-row"><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-check-double" style="margin-right:6px;opacity:.4"></i>No approved reports yet</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- REJECTED -->
+      <div class="sec" id="sec-rejected">
+        <div class="pg-hd"><div class="pg-title">Rejected Reports</div><div class="pg-sub">Organizations have been notified</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-times-circle"></i>Rejected</h4></div>
+          <table class="tbl"><thead><tr><th>Report ID</th><th>Organization</th><th>Rejected On</th><th>Reason</th></tr></thead>
+          <tbody id="regRejectedBody">
+            <tr class="_empty-row"><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-times-circle" style="margin-right:6px;opacity:.4"></i>No rejected reports</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- NOTICES -->
+      <div class="sec" id="sec-notices">
+        <div class="pg-hd"><div class="pg-title">Compliance Notices</div><div class="pg-sub">Official notices for non-compliance</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-exclamation-triangle"></i>Notices Issued</h4><button class="act-btn ab-amber" style="padding:7px 14px;font-size:.8rem" onclick="_regNewNoticeModal()"><i class="fas fa-plus"></i> New Notice</button></div>
+          <table class="tbl"><thead><tr><th>Notice No.</th><th>Organization</th><th>Date</th><th>Violation</th><th>Status</th></tr></thead>
+          <tbody><tr><td><b>NOT-2025-0021</b></td><td>QMICS Manufacturing</td><td>02 Jun 2025</td><td>Noise at boundary: 88 dB (limit 85 dB) — action within 30 days</td><td><span class="chip c-pend"><span class="cdot"></span>Open</span></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- CERTIFICATES -->
+      <div class="sec" id="sec-certs">
+        <div class="pg-hd"><div class="pg-title">Digital Certificate Center</div><div class="pg-sub">Issue official government compliance certificates</div></div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="act-btn ab-amber" onclick="_regIssueCert('environmental','Environmental Compliance')"><i class="fas fa-plus"></i> Environmental Compliance Cert</button>
+          <button class="act-btn ab-purple" onclick="_regIssueCert('esg','ESG Compliance')"><i class="fas fa-plus"></i> ESG Compliance Cert</button>
+          <button style="background:linear-gradient(135deg,#0d9488,#059669);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px" onclick="_regIssueCert('sustainability','Sustainability')"><i class="fas fa-plus"></i> Sustainability Cert</button>
+          <button style="background:linear-gradient(135deg,#1d4ed8,#0d9488);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px" onclick="_regIssueCert('carbon','Carbon Verification')"><i class="fas fa-plus"></i> Carbon Verification Cert</button>
+        </div>
+        <div class="cert-card">
+          <div class="cert-top">
+            <img src="assets/logo.png" class="cert-logo" alt="EcoSphere"/>
+            <div class="cert-t">Environmental Compliance Certificate</div>
+            <div class="cert-s">Issued by Telangana State Pollution Control Board (TSPCB) · Government of Telangana</div>
+            <div class="cert-seal">🏛️</div>
+          </div>
+          <div class="cert-body">
+            <div class="cert-stmp"><i class="fas fa-landmark"></i><span>Official Government Certificate · Digitally Signed · QR Verified</span></div>
+            <div class="cert-fields">
+              <div class="cfi"><div class="cfl">Certificate No.</div><div class="cfv">TSPCB/ENV/2025/0584</div></div>
+              <div class="cfi"><div class="cfl">Organization</div><div class="cfv">QMICS Manufacturing Pvt Ltd</div></div>
+              <div class="cfi"><div class="cfl">Issue Date</div><div class="cfv">02 Jun 2025</div></div>
+              <div class="cfi"><div class="cfl">Valid Until</div><div class="cfv" style="color:#16a34a;font-weight:800">01 Jun 2026</div></div>
+              <div class="cfi"><div class="cfl">Issuing Officer</div><div class="cfv">Dr. K. Reddy — TSPCB</div></div>
+              <div class="cfi"><div class="cfl">Certificate Type</div><div class="cfv">Environmental Compliance</div></div>
+            </div>
+            <div class="cert-qr">
+              <div class="qr-box"><svg width="48" height="48" viewBox="0 0 48 48" style="padding:5px"><rect width="48" height="48" fill="#1c1400"/><rect x="7" y="7" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="10" y="10" width="8" height="8" fill="#fbbf24"/><rect x="27" y="7" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="30" y="10" width="8" height="8" fill="#fbbf24"/><rect x="7" y="27" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="10" y="30" width="8" height="8" fill="#fbbf24"/><rect x="27" y="27" width="4" height="4" fill="#fbbf24"/><rect x="35" y="27" width="4" height="4" fill="#fbbf24"/><rect x="31" y="33" width="4" height="4" fill="#fbbf24"/></svg></div>
+              <div class="qr-info"><h5>QR & Blockchain Verified</h5><p>Scan to verify on EcoSphere Public Portal</p><div class="qr-hash">TX: 0xa3f8c1d2e4b67890</div></div>
+            </div>
+          </div>
+          <div class="cert-actions">
+            <button class="cert-dl" onclick="ecoExport({title:'TSPCB Official Compliance Certificate',subtitle:'Certificate No. TSPCB/ENV/2025/0584 — ISO 14001',formats:['pdf','csv'],onFormat:function(f){ecoDownloadReport('ISO 14001','TSPCB Government Compliance Certificate TSPCB/ENV/2025/0584');}})"><i class="fas fa-download"></i> Download Certificate</button>
+            <button class="cert-vf" onclick="toast('Certificate TSPCB/ENV/2025/0584 — Verified ✓')"><i class="fas fa-shield-check"></i> Verify</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="sec" id="sec-analytics">
+        <div class="pg-hd"><div class="pg-title">Analytics</div><div class="pg-sub">Compliance trends and regional statistics</div></div>
+        <div class="stats">
+          <div class="stat s2"><div class="stat-ico"><i class="fas fa-percentage"></i></div><div class="stat-num" id="statCompliance">—</div><div class="stat-lbl">Approval Rate</div></div>
+          <div class="stat s1"><div class="stat-ico"><i class="fas fa-clock"></i></div><div class="stat-num" id="statOrgs">—</div><div class="stat-lbl">Avg Review Time</div></div>
+          <div class="stat s5"><div class="stat-ico"><i class="fas fa-building"></i></div><div class="stat-num" id="statRegOrgs">—</div><div class="stat-lbl">Registered Orgs</div></div>
+          <div class="stat s4"><div class="stat-ico"><i class="fas fa-file-alt"></i></div><div class="stat-num" id="statReviewsYTD">—</div><div class="stat-lbl">Reviews YTD</div></div>
+        </div>
+        <div class="charts2">
+          <div class="chart-card"><h4><i class="fas fa-chart-line"></i>Compliance Trends — 2025</h4><canvas id="rc3" height="200"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-map-marker-alt"></i>State-wise Reports</h4><canvas id="rc4" height="200"></canvas></div>
+        </div>
+      </div>
+
+      <!-- AUDIT -->
+      <div class="sec" id="sec-audit">
+        <div class="pg-hd"><div class="pg-title">Audit Trail</div><div class="pg-sub">Complete government activity log</div></div>
+        <div class="card">
+          <div class="card-hd"><h4><i class="fas fa-history"></i>Activity Log</h4><button class="btn b-dl" onclick="ecoExport({title:'Regulatory Audit Trail',subtitle:'Annual Activity Log — Regulatory Export',formats:['pdf','excel','csv'],onFormat:function(f){ecoDownloadReport('Annual','Regulatory Audit Trail Export');}})"><i class="fas fa-download"></i> Export</button></div>
+          <div style="padding:16px">
+            <div class="audit-row"><div class="a-ico a-p"><i class="fas fa-certificate"></i></div><div class="a-txt"><strong>Certificate TSPCB/ENV/2025/0584 Issued</strong><p>Environmental Compliance Certificate issued to QMICS Manufacturing by Dr. K. Reddy.</p><div class="a-time"><i class="fas fa-clock"></i> 02 Jun 2025 · 15:20</div></div></div>
+            <div class="audit-row"><div class="a-ico a-a"><i class="fas fa-exclamation-circle"></i></div><div class="a-txt"><strong>Notice NOT-2025-0021 Issued</strong><p>Compliance notice for boundary noise violation (88 dB > 85 dB limit).</p><div class="a-time"><i class="fas fa-clock"></i> 02 Jun 2025 · 11:05</div></div></div>
+            <div class="audit-row"><div class="a-ico a-g"><i class="fas fa-check-circle"></i></div><div class="a-txt"><strong>Report RPT-2025-0598 Approved</strong><p>ESG Report for Power Grid Co. approved by Regulatory Officer.</p><div class="a-time"><i class="fas fa-clock"></i> 20 May 2025 · 14:30</div></div></div>
+            <div class="audit-row"><div class="a-ico a-r"><i class="fas fa-times-circle"></i></div><div class="a-txt"><strong>Report RPT-2025-0580 Rejected</strong><p>ESG score 28/100 below statutory minimum of 50/100.</p><div class="a-time"><i class="fas fa-clock"></i> 10 May 2025 · 09:15</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONITORING -->
+      <div class="sec" id="sec-monitoring">
+        <div class="pg-hd"><div class="pg-title">Organization Monitoring</div><div class="pg-sub">Environmental monitoring data from your assigned organizations — read-only view</div></div>
+        <div class="stats">
+          <div class="stat s1"><div class="stat-ico"><i class="fas fa-database"></i></div><div class="stat-num" id="monTotal">—</div><div class="stat-lbl">Total Records</div></div>
+          <div class="stat s2"><div class="stat-ico"><i class="fas fa-check-circle"></i></div><div class="stat-num" id="monCompliant">—</div><div class="stat-lbl">Compliant</div></div>
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-exclamation-circle"></i></div><div class="stat-num" id="monNonCompliant">—</div><div class="stat-lbl">Non-Compliant</div></div>
+          <div class="stat s4"><div class="stat-ico"><i class="fas fa-minus-circle"></i></div><div class="stat-num" id="monMarginal">—</div><div class="stat-lbl">Marginal</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <h4><i class="fas fa-chart-line"></i> Environmental Monitoring Records</h4>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="monTypeFilter" class="fi" style="width:auto;padding:5px 10px;font-size:.78rem" onchange="_filterMonitoring()">
+                <option value="">All Types</option>
+                <option value="AIR">Air Quality</option>
+                <option value="WATER">Water Quality</option>
+                <option value="NOISE">Noise</option>
+                <option value="SOIL">Soil</option>
+                <option value="WASTE">Waste</option>
+                <option value="STACK_EMISSION">Stack Emission</option>
+              </select>
+              <button class="btn b-dl" onclick="_filterMonitoring()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Organization</th><th>Location</th><th>Monitoring Type</th><th>Station</th><th>Date</th><th>Status</th><th>Parameters</th></tr></thead>
+            <tbody id="monTableBody"><tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8"><i class="fas fa-info-circle"></i> Navigate to this section to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="sec" id="sec-alerts">
+        <div class="pg-hd"><div class="pg-title">Environmental Alerts</div><div class="pg-sub">Non-compliant and marginal monitoring records from assigned organizations</div></div>
+        <div class="stats">
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-num" id="alertTotal">—</div><div class="stat-lbl">Active Alerts</div></div>
+          <div class="stat s3"><div class="stat-ico"><i class="fas fa-ban"></i></div><div class="stat-num" id="alertNonCompliant">—</div><div class="stat-lbl">Non-Compliant</div></div>
+          <div class="stat s4"><div class="stat-ico"><i class="fas fa-exclamation"></i></div><div class="stat-num" id="alertMarginal">—</div><div class="stat-lbl">Marginal</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <h4><i class="fas fa-bell"></i> Environmental Alerts — Non-Compliant Records</h4>
+            <button class="btn b-dl" onclick="_loadAlertsData()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Organization</th><th>Monitoring Type</th><th>Date</th><th>Exceedance Parameters</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="alertsTableBody"><tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8"><i class="fas fa-info-circle"></i> Navigate to this section to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="rToast"></div>
+
+<script>
+var _auth='Pollution Control Board';
+function pickAuth(btn,val){
+  document.querySelectorAll('.auth-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active'); _auth=val;
+}
+function toggleEye(id,ico){
+  var inp=document.getElementById(id),i=document.getElementById(ico);
+  inp.type=inp.type==='password'?'text':'password';
+  i.className=inp.type==='password'?'fas fa-eye':'fas fa-eye-slash';
+}
+function doRegLogin(){
+  var em=document.getElementById('rEmail').value;
+  var pw=document.getElementById('rPw').value;
+  var err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!em||!pw){
+    err.style.display='flex';
+    err.innerHTML='<i class="fas fa-exclamation-circle"></i>&nbsp;Please fill in all fields.';
+    return;
+  }
+  window._regOrg=null;
+  var btn=document.getElementById('regBtn'),txt=document.getElementById('regBtnTxt'),spin=document.getElementById('regSpin');
+  btn.disabled=true; txt.style.opacity='.4'; spin.style.display='inline-block';
+  setTimeout(function(){
+    var init=_auth.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    document.getElementById('rAv').textContent=init;
+    document.getElementById('rLabel').textContent=_auth;
+    document.getElementById('rWelcome').textContent='Government review — All Organizations';
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('app').style.display='flex';
+    setTimeout(initCharts,200);
+    setTimeout(_buildRegOrgSidebar,200);
+    toast('✅ Welcome, '+_auth+'!');
+  },1000);
+}
+
+function regLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+  var btn=document.getElementById('regBtn'),txt=document.getElementById('regBtnTxt'),spin=document.getElementById('regSpin');
+  btn.disabled=false; txt.style.opacity='1'; spin.style.display='none';
+  document.getElementById('rEmail').value=''; document.getElementById('rPw').value='';
+  window._regOrg=null;
+  var sb=document.getElementById('regOrgSidebarList');
+  if(sb) sb.innerHTML='<div class="sb-item on" id="regOrgAll" onclick="_regSelectSidebarOrg(null,this)" style="border-left-color:var(--reg)"><i class="fas fa-layer-group"></i> All Organizations</div>';
+}
+function navTo(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('show')});
+  var t=document.getElementById('sec-'+id); if(t) t.classList.add('show');
+  // Clear nav menu items but preserve the selected org item in the org sidebar
+  document.querySelectorAll('.sb-item').forEach(function(s){
+    if(!s.closest('#regOrgSidebarList')) s.classList.remove('on');
+  });
+  if(btn) btn.classList.add('on');
+  if(id==='analytics') initCharts();
+  if(id==='approved'||id==='rejected') _regLoadApprovedRejected(window._regOrg||'');
+  // Re-apply org filter on every section navigation if an org is selected
+  if(window._regOrg && typeof _filterRegByOrg==='function') setTimeout(function(){ _filterRegByOrg(window._regOrg); }, 50);
+}
+function regAct(type){
+  var m={approve:'✅ Report approved by Regulatory Authority',cert:'🏆 Compliance Certificate issued',notice:'⚠️ Compliance Notice issued — organization notified',inspect:'📅 Inspection scheduled — field team assigned',reject:'❌ Report rejected — organization and laboratory notified'};
+  toast(m[type]);
+  if(type==='cert'||type==='approve') setTimeout(function(){navTo('certs',null)},800);
+}
+function toast(msg){
+  var el=document.getElementById('rToast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show')},3200);
+}
+// ── Org Dropdown (Regulatory) ──────────────────────────────────────
+var _regOrgList=[];
+
+function _regEscH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _regEscA(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\x27");}
+
+function _regOrgInit(){
+  var BASE='http://localhost:5000/api/v1';
+  if(typeof EcoSphereAPI!=='undefined'&&EcoSphereAPI.BASE_URL)BASE=EcoSphereAPI.BASE_URL;
+
+  /* Collect all orgs from every localStorage source */
+  var localOrgs=[];
+  var _seen={};
+  function _addOrg(name,industry){
+    var k=(name||'').toLowerCase().trim();
+    if(!k||_seen[k])return;
+    _seen[k]=true;
+    localOrgs.push({name:name,industry:industry||''});
+  }
+  /* eco_all_orgs — the canonical shared registry written by org-portal on every login/register */
+  try{
+    var allOrgs=JSON.parse(localStorage.getItem('eco_all_orgs')||'[]');
+    allOrgs.forEach(function(o){if(o.name)_addOrg(o.name,o.industry||'');});
+  }catch(e){}
+  try{
+    var re=JSON.parse(localStorage.getItem('eco_reg_evidence')||'{}');
+    if(re.companyName)_addOrg(re.companyName,re.industryType);
+  }catch(e){}
+  try{
+    var le=JSON.parse(localStorage.getItem('eco_lab_evidence')||'{}');
+    if(le.companyName)_addOrg(le.companyName,le.industryType);
+  }catch(e){}
+  try{
+    var subs=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]');
+    subs.forEach(function(s){if(s.orgName)_addOrg(s.orgName,s.industryType||s.industry||'');});
+  }catch(e){}
+  try{
+    var lev=JSON.parse(localStorage.getItem('eco_lab_evidence_flagged')||'{}');
+    if(lev.companyName)_addOrg(lev.companyName,lev.industryType);
+  }catch(e){}
+  try{
+    var labFb=JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]');
+    labFb.forEach(function(f){if(f.orgName)_addOrg(f.orgName,f.industry||'');});
+  }catch(e){}
+  /* ecoOrgName from session */
+  var sn=sessionStorage.getItem('ecoOrgName')||localStorage.getItem('ecoOrgName');
+  if(sn)_addOrg(sn,sessionStorage.getItem('ecoIndustry')||localStorage.getItem('ecoIndustry')||'');
+
+  var demo=[
+    {name:'QMICS Manufacturing Pvt Ltd',industry:'Manufacturing'},
+    {name:'Medway Pharma Pvt Ltd',industry:'Pharmaceuticals'},
+    {name:'Pharma Solutions Ltd',industry:'Pharmaceuticals'},
+    {name:'Green Energy Corp',industry:'Power Generation'},
+    {name:'Textile Hub India',industry:'Textile'},
+    {name:'Chemical Corp Ltd',industry:'Chemical'},
+    {name:'Mining Corp Ltd',industry:'Mining'},
+    {name:'AutoDrive India Pvt Ltd',industry:'Automotive'},
+    {name:'FoodPro Industries',industry:'Food Processing'},
+    {name:'BuildTech Constructions',industry:'Construction'},
+    {name:'SteelMax Ltd',industry:'Manufacturing'},
+    {name:'AquaPure Systems',industry:'Chemical'},
+    {name:'BioPharm Laboratories',industry:'Pharmaceuticals'},
+    {name:'EcoAg Solutions',industry:'Agriculture'},
+    {name:'PaperCraft Mills',industry:'Paper & Pulp'},
+    {name:'TanneryCo Pvt Ltd',industry:'Leather & Tannery'},
+    {name:'PowerGrid South Ltd',industry:'Power Generation'},
+    {name:'CementPlus Corp',industry:'Cement'},
+    {name:'FertilizerFirst Ltd',industry:'Fertilizer'},
+    {name:'RubberTech Pvt Ltd',industry:'Rubber & Plastics'},
+    {name:'GlassWorks India',industry:'Glass & Ceramics'}
+  ];
+
+  /* Try API (works if user is already authenticated / token in cookie) */
+  var headers={'Content-Type':'application/json'};
+  try{
+    var tok=(typeof EcoService!=='undefined'&&EcoService.TokenStore)?EcoService.TokenStore.getAccess():null;
+    if(!tok){var raw=localStorage.getItem('eco_access_token')||localStorage.getItem('accessToken')||sessionStorage.getItem('eco_access_token');tok=raw||null;}
+    if(tok)headers['Authorization']='Bearer '+tok;
+  }catch(e){}
+
+  fetch(BASE+'/regulatory/organizations',{headers:headers})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){
+      var api=(d&&d.data)?d.data.map(function(o){return{name:o.name||o.companyName,industry:o.industryType||o.industry||'',id:o._id||o.id||''};}):[];
+      _regOrgList=_regMergeOrgs(api.concat(localOrgs).concat(demo));
+      _regOrgRender('');
+    })
+    .catch(function(){
+      _regOrgList=_regMergeOrgs(localOrgs.concat(demo));
+      _regOrgRender('');
+    });
+}
+
+function _regMergeOrgs(arr){
+  var seen={},out=[];
+  arr.forEach(function(o){var k=(o.name||'').toLowerCase();if(k&&!seen[k]){seen[k]=true;out.push(o);}});
+  return out;
+}
+
+function _regOrgRender(q){
+  var el=document.getElementById('rCompanyList');
+  if(!el)return;
+  var list=q?_regOrgList.filter(function(o){return o.name.toLowerCase().indexOf(q.toLowerCase())!==-1;}):_regOrgList;
+  if(!list.length){
+    el.innerHTML='<div style="padding:11px 14px;font-size:.78rem;color:#64748b;font-style:italic">No matching organizations found</div>';
+    return;
+  }
+  el.innerHTML=list.map(function(o){
+    return '<div class="org-drop-opt" onmousedown="_regOrgSelect(\''+_regEscA(o.name)+'\',\''+_regEscA(o.industry||'')+'\',\''+_regEscA(o.id||'')+'\')"><div class="org-drop-opt-name">'+_regEscH(o.name)+'</div>'+(o.industry?'<div class="org-drop-opt-ind"><i class="fas fa-industry" style="margin-right:4px"></i>'+_regEscH(o.industry)+'</div>':'')+'</div>';
+  }).join('');
+}
+
+function _regOrgFilter(){
+  var q=document.getElementById('rCompanySearch').value;
+  document.getElementById('rCompanyName').value='';
+  _regOrgRender(q);
+  document.getElementById('rCompanyList').classList.add('open');
+}
+
+function _regOrgOpen(){
+  /* Clear search text so all orgs show every time the dropdown opens */
+  var si=document.getElementById('rCompanySearch');
+  if(si) si.value='';
+  _regOrgRender('');
+  document.getElementById('rCompanyList').classList.add('open');
+}
+
+function _regOrgBlur(){
+  setTimeout(function(){
+    var el=document.getElementById('rCompanyList');
+    if(el)el.classList.remove('open');
+  },200);
+}
+
+function _regOrgSelect(name,industry,id){
+  var si=document.getElementById('rCompanySearch');
+  var hi=document.getElementById('rCompanyName');
+  if(si){si.value=name;si.dataset.industry=industry;}
+  if(hi)hi.value=name;
+  window._regOrg=name;
+  window._regIndustry=industry;
+  var el=document.getElementById('rCompanyList');
+  if(el)el.classList.remove('open');
+}
+
+// ── Org-specific data filtering ──────────────────────────────────
+function _filterRegByOrg(orgName){
+  var app=document.getElementById('app');
+  if(!app||!orgName)return;
+  var norm=orgName.toLowerCase().trim();
+  var key2=norm.split(/\s+/).slice(0,2).join(' ');
+
+  function rowMatch(cellText){
+    var ct=(cellText||'').toLowerCase().trim();
+    if(!ct)return false;
+    return ct.indexOf(key2)!==-1||norm.indexOf(ct.split(/\s+/).slice(0,2).join(' '))!==-1;
+  }
+
+  app.querySelectorAll('tbody tr:not(._emp)').forEach(function(tr){
+    var tds=tr.querySelectorAll('td');
+    if(tds.length<2)return;
+    tr.style.display=rowMatch(tds[1].textContent)?'':'none';
+  });
+
+  app.querySelectorAll('tbody').forEach(function(tb){
+    var rows=Array.from(tb.querySelectorAll('tr:not(._emp)'));
+    var allHidden=rows.length>0&&rows.every(function(r){return r.style.display==='none';});
+    var ep=tb.querySelector('tr._emp');
+    if(allHidden){
+      if(!ep){
+        ep=document.createElement('tr');ep.className='_emp';
+        var c=rows[0].querySelectorAll('td').length||4;
+        ep.innerHTML='<td colspan="'+c+'" style="text-align:center;padding:22px 16px;color:#94a3b8;font-size:.83rem;font-style:italic">'
+          +'<i class="fas fa-filter" style="margin-right:7px"></i>No records found for <strong style="color:#475569;font-style:normal">'+_regEscH(orgName)+'</strong></td>';
+        tb.appendChild(ep);
+      }
+      ep.style.display='';
+    }else if(ep)ep.style.display='none';
+  });
+
+  app.querySelectorAll('.audit-row').forEach(function(row){
+    var txt=row.textContent.toLowerCase();
+    row.style.display=txt.indexOf(key2)!==-1?'':'none';
+  });
+
+  // Update sidebar pending badge
+  var pendVisible=Array.from(app.querySelectorAll('#sec-pending tbody tr:not(._emp)')).filter(function(r){return r.style.display!=='none';}).length;
+  var nb=document.querySelector('.sb-item[onclick*="pending"] .sb-num');
+  if(nb)nb.textContent=pendVisible>0?pendVisible:'';
+  // Update card header badge
+  var pendCard=app.querySelector('#sec-pending .card-hd span');
+  if(pendCard)pendCard.textContent=pendVisible+' pending';
+}
+
+function initCharts(){
+  if(typeof Chart==='undefined') return;
+  var opt={plugins:{legend:{labels:{color:'#374151',font:{size:10,family:'Inter',weight:'600'},boxWidth:9,padding:9}},tooltip:{backgroundColor:'#1c1400',padding:8,cornerRadius:7}},scales:{x:{ticks:{color:'#78716c',font:{size:9}},grid:{color:'#fffbeb'}},y:{ticks:{color:'#78716c',font:{size:9}},grid:{color:'#fffbeb'}}}};
+  var c1=document.getElementById('rc1'); if(c1&&!c1._c) c1._c=new Chart(c1,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Approved',data:[5,7,6,8,7,12],backgroundColor:'rgba(217,119,6,.75)',borderRadius:4},{label:'Rejected',data:[1,0,1,0,1,2],backgroundColor:'rgba(220,38,38,.6)',borderRadius:4},{label:'Certs',data:[4,6,5,7,6,9],backgroundColor:'rgba(124,58,237,.6)',borderRadius:4}]},options:{...opt,animation:{duration:900}}});
+  var c2=document.getElementById('rc2'); if(c2&&!c2._c) c2._c=new Chart(c2,{type:'doughnut',data:{labels:['Manufacturing','Chemical','Pharma','Power','Others'],datasets:[{data:[40,20,18,12,10],backgroundColor:['rgba(217,119,6,.85)','rgba(220,38,38,.75)','rgba(124,58,237,.75)','rgba(29,78,216,.75)','rgba(13,148,136,.75)'],borderColor:'#fff',borderWidth:2}]},options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#374151',font:{size:9},padding:7,boxWidth:7}},tooltip:opt.plugins.tooltip},animation:{duration:900}}});
+  var c3=document.getElementById('rc3'); if(c3&&!c3._c) c3._c=new Chart(c3,{type:'line',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Approvals',data:[5,7,6,8,7,12],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.07)',fill:true,tension:.4,pointRadius:3},{label:'Certs',data:[4,6,5,7,6,9],borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.05)',fill:true,tension:.4,pointRadius:3}]},options:{...opt,interaction:{mode:'index',intersect:false},animation:{duration:900}}});
+  var c4=document.getElementById('rc4'); if(c4&&!c4._c) c4._c=new Chart(c4,{type:'bar',data:{labels:['Telangana','Maharashtra','Karnataka','Tamil Nadu','Gujarat'],datasets:[{label:'Reports',data:[42,35,28,22,18],backgroundColor:'rgba(217,119,6,.75)',borderRadius:4}]},options:{...opt,indexAxis:'y',plugins:{legend:{display:false}},animation:{duration:900}}});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DYNAMIC SUBMISSIONS from org-portal  — reg-portal.html
+   Reads eco_reg_submissions, injects matching rows into pending tbody
+══════════════════════════════════════════════════════════════ */
+function _loadDynamicRegSubmissions(orgName) {
+  var subs = [];
+  try { subs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]'); } catch(e){ return; }
+  if (!subs.length) return;
+
+  var norm = (orgName||'').toLowerCase().trim();
+  var key2 = norm.split(/\s+/).slice(0,2).join(' ');
+
+  var matching = subs.filter(function(s){
+    var sn = (s.orgName||'').toLowerCase().trim();
+    return !norm || sn.indexOf(key2) !== -1 || norm.indexOf(sn.split(/\s+/).slice(0,2).join(' ')) !== -1;
+  });
+  if (!matching.length) return;
+
+  var tbody = document.querySelector('#sec-pending tbody');
+  if (!tbody) return;
+
+  /* Remove previously injected dynamic rows to avoid duplication on re-call */
+  tbody.querySelectorAll('tr._dyn-sub').forEach(function(r){ r.remove(); });
+
+  matching.forEach(function(s) {
+    var score = s.score || 80;
+    var scoreColor = score >= 85 ? '#10b981' : score >= 70 ? '#d97706' : '#ef4444';
+    var dateStr = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+    var tr = document.createElement('tr');
+    tr.className = '_dyn-sub';
+    tr.style.cssText = 'background:linear-gradient(90deg,rgba(124,58,237,.04),transparent);border-left:3px solid #7c3aed';
+    tr.innerHTML =
+      '<td style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#5b21b6">' +
+        '<span style="background:#ede9fe;border:1px solid #c4b5fd;border-radius:5px;padding:1px 7px;font-size:.68rem;margin-right:6px">ORG</span>' +
+        s.reportId +
+      '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151;font-weight:600">' + s.orgName + '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151">' + s.industryType + '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151">' + dateStr + '</td>' +
+      '<td style="padding:10px 12px;font-size:.78rem;color:#374151">' + s.reportType + '</td>' +
+      '<td style="padding:10px 12px">' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<div style="height:5px;width:60px;background:#f1f5f9;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+score+'%;background:'+scoreColor+'"></div></div>' +
+          '<span style="font-size:.74rem;font-weight:700;color:'+scoreColor+'">'+score+'%</span>' +
+        '</div>' +
+      '</td>' +
+      '<td style="padding:10px 12px">' +
+        '<span style="background:#fef3c7;border:1px solid #fde68a;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:700;color:#92400e">' +
+          '<i class="fas fa-hourglass-half" style="margin-right:3px"></i>Pending Review' +
+        '</span>' +
+      '</td>' +
+      '<td style="padding:10px 12px">' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="_regApproveSub(this,\''+s.reportId+'\')" style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-check"></i> Approve</button>' +
+          '<button onclick="_regRejectSub(this,\''+s.reportId+'\')" style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-times"></i> Reject</button>' +
+        '</div>' +
+      '</td>';
+    tbody.insertBefore(tr, tbody.firstChild);
+  });
+
+  /* Update pending count badge if present */
+  var badge = document.querySelector('.sb-item[onclick*="pending"] .sb-num, [data-section="pending"] .badge');
+  if (badge) {
+    var vis = Array.from(tbody.querySelectorAll('tr:not(._emp)')).filter(function(r){ return r.style.display !== 'none'; }).length;
+    badge.textContent = vis > 0 ? vis : '';
+  }
+}
+
+function _regApproveSub(btn, reportId) {
+  var td = btn.closest('td');
+  if (!td) return;
+  td.innerHTML =
+    '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;min-width:200px">'
+    +'<div style="font-size:.74rem;font-weight:800;color:#065f46;margin-bottom:6px"><i class="fas fa-check-circle" style="margin-right:4px"></i>Approve this report?</div>'
+    +'<textarea id="fbTxt_'+reportId+'" placeholder="Approval comments (optional)..." style="width:100%;min-height:52px;border:1px solid #bbf7d0;border-radius:7px;padding:6px 8px;font-size:.73rem;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>'
+    +'<div style="display:flex;gap:6px;margin-top:6px">'
+    +'<button onclick="_regConfirmDecision(\''+reportId+'\',\'APPROVED\')" style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-check"></i> Confirm</button>'
+    +'<button onclick="_regCancelDecision(this,\''+reportId+'\')" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 10px;font-size:.72rem;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+}
+
+function _regRejectSub(btn, reportId) {
+  var td = btn.closest('td');
+  if (!td) return;
+  td.innerHTML =
+    '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;min-width:200px">'
+    +'<div style="font-size:.74rem;font-weight:800;color:#dc2626;margin-bottom:6px"><i class="fas fa-times-circle" style="margin-right:4px"></i>Reject this report?</div>'
+    +'<textarea id="fbTxt_'+reportId+'" placeholder="Reason for rejection (required)..." style="width:100%;min-height:52px;border:1px solid #fecaca;border-radius:7px;padding:6px 8px;font-size:.73rem;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>'
+    +'<div style="display:flex;gap:6px;margin-top:6px">'
+    +'<button onclick="_regConfirmDecision(\''+reportId+'\',\'REJECTED\')" style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-times"></i> Confirm</button>'
+    +'<button onclick="_regCancelDecision(this,\''+reportId+'\')" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 10px;font-size:.72rem;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+}
+
+function _regConfirmDecision(reportId, status) {
+  var fbEl = document.getElementById('fbTxt_'+reportId);
+  var feedback = fbEl ? fbEl.value.trim() : '';
+  if (status === 'REJECTED' && !feedback) {
+    if (fbEl) { fbEl.style.borderColor='#ef4444'; fbEl.focus(); }
+    return;
+  }
+  _regUpdateSubmissionStatus(reportId, status, feedback);
+  var td = fbEl ? fbEl.closest('td') : null;
+  if (td) {
+    var c=status==='APPROVED'?{bg:'#dcfce7',bd:'#bbf7d0',tx:'#065f46',ic:'fa-check-double',lb:'Approved'}:{bg:'#fef2f2',bd:'#fecaca',tx:'#dc2626',ic:'fa-times-circle',lb:'Rejected'};
+    td.innerHTML='<div>'
+      +'<span style="background:'+c.bg+';border:1px solid '+c.bd+';border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;color:'+c.tx+'"><i class="fas '+c.ic+'" style="margin-right:3px"></i>'+c.lb+'</span>'
+      +(feedback?'<div style="font-size:.7rem;color:#64748b;margin-top:5px;max-width:200px;line-height:1.4">'+_regEscH(feedback)+'</div>':'')
+      +'</div>';
+  }
+  if(typeof toast==='function') toast('Report '+reportId+' '+status.toLowerCase()+'.');
+}
+
+function _regCancelDecision(btn, reportId) {
+  var td = btn.closest('td');
+  if (td) td.innerHTML =
+    '<div style="display:flex;gap:6px">'
+    +'<button onclick="_regApproveSub(this,\''+reportId+'\')" style="background:#10b981;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-check"></i> Approve</button>'
+    +'<button onclick="_regRejectSub(this,\''+reportId+'\')" style="background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer"><i class="fas fa-times"></i> Reject</button>'
+    +'</div>';
+}
+
+function _regUpdateSubmissionStatus(reportId, status, feedback) {
+  var subs = [];
+  try { subs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]'); } catch(e){}
+  subs = subs.map(function(s){
+    return s.reportId === reportId
+      ? Object.assign({}, s, {status: status, feedback: feedback||'', reviewedAt: new Date().toISOString()})
+      : s;
+  });
+  localStorage.setItem('eco_reg_submissions', JSON.stringify(subs));
+  /* Notify org */
+  var notifs = [];
+  try { notifs = JSON.parse(localStorage.getItem('eco_notifications') || '[]'); } catch(e){}
+  var msgBase = 'Regulatory authority '+status.toLowerCase()+' your report '+reportId+'.';
+  notifs.unshift({
+    type: 'REG_DECISION', reportId: reportId, status: status,
+    feedback: feedback||'', at: new Date().toISOString(),
+    message: msgBase+(feedback?' Feedback: '+feedback:'')
+  });
+  localStorage.setItem('eco_notifications', JSON.stringify(notifs));
+  /* Refresh approved/rejected sections immediately */
+  setTimeout(function(){ _regLoadApprovedRejected(window._regOrg||''); }, 100);
+}
+
+/* ── Cross-portal: populate Approved / Rejected sections from eco_reg_submissions ── */
+function _regLoadApprovedRejected(orgName){
+  var subs=[];
+  try{subs=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]');}catch(e){}
+  var filtered=subs;
+  if(orgName){
+    var key2=orgName.toLowerCase().split(/\s+/).slice(0,2).join(' ');
+    filtered=subs.filter(function(s){return (s.orgName||'').toLowerCase().split(/\s+/).slice(0,2).join(' ')===key2;});
+  }
+  function _fmtDate(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return '—';}}
+  function _certNo(s){return 'GOV/ENV/2025/'+(s.reportId||'').replace('RPT-','').replace(/\D/g,'').slice(-4)||Math.floor(1000+Math.random()*9000);}
+
+  /* APPROVED */
+  var appArr=filtered.filter(function(s){return s.status==='APPROVED';});
+  var appTbl=document.querySelector('#sec-approved tbody');
+  if(appTbl){
+    appTbl.querySelectorAll('._dyn-reg').forEach(function(r){r.remove();});
+    appArr.forEach(function(s){
+      var tr=document.createElement('tr');tr.className='_dyn-reg';
+      tr.style.cssText='border-left:3px solid #10b981';
+      var cert=_certNo(s);
+      tr.innerHTML='<td><b>'+(s.reportId||'RPT-REG')+'</b></td>'
+        +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(s.orgName||'—')+'</td>'
+        +'<td>'+(s.reportType||'Compliance Report')+'</td>'
+        +'<td>'+_fmtDate(s.reviewedAt)+'</td>'
+        +'<td><span style="font-size:.75rem;color:#0d9488;font-weight:700">'+cert+'</span></td>'
+        +'<td><button class="btn b-ct" onclick="toast(\'Certificate '+_regEscA(cert)+' is ready for download\')" style="font-size:.72rem"><i class="fas fa-certificate"></i> Cert</button></td>';
+      appTbl.insertBefore(tr,appTbl.firstChild);
+    });
+  }
+
+  /* REJECTED */
+  var rejArr=filtered.filter(function(s){return s.status==='REJECTED';});
+  var rejTbl=document.querySelector('#sec-rejected tbody');
+  if(rejTbl){
+    rejTbl.querySelectorAll('._dyn-reg').forEach(function(r){r.remove();});
+    rejArr.forEach(function(s){
+      var tr=document.createElement('tr');tr.className='_dyn-reg';
+      tr.style.cssText='border-left:3px solid #ef4444';
+      tr.innerHTML='<td><b>'+(s.reportId||'RPT-REG-REJ')+'</b></td>'
+        +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(s.orgName||'—')+'</td>'
+        +'<td>'+_fmtDate(s.reviewedAt)+'</td>'
+        +'<td style="max-width:280px;font-size:.8rem;color:#64748b">'+_regEscH(s.feedback||'—')+'</td>';
+      rejTbl.insertBefore(tr,rejTbl.firstChild);
+    });
+  }
+
+  /* Update sidebar badges */
+  var sbApp=document.querySelector('.sb-item[onclick*="approved"] .sb-num');
+  if(!sbApp&&appArr.length){var ai=document.querySelector('.sb-item[onclick*="approved"]');if(ai){sbApp=document.createElement('span');sbApp.className='sb-num g';ai.appendChild(sbApp);}}
+  if(sbApp){sbApp.textContent=appArr.length;sbApp.style.display=appArr.length?'':'none';}
+  var sbRej=document.querySelector('.sb-item[onclick*="rejected"] .sb-num');
+  if(!sbRej&&rejArr.length){var ri=document.querySelector('.sb-item[onclick*="rejected"]');if(ri){sbRej=document.createElement('span');sbRej.className='sb-num';sbRej.style.cssText='background:rgba(239,68,68,.22);color:#fca5a5';ri.appendChild(sbRej);}}
+  if(sbRej){sbRej.textContent=rejArr.length;sbRej.style.display=rejArr.length?'':'none';}
+}
+
+/* ── Issue government certificate ── */
+function _regIssueCert(type, typeName){
+  var org=window._regOrg||sessionStorage.getItem('ecoOrgName')||'Organization';
+  if(!org||org==='Organization'){toast('⚠️ Log in with an organization selected to issue a certificate');return;}
+  var yr=new Date().getFullYear();
+  var prefix={environmental:'TSPCB/ENV',esg:'TSPCB/ESG',sustainability:'TSPCB/SUS',carbon:'TSPCB/CRB'}[type]||'TSPCB/CERT';
+  var certNo=prefix+'/'+yr+'/'+Math.floor(Math.random()*9000+1000);
+  var date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var expiry=new Date(Date.now()+365*24*60*60*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var officer=document.getElementById('rLabel')?document.getElementById('rLabel').textContent:'Regulatory Officer';
+  /* Store for cross-portal access */
+  var certs=[];
+  try{certs=JSON.parse(localStorage.getItem('eco_reg_certs')||'[]');}catch(e){}
+  certs.unshift({certNo:certNo,type:typeName,org:org,issuedAt:new Date().toISOString(),expiry:expiry,issuedBy:officer});
+  localStorage.setItem('eco_reg_certs',JSON.stringify(certs));
+  /* Notify org */
+  var notifs=[];
+  try{notifs=JSON.parse(localStorage.getItem('eco_notifications')||'[]');}catch(e){}
+  notifs.unshift({type:'CERT_ISSUED',certNo:certNo,typeName:typeName,org:org,issuedAt:new Date().toISOString(),message:'Government '+typeName+' Certificate issued: '+certNo});
+  localStorage.setItem('eco_notifications',JSON.stringify(notifs));
+  /* Add to cert section display */
+  var section=document.querySelector('#sec-certs');
+  if(section){
+    var card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:12px;padding:20px 22px;margin-bottom:14px;border-left:4px solid #d97706;box-shadow:0 2px 10px rgba(0,0,0,.06)';
+    card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'
+      +'<div><div style="font-size:.68rem;color:#d97706;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px"><i class="fas fa-landmark" style="margin-right:4px"></i>'+typeName+' Certificate — Government</div>'
+      +'<div style="font-size:.95rem;font-weight:900;color:#1c1400;margin-bottom:4px">'+certNo+'</div>'
+      +'<div style="font-size:.78rem;color:#64748b"><i class="fas fa-building" style="margin-right:4px"></i>'+org+'</div>'
+      +'<div style="font-size:.76rem;color:#94a3b8;margin-top:3px">Issued: '+date+' &nbsp;·&nbsp; Valid till: <span style="color:#16a34a;font-weight:700">'+expiry+'</span></div>'
+      +'<div style="font-size:.73rem;color:#78716c;margin-top:2px">Issuing Officer: '+officer+'</div></div>'
+      +'<div style="display:flex;gap:8px;flex-shrink:0">'
+      +'<button class="cert-dl" onclick="ecoDownloadReport(\''+type+'\',\''+typeName+' Certificate '+certNo+'\')"><i class="fas fa-download"></i> Download</button>'
+      +'<button class="cert-vf" onclick="toast(\'✅ '+certNo+' — Verified on EcoSphere Blockchain Ledger\')"><i class="fas fa-shield-check"></i> Verify</button>'
+      +'</div></div>';
+    var existCert=section.querySelector('.cert-card');
+    if(existCert)section.insertBefore(card,existCert);
+    else section.appendChild(card);
+  }
+  /* Update cert count */
+  var cs=document.getElementById('statCerts');
+  if(cs){cs.textContent=parseInt(cs.textContent||'0',10)+1;}
+  toast('🏛️ '+typeName+' Certificate issued: '+certNo);
+}
+
+/* ── New Notice modal ── */
+function _regNewNoticeModal(){
+  var existing=document.getElementById('regNoticeModal');if(existing)existing.remove();
+  var modal=document.createElement('div');
+  modal.id='regNoticeModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(28,20,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+  var org=window._regOrg||sessionStorage.getItem('ecoOrgName')||'';
+  modal.innerHTML='<div style="background:#fff;border-radius:16px;padding:32px;max-width:540px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25)">'
+    +'<h3 style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#1c1400;margin:0 0 4px"><i class="fas fa-exclamation-triangle" style="color:#d97706;margin-right:8px"></i>Issue Compliance Notice</h3>'
+    +'<p style="font-size:.8rem;color:#78716c;margin:0 0 20px">Official notice for non-compliance — organization will be notified immediately</p>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">'
+    +'<div><label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Organization *</label>'
+    +'<input id="noticeOrg" type="text" value="'+_regEscH(org)+'" placeholder="Organization name" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.84rem;font-family:Inter,sans-serif;outline:none"/></div>'
+    +'<div><label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Notice Type *</label>'
+    +'<select id="noticeType" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.84rem;font-family:Inter,sans-serif;outline:none;background:#fff">'
+    +'<option value="Air Pollution">Air Pollution Violation</option>'
+    +'<option value="Water Pollution">Water Discharge Violation</option>'
+    +'<option value="Noise Pollution">Noise Limit Exceedance</option>'
+    +'<option value="Waste Management">Waste Management Violation</option>'
+    +'<option value="Non-Compliance">General Non-Compliance</option>'
+    +'<option value="Permit Violation">Permit Condition Violation</option>'
+    +'</select></div>'
+    +'<div><label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Response Deadline *</label>'
+    +'<input id="noticeDeadline" type="number" min="7" max="90" value="30" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.84rem;font-family:Inter,sans-serif;outline:none"/> <span style="font-size:.74rem;color:#94a3b8">days</span></div>'
+    +'<div><label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Severity</label>'
+    +'<select id="noticeSeverity" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.84rem;font-family:Inter,sans-serif;outline:none;background:#fff">'
+    +'<option value="Low">Low</option><option value="Medium" selected>Medium</option><option value="High">High</option><option value="Critical">Critical</option>'
+    +'</select></div></div>'
+    +'<div style="margin-bottom:14px"><label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Violation Description *</label>'
+    +'<textarea id="noticeDesc" rows="3" placeholder="Describe the violation, parameters exceeded, and required corrective actions..." style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.84rem;font-family:Inter,sans-serif;outline:none;resize:vertical"></textarea></div>'
+    +'<div id="noticeMsgEl" style="display:none;font-size:.79rem;padding:9px 14px;border-radius:8px;margin-bottom:14px"></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button onclick="_regSubmitNotice()" style="flex:1;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:9px;padding:11px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer"><i class="fas fa-paper-plane"></i> Issue Notice</button>'
+    +'<button onclick="document.getElementById(\'regNoticeModal\').remove()" style="background:#f1f5f9;color:#475569;border:none;border-radius:9px;padding:11px 18px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+  setTimeout(function(){var e=document.getElementById('noticeOrg');if(e){e.focus();e.select();}},80);
+}
+
+function _regSubmitNotice(){
+  var org=(document.getElementById('noticeOrg')||{value:''}).value.trim();
+  var type=(document.getElementById('noticeType')||{value:''}).value;
+  var desc=(document.getElementById('noticeDesc')||{value:''}).value.trim();
+  var days=(document.getElementById('noticeDeadline')||{value:'30'}).value;
+  var severity=(document.getElementById('noticeSeverity')||{value:'Medium'}).value;
+  var msg=document.getElementById('noticeMsgEl');
+  if(!org||!desc){
+    msg.style.cssText='display:block;background:#fee2e2;color:#991b1b;border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:9px 14px;font-size:.79rem;margin-bottom:14px';
+    msg.textContent='Please fill in Organization and Violation Description.';return;
+  }
+  var yr=new Date().getFullYear();
+  var noticeNo='NOT-'+yr+'-'+Math.floor(Math.random()*9000+1000);
+  var date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var deadlineDate=new Date(Date.now()+parseInt(days)*24*60*60*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  /* Save notice */
+  var notices=[];
+  try{notices=JSON.parse(localStorage.getItem('eco_reg_notices')||'[]');}catch(e){}
+  notices.unshift({noticeNo:noticeNo,org:org,type:type,desc:desc,severity:severity,deadline:deadlineDate,issuedAt:new Date().toISOString(),status:'Open'});
+  localStorage.setItem('eco_reg_notices',JSON.stringify(notices));
+  /* Notify org */
+  var notifs=[];
+  try{notifs=JSON.parse(localStorage.getItem('eco_notifications')||'[]');}catch(e){}
+  notifs.unshift({type:'NOTICE_ISSUED',noticeNo:noticeNo,org:org,violationType:type,message:'Compliance notice '+noticeNo+' issued for '+type+'. Respond within '+days+' days.'});
+  localStorage.setItem('eco_notifications',JSON.stringify(notifs));
+  /* Add row to notices table */
+  var tbody=document.querySelector('#sec-notices tbody');
+  if(tbody){
+    tbody.querySelectorAll('._empty-row').forEach(function(r){r.remove();});
+    var sev={Critical:'c-rej',High:'c-rej',Medium:'c-pend',Low:'c-rev'}[severity]||'c-pend';
+    var tr=document.createElement('tr');tr.className='_dyn-notice';
+    tr.innerHTML='<td><b>'+noticeNo+'</b></td><td>'+_regEscH(org)+'</td><td>'+date+'</td>'
+      +'<td style="max-width:240px;font-size:.8rem">'+_regEscH(desc)+'</td>'
+      +'<td><span class="chip '+sev+'"><span class="cdot"></span>Open · '+severity+'</span></td>';
+    tbody.insertBefore(tr,tbody.firstChild);
+  }
+  var sn=document.getElementById('statNotices');if(sn)sn.textContent=parseInt(sn.textContent||'0',10)+1;
+  document.getElementById('regNoticeModal').remove();
+  toast('⚠️ Notice '+noticeNo+' issued to '+org);
+}
+
+/* ── Forgot password modal ── */
+function _regForgotPassword(){
+  var existing=document.getElementById('regFgpModal');if(existing)existing.remove();
+  var modal=document.createElement('div');
+  modal.id='regFgpModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(28,20,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML='<div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25)">'
+    +'<h3 style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#1c1400;margin:0 0 8px"><i class="fas fa-key" style="color:#d97706;margin-right:8px"></i>Reset Password</h3>'
+    +'<p style="font-size:.81rem;color:#78716c;margin:0 0 20px">Enter your official email. A reset link will be sent if the account exists.</p>'
+    +'<label style="font-size:.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Official Email Address</label>'
+    +'<input id="regFgpEmail" type="email" placeholder="officer@spcb.gov.in" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.87rem;font-family:Inter,sans-serif;outline:none;margin-bottom:12px"/>'
+    +'<div id="regFgpMsg" style="display:none;font-size:.79rem;padding:9px 14px;border-radius:8px;margin-bottom:14px"></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button onclick="_regSendReset()" style="flex:1;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:9px;padding:11px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer"><i class="fas fa-paper-plane"></i> Send Reset Link</button>'
+    +'<button onclick="document.getElementById(\'regFgpModal\').remove()" style="background:#f1f5f9;color:#475569;border:none;border-radius:9px;padding:11px 18px;font-family:Poppins,sans-serif;font-size:.87rem;font-weight:700;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+  setTimeout(function(){var e=document.getElementById('regFgpEmail');if(e)e.focus();},80);
+}
+
+function _regSendReset(){
+  var email=(document.getElementById('regFgpEmail')||{value:''}).value.trim();
+  var msg=document.getElementById('regFgpMsg');
+  if(!email||!/\S+@\S+\.\S+/.test(email)){
+    msg.style.cssText='display:block;background:#fee2e2;color:#991b1b;border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:9px 14px;font-size:.79rem;margin-bottom:14px';
+    msg.textContent='Please enter a valid email address.';return;
+  }
+  var BASE=(typeof EcoSphereAPI!=='undefined'&&EcoSphereAPI.BASE_URL)?EcoSphereAPI.BASE_URL:'http://localhost:5000/api/v1';
+  fetch(BASE+'/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+    .catch(function(){})
+    .finally(function(){
+      msg.style.cssText='display:block;background:#fef3c7;color:#92400e;border:1px solid rgba(217,119,6,.2);border-radius:8px;padding:9px 14px;font-size:.79rem;margin-bottom:14px';
+      msg.innerHTML='<i class="fas fa-check-circle" style="margin-right:6px"></i>If an account exists for <b>'+email+'</b>, a reset link has been sent.';
+    });
+}
+
+/* ── Organization Sidebar ── */
+function _buildRegOrgSidebar() {
+  var container = document.getElementById('regOrgSidebarList');
+  if (!container) return;
+
+  var allOrgs = [];
+  try { allOrgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]'); } catch(e){}
+
+  // Add legacy orgs from submissions that predate the registry (auto-accepted)
+  var knownNorms = allOrgs.map(function(o){ return (o.orgName||o.name||'').toLowerCase().trim(); });
+  try { JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]').forEach(function(s){
+    var n=(s.orgName||'').trim(); if(n&&knownNorms.indexOf(n.toLowerCase())===-1){ allOrgs.push({orgName:n,name:n,regStatus:'accepted'}); knownNorms.push(n.toLowerCase()); }
+  }); } catch(e){}
+  try { JSON.parse(localStorage.getItem('eco_lab_feedback')||'[]').forEach(function(f){
+    var n=(f.orgName||'').trim(); if(n&&knownNorms.indexOf(n.toLowerCase())===-1){ allOrgs.push({orgName:n,name:n,regStatus:'accepted'}); knownNorms.push(n.toLowerCase()); }
+  }); } catch(e){}
+
+  var getName = function(o){ return (o.orgName||o.name||'').trim(); };
+  var getInit = function(nm){ return nm.split(/\s+/).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase(); };
+  var escH = function(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
+  var escJ = function(s){ return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\x27"); };
+
+  var pending  = allOrgs.filter(function(o){ return o.regStatus === 'pending'; });
+  var accepted = allOrgs.filter(function(o){ return !o.regStatus || o.regStatus === 'accepted'; });
+
+  var html = '<div class="sb-item on" id="regOrgAll" onclick="_regSelectSidebarOrg(null,this)" style="border-left-color:var(--reg)">'
+           + '<i class="fas fa-layer-group"></i> All Organizations</div>';
+
+  if (pending.length) {
+    html += '<div style="font-size:.64rem;font-weight:800;letter-spacing:.07em;color:#d97706;text-transform:uppercase;padding:10px 14px 4px;display:flex;align-items:center;gap:5px">'
+          + '<i class="fas fa-clock"></i> Pending Approval'
+          + '<span style="background:#d97706;color:#fff;border-radius:10px;padding:1px 6px;font-size:.58rem">' + pending.length + '</span></div>';
+    pending.forEach(function(o){
+      var nm = getName(o); if(!nm) return;
+      html += '<div style="display:flex;align-items:center;gap:5px;padding:6px 8px 6px 12px;border-left:3px solid #d97706;margin:1px 0;background:rgba(217,119,6,.07)">'
+            + '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:rgba(217,119,6,.25);color:#d97706;font-size:.54rem;font-weight:900;flex-shrink:0">' + escH(getInit(nm)) + '</span>'
+            + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:#92400e;flex:1;min-width:0" title="' + escH(nm) + '">' + escH(nm) + '</span>'
+            + '<button onclick="_regAcceptOrg(\'' + escJ(nm) + '\')" title="Accept" style="background:#dcfce7;color:#16a34a;border:none;border-radius:5px;padding:3px 6px;font-size:.62rem;cursor:pointer;font-weight:800;flex-shrink:0"><i class="fas fa-check"></i></button>'
+            + '<button onclick="_regRemoveOrg(\'' + escJ(nm) + '\')" title="Remove" style="background:#fee2e2;color:#dc2626;border:none;border-radius:5px;padding:3px 6px;font-size:.62rem;cursor:pointer;font-weight:800;flex-shrink:0"><i class="fas fa-times"></i></button>'
+            + '</div>';
+    });
+  }
+
+  if (accepted.length) {
+    if (pending.length) {
+      html += '<div style="font-size:.64rem;font-weight:800;letter-spacing:.07em;color:#d97706;text-transform:uppercase;padding:10px 14px 4px;display:flex;align-items:center;gap:5px">'
+            + '<i class="fas fa-check-circle" style="color:#d97706"></i> Accepted</div>';
+    }
+    accepted.forEach(function(o){
+      var nm = getName(o); if(!nm) return;
+      html += '<div class="sb-item" onclick="_regSelectSidebarOrg(\'' + escJ(nm) + '\',this)" title="' + escH(nm) + '">'
+            + '<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;background:rgba(245,158,11,.2);color:#fbbf24;font-size:.55rem;font-weight:900;flex-shrink:0">' + escH(getInit(nm)) + '</span>'
+            + ' <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(nm) + '</span>'
+            + '</div>';
+    });
+  }
+
+  if (!pending.length && !accepted.length) {
+    html += '<div style="padding:12px 14px;font-size:.74rem;color:#94a3b8;font-style:italic"><i class="fas fa-building" style="margin-right:6px"></i>No registered organizations</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function _regAcceptOrg(orgName) {
+  try {
+    var orgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]');
+    var norm = orgName.toLowerCase().trim();
+    var found = false;
+    orgs = orgs.map(function(o){
+      if ((o.orgName||o.name||'').toLowerCase().trim() === norm) { found = true; return Object.assign({},o,{regStatus:'accepted',regAcceptedAt:new Date().toISOString()}); }
+      return o;
+    });
+    if (!found) orgs.push({name:orgName,orgName:orgName,regStatus:'accepted',regAcceptedAt:new Date().toISOString()});
+    localStorage.setItem('eco_all_orgs', JSON.stringify(orgs));
+    _buildRegOrgSidebar();
+    if (typeof toast === 'function') toast('✅ ' + orgName + ' accepted');
+  } catch(e){}
+}
+
+function _regRemoveOrg(orgName) {
+  try {
+    var orgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]');
+    var norm = orgName.toLowerCase().trim();
+    orgs = orgs.map(function(o){
+      if ((o.orgName||o.name||'').toLowerCase().trim() === norm) return Object.assign({},o,{regStatus:'removed'});
+      return o;
+    });
+    localStorage.setItem('eco_all_orgs', JSON.stringify(orgs));
+    if ((window._regOrg||'').toLowerCase().trim() === norm) _regSelectSidebarOrg(null, document.getElementById('regOrgAll'));
+    _buildRegOrgSidebar();
+    if (typeof toast === 'function') toast('🗑️ ' + orgName + ' removed');
+  } catch(e){}
+}
+
+function _regComputeOrgStats(orgName) {
+  var norm = (orgName || '').toLowerCase().trim();
+  var key2 = norm.split(/\s+/).slice(0,2).join(' ');
+  function match(n) {
+    var cn = (n||'').toLowerCase().trim();
+    return cn.indexOf(key2) !== -1 || key2.indexOf(cn.split(/\s+/).slice(0,2).join(' ')) !== -1;
+  }
+  var subs=[]; var certs=[]; var notices=[];
+  try{ subs=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]'); }catch(e){}
+  try{ certs=JSON.parse(localStorage.getItem('eco_reg_certs')||'[]').concat(JSON.parse(localStorage.getItem('eco_issued_certs')||'[]')); }catch(e){}
+  try{ notices=JSON.parse(localStorage.getItem('eco_reg_notices')||'[]'); }catch(e){}
+
+  var orgSubs    = subs.filter(function(s){ return match(s.orgName); });
+  var orgCerts   = certs.filter(function(c){ return match(c.orgName); });
+  var orgNotices = notices.filter(function(n){ return match(n.orgName); });
+
+  function hasStatus(item, terms) {
+    var s=(item.status||'').toLowerCase();
+    return terms.some(function(t){ return s===t||s.indexOf(t)!==-1; });
+  }
+  var pending  = orgSubs.filter(function(s){ return hasStatus(s,['pending','submitted','lab_approved','forwarded']); }).length;
+  var approved = orgSubs.filter(function(s){ return hasStatus(s,['approved','reg_approved','final_approved']); }).length;
+  var rejected = orgSubs.filter(function(s){ return hasStatus(s,['rejected','reg_rejected']); }).length;
+
+  function _s(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  _s('statPending',  pending);
+  _s('statApproved', approved);
+  _s('statRejected', rejected);
+  _s('statCerts',    orgCerts.length);
+  _s('statNotices',  orgNotices.length);
+  _s('statInspect',  0);
+
+  var sbP=document.getElementById('sbRegPending'); if(sbP) sbP.textContent=pending||'';
+
+  var total=approved+rejected;
+  var rate=total>0?Math.round(approved/total*100):null;
+  var el;
+  el=document.getElementById('statCompliance'); if(el) el.textContent=rate!==null?rate+'%':'—';
+  el=document.getElementById('statRegOrgs');    if(el) el.textContent=1;
+}
+
+function _regSelectSidebarOrg(orgName, btn) {
+  var container = document.getElementById('regOrgSidebarList');
+  if (container) {
+    container.querySelectorAll('.sb-item').forEach(function(el){ el.classList.remove('on'); el.style.borderLeftColor=''; });
+  }
+  if (btn) { btn.classList.add('on'); btn.style.borderLeftColor='var(--reg)'; }
+
+  if (!orgName) {
+    window._regOrg = null;
+    document.getElementById('rWelcome').textContent = 'Government review — All Organizations';
+    var banner = document.getElementById('regCompanyBanner');
+    if (banner) banner.style.display = 'none';
+    document.querySelectorAll('#app tbody tr').forEach(function(r){ r.style.display = ''; });
+    document.querySelectorAll('#app tbody tr._emp').forEach(function(r){ r.style.display = 'none'; });
+    if (typeof _loadDashboard === 'function') _loadDashboard();
+  } else {
+    window._regOrg = orgName;
+    document.getElementById('rWelcome').textContent = 'Reviewing — ' + orgName;
+    var banner = document.getElementById('regCompanyBanner');
+    var bannerName = document.getElementById('regCompanyBannerName');
+    if (banner) banner.style.display = 'flex';
+    if (bannerName) bannerName.textContent = orgName;
+    _filterRegByOrg(orgName);
+    _regComputeOrgStats(orgName);
+    if (typeof _loadDynamicRegSubmissions === 'function') _loadDynamicRegSubmissions(orgName);
+  }
+}
+</script>
+
+<script>
+/* Listen for lab-approved reports forwarded to eco_reg_submissions */
+window.addEventListener('storage', function(e) {
+  if (e.key !== 'eco_reg_submissions') return;
+  var appPanel = document.getElementById('app');
+  if (!appPanel || appPanel.style.display === 'none') return;
+  if (typeof _loadDynamicRegSubmissions === 'function') {
+    _loadDynamicRegSubmissions(window._regOrg || '');
+  }
+  try {
+    var newArr = JSON.parse(e.newValue || '[]');
+    var oldArr = JSON.parse(e.oldValue || '[]');
+    var oldIds = oldArr.map(function(s){ return s.reportId; });
+    var fresh  = newArr.filter(function(s){ return s.status === 'LAB_APPROVED' && oldIds.indexOf(s.reportId) === -1; });
+    if (fresh.length && typeof toast === 'function') {
+      toast('📥 Lab approved report from ' + fresh[0].orgName + ' — ready for regulatory review!');
+    }
+  } catch(err){}
+});
+</script>
+
+<script>
+(function() {
+  // Org selection happens inside the portal after login — not on the login screen
+  window._regOrg      = null;
+  window._regIndustry = '';
+})();
+</script>
+<!-- EcoSphere 3D Environmental Intelligence Universe -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/eco-universe.js"></script>
+<!-- EcoSphere Backend API Client -->
+<script src="js/api.js"></script>
+<script src="js/pdf-download.js"></script>
+<script src="js/eco-export.js"></script>
+<!-- EcoSphere Frontend ↔ Backend Integration -->
+<script src="js/eco-api-service.js"></script>
+<script src="js/reg-connect.js"></script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

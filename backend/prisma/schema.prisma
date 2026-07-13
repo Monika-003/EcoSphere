@@ -1,0 +1,3062 @@
+// ════════════════════════════════════════════════════════════════
+//  EcoSphere — Complete PostgreSQL Database Schema
+//  Prisma ORM v5 | PostgreSQL 15+
+// ════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  // Org-portal roles — full access
+  ENV_OFFICER
+  ADMIN
+  // Org-portal roles — view only
+  ENV_ENGINEER
+  PRODUCTION_HEAD
+  QUALITY_HEAD
+  HR_HEAD
+  // Lab-portal roles
+  LAB_ADMIN
+  LAB_ANALYST
+  LAB_SENIOR_REVIEWER
+  LAB_QUALITY_MANAGER
+  // Regulatory-portal roles
+  REG_OFFICER
+  REG_INSPECTOR
+  REG_REGIONAL_OFFICER
+  REG_GOVERNMENT_AUTHORITY
+  CONSULTANT
+  AUDITOR
+}
+
+enum EntityStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SUSPENDED
+  ACTIVE
+  INACTIVE
+}
+
+enum ReportType {
+  ENVIRONMENTAL_MONITORING
+  ESG_REPORT
+  CARBON_EMISSION
+  SUSTAINABILITY
+  ISO14001_COMPLIANCE
+  EIA_REPORT
+  WATER_AUDIT
+  ENERGY_AUDIT
+  WASTE_AUDIT
+  ANNUAL_ENVIRONMENTAL
+}
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED_TO_LAB
+  LAB_UNDER_REVIEW
+  LAB_CORRECTION_REQUESTED
+  LAB_APPROVED
+  LAB_REJECTED
+  SUBMITTED_TO_REGULATORY
+  REG_UNDER_REVIEW
+  REG_CORRECTION_REQUESTED
+  REG_APPROVED
+  REG_REJECTED
+  CERTIFIED
+  ARCHIVED
+}
+
+enum WorkflowStage {
+  ORGANIZATION
+  LABORATORY
+  REGULATORY
+  COMPLETED
+}
+
+enum CertificateType {
+  ENVIRONMENTAL_COMPLIANCE
+  ESG_CERTIFICATION
+  SUSTAINABILITY
+  CARBON_VERIFICATION
+  ISO14001
+  WATER_QUALITY
+  AIR_QUALITY
+  NOISE_COMPLIANCE
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum MonitoringType {
+  AIR
+  WATER
+  NOISE
+  SOIL
+  TEMPERATURE
+  HUMIDITY
+  WASTE
+  STACK_EMISSION
+  GROUNDWATER
+  METEOROLOGICAL
+  ETP
+  STP
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  MARGINAL
+  BORDERLINE
+  UNDER_REVIEW
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+  GOVERNMENT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+  CANCELLED
+  SUSPENDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum DeviceType {
+  IOT_SENSOR
+  AUTOMATED_ANALYSER
+  CEMS
+  WQMS
+  NEMS
+  MANUAL
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  SUBMIT
+  APPROVE
+  REJECT
+  REVOKE
+  VERIFY
+  DOWNLOAD
+  UPLOAD
+  DEACTIVATE
+  BROADCAST
+  PAYMENT
+  CERTIFICATE_ISSUED
+  NOTICE_ISSUED
+  WORKFLOW_ADVANCE
+  AI_QUERY
+  PASSWORD_CHANGE
+  PERMISSION_CHANGE
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  USERS & AUTH
+// ─────────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String
+  firstName        String
+  lastName         String
+  phone            String?
+  avatar           String?
+  role             UserRole
+  isEmailVerified  Boolean   @default(false)
+  isPhoneVerified  Boolean   @default(false)
+  isMfaEnabled     Boolean   @default(false)
+  mfaSecret        String?
+  isActive         Boolean   @default(true)
+  lastLoginAt      DateTime?
+  passwordChangedAt DateTime?
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  orgId            String?
+  organization     Organization?    @relation("OrgUsers", fields: [orgId], references: [id], onDelete: SetNull, map: "users_org_fkey")
+  labId            String?
+  laboratory       Laboratory?      @relation("LabUsers", fields: [labId], references: [id], onDelete: SetNull, map: "users_lab_fkey")
+  authorityId      String?
+  authority        RegulatoryAuthority? @relation("RegUsers", fields: [authorityId], references: [id], onDelete: SetNull, map: "users_authority_fkey")
+
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  monitoringRecords MonitoringRecord[]
+  reportSubmissions Report[]         @relation("ReportSubmitter")
+  reportReviews    ReportReview[]
+  workflowHistories WorkflowHistory[]
+  aiConversations  AIConversation[]
+  certificates     Certificate[]    @relation("CertIssuedBy")
+  paymentTransactions PaymentTransaction[]
+
+  @@index([email])
+  @@index([role])
+  @@index([orgId])
+  @@index([labId])
+  @@index([authorityId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  ipAddress   String?
+  userAgent   String?
+  isRevoked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  ORGANIZATIONS
+// ─────────────────────────────────────────────────────────────────
+
+model Organization {
+  id                  String        @id @default(uuid())
+  name                String
+  registrationNumber  String        @unique
+  gstNumber           String?
+  industryType        String
+  establishmentYear   Int?
+  employeeCount       Int?
+  annualRevenue       Decimal?      @db.Decimal(15, 2)
+  website             String?
+  sustainabilityGoals String?
+
+  // Location
+  country             String        @default("India")
+  state               String
+  city                String
+  address             String
+  postalCode          String?
+  facilityType        String?
+  gpsLatitude         Decimal?      @db.Decimal(10, 8)
+  gpsLongitude        Decimal?      @db.Decimal(11, 8)
+
+  // Environmental
+  airEmissionSources  String[]
+  waterSources        String[]
+  annualCarbonTonne   Decimal?      @db.Decimal(15, 2)
+  solidWasteTonne     Decimal?      @db.Decimal(15, 2)
+  hazardousWasteKg    Decimal?      @db.Decimal(15, 2)
+  waterConsumptionKl  Decimal?      @db.Decimal(15, 2)
+  existingCerts       String[]
+
+  // Contacts
+  headName            String?
+  headDesignation     String?
+  headEmail           String?
+  headPhone           String?
+  contactName         String?
+  contactEmail        String?
+  contactPhone        String?
+  panNumber           String?
+  pincode             String?
+
+  // Documents (S3 keys + JSON documents array)
+  regCertificateKey   String?
+  gstCertificateKey   String?
+  envClearanceKey     String?
+  ctoDocumentKey      String?
+  documents           Json?
+  certifications      String[]
+
+  // Verification
+  isVerified          Boolean       @default(false)
+  verifiedAt          DateTime?
+  verifiedById        String?
+
+  // Status
+  status              EntityStatus  @default(PENDING_APPROVAL)
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectionReason     String?
+  isActive            Boolean       @default(true)
+
+  // Subscription
+  subscription        Subscription?
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Relations
+  users               User[]        @relation("OrgUsers")
+  monitoringStations  MonitoringStation[]
+  monitoringRecords   MonitoringRecord[]
+  reports             Report[]
+  certificates        Certificate[]
+  notifications       Notification[]
+  workflowHistories   WorkflowHistory[]
+  transactions        PaymentTransaction[]
+
+  // ESG Module Relations
+  esgProfiles         EsgProfile[]
+  esgEnergy           EsgEnergy[]
+  esgWater            EsgWater[]
+  esgEmissions        EsgEmissions[]
+  esgWaste            EsgWaste[]
+  esgBiodiversity     EsgBiodiversity[]
+  esgEmployees        EsgEmployees[]
+  esgSafety           EsgSafety[]
+  esgGovernance       EsgGovernance[]
+  esgCsr              EsgCsr[]
+  esgEvidence         EsgEvidence[]
+  esgScores           EsgScore[]
+  esgReportHistory    EsgReportHistory[]
+
+  // EIA Module Relations
+  eiaProjects         EiaProject[]
+
+  // Regulatory Access assignments
+  regulatoryAccess    RegulatoryAccess[]
+
+  @@index([status])
+  @@index([industryType])
+  @@index([state])
+  @@map("organizations")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  LABORATORIES
+// ─────────────────────────────────────────────────────────────────
+
+model Laboratory {
+  id                  String        @id @default(uuid())
+  name                String
+  accreditationNumber String?       @unique
+  nablAccreditationNo String?       @unique
+  accreditationExpiry DateTime?
+  isNablAccredited    Boolean       @default(false)
+  nablStatus          String        @default("Pending")
+  capabilities        String[]
+  iso17025Certified   Boolean       @default(false)
+  laboratoryType      String        @default("ENVIRONMENTAL")
+  foundedYear         Int?
+  servicesOffered     String[]
+  contactEmail        String?
+  contactPhone        String?
+
+  // Infrastructure
+  analystCount        Int?
+  testingCapacity     Int?
+  avgTurnaroundDays   Int           @default(3)
+  serviceArea         String?
+  keyEquipment        String?
+  labHeadName         String?
+  labHeadEmail        String?
+  labHeadPhone        String?
+  pricingPerSample    Decimal?      @db.Decimal(10, 2)
+
+  // Location
+  address             String?
+  city                String?
+  state               String?
+  pincode             String?
+  country             String        @default("India")
+  gpsLatitude         Decimal?      @db.Decimal(10, 8)
+  gpsLongitude        Decimal?      @db.Decimal(11, 8)
+
+  // Documents
+  nablCertKey         String?
+  iso17025CertKey     String?
+  labLicenseKey       String?
+  calibrationRecordsKey String?
+
+  status              EntityStatus  @default(PENDING_APPROVAL)
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectionReason     String?
+  isActive            Boolean       @default(true)
+
+  subscription        Subscription?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  users               User[]        @relation("LabUsers")
+  reportReviews       ReportReview[]
+  labSamples          LabSample[]
+  certificates        Certificate[]  @relation("LabCerts")
+  notifications       Notification[]
+  transactions        PaymentTransaction[]
+
+  @@index([status])
+  @@index([state])
+  @@map("laboratories")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  REGULATORY AUTHORITIES
+// ─────────────────────────────────────────────────────────────────
+
+model RegulatoryAuthority {
+  id               String        @id @default(uuid())
+  name             String        @unique
+  shortName        String?
+  authorityType    String
+  governmentLevel  String        @default("STATE")
+  department       String?
+  officialEmail    String?       @unique
+  officialPhone    String?
+  contactEmail     String?
+  contactPhone     String?
+  regionCovered    String?
+  jurisdiction     String?
+  industriesRegulated String?
+  permissions      String[]
+  website          String?
+
+  // Location
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+
+  officerName      String?
+  officialIdNumber String?
+
+  // Documents
+  authLetterKey    String?
+  govIdKey         String?
+
+  status           EntityStatus  @default(PENDING_APPROVAL)
+  approvedBy       String?
+  approvedAt       DateTime?
+  isActive         Boolean       @default(true)
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  users            User[]        @relation("RegUsers")
+  reportApprovals  ReportReview[]
+  certificates     Certificate[]  @relation("RegCerts")
+  notices          ComplianceNotice[]
+  inspections      Inspection[]
+  notifications    Notification[]
+
+  @@index([status])
+  @@map("regulatory_authorities")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  REGULATORY ACCESS  (Organization → Regulatory Officer mapping)
+//  Org admins assign specific regulators; those regulators only see
+//  the organizations they are explicitly assigned to.
+// ─────────────────────────────────────────────────────────────────
+
+model RegulatoryAccess {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  regulatorUserId String       // User.id — must have a REG_* role
+  status          String       @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([organizationId, regulatorUserId])
+  @@index([organizationId])
+  @@index([regulatorUserId])
+  @@index([status])
+  @@map("regulatory_access")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  MONITORING STATIONS & RECORDS
+// ─────────────────────────────────────────────────────────────────
+
+model MonitoringStation {
+  id              String          @id @default(uuid())
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name            String
+  stationCode     String          @unique
+  monitoringType  MonitoringType
+  deviceType      DeviceType      @default(MANUAL)
+  deviceId        String?
+  latitude        Decimal?        @db.Decimal(10, 8)
+  longitude       Decimal?        @db.Decimal(11, 8)
+  locationDesc    String?
+  isActive        Boolean         @default(true)
+  lastSyncAt      DateTime?
+  calibratedAt    DateTime?
+  calibratedBy    String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  records         MonitoringRecord[]
+
+  @@index([organizationId])
+  @@index([monitoringType])
+  @@index([stationCode])
+  @@map("monitoring_stations")
+}
+
+model MonitoringRecord {
+  id              String          @id @default(uuid())
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  stationId       String?
+  station         MonitoringStation? @relation(fields: [stationId], references: [id])
+  submittedById   String
+  submittedBy     User            @relation(fields: [submittedById], references: [id])
+
+  monitoringType  MonitoringType
+  recordingDate   DateTime
+  shift           String?
+  location        String?
+  samplingMethod  String?
+
+  // Flexible parameter storage (JSON for all types)
+  parameters      Json
+  rawData         Json?
+
+  // Calculated fields
+  complianceStatus ComplianceStatus @default(UNDER_REVIEW)
+  violationsCount  Int              @default(0)
+  violations       Json?
+
+  // AI Analysis
+  aiAnalysis      String?
+  aiRecommendations Json?
+  aiScore         Decimal?         @db.Decimal(5, 2)
+
+  remarks         String?
+  version         Int              @default(1)
+  isDraft         Boolean          @default(false)
+  isApproved      Boolean          @default(false)
+
+  // Source tracking
+  deviceId        String?
+  deviceName      String?
+  sourceType      String           @default("MANUAL")
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  reportItems     ReportMonitoringRecord[]
+
+  @@index([organizationId])
+  @@index([monitoringType])
+  @@index([recordingDate])
+  @@index([complianceStatus])
+  @@map("monitoring_records")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  REPORTS
+// ─────────────────────────────────────────────────────────────────
+
+model Report {
+  id              String        @id @default(uuid())
+  reportNumber    String        @unique
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+  submittedById   String
+  submittedBy     User          @relation("ReportSubmitter", fields: [submittedById], references: [id])
+
+  reportType      ReportType
+  title           String
+  period          String
+  periodStartDate DateTime?
+  periodEndDate   DateTime?
+  status          ReportStatus  @default(DRAFT)
+  currentStage    WorkflowStage @default(ORGANIZATION)
+
+  // ESG Scores
+  esgScore        Decimal?      @db.Decimal(5, 2)
+  envScore        Decimal?      @db.Decimal(5, 2)
+  socialScore     Decimal?      @db.Decimal(5, 2)
+  govScore        Decimal?      @db.Decimal(5, 2)
+
+  // Carbon
+  scope1          Decimal?      @db.Decimal(15, 4)
+  scope2          Decimal?      @db.Decimal(15, 4)
+  scope3          Decimal?      @db.Decimal(15, 4)
+  totalCarbon     Decimal?      @db.Decimal(15, 4)
+
+  // Compliance
+  complianceScore Decimal?      @db.Decimal(5, 2)
+  violations      Json?
+
+  // Documents (S3 keys)
+  documentKey     String?
+  pdfKey          String?
+  excelKey        String?
+  attachments     Json?
+
+  // AI
+  aiSummary       String?
+  aiRecommendations Json?
+  aiRiskScore     Decimal?      @db.Decimal(5, 2)
+
+  notes           String?
+  version         Int           @default(1)
+  isDraft         Boolean       @default(false)
+
+  submittedToLabAt     DateTime?
+  labReviewStartedAt   DateTime?
+  labApprovedAt        DateTime?
+  submittedToRegAt     DateTime?
+  regReviewStartedAt   DateTime?
+  regApprovedAt        DateTime?
+  certifiedAt          DateTime?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  monitoringRecords ReportMonitoringRecord[]
+  reviews          ReportReview[]
+  certificate      Certificate?
+  workflowHistory  WorkflowHistory[]
+  notifications    Notification[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([reportType])
+  @@index([reportNumber])
+  @@map("reports")
+}
+
+model ReportMonitoringRecord {
+  id               String           @id @default(uuid())
+  reportId         String
+  report           Report           @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  monitoringRecordId String
+  monitoringRecord MonitoringRecord @relation(fields: [monitoringRecordId], references: [id])
+
+  @@unique([reportId, monitoringRecordId])
+  @@map("report_monitoring_records")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  REPORT REVIEWS (Lab + Regulatory)
+// ─────────────────────────────────────────────────────────────────
+
+model ReportReview {
+  id              String       @id @default(uuid())
+  reportId        String
+  report          Report       @relation(fields: [reportId], references: [id])
+  reviewedById    String
+  reviewedBy      User         @relation(fields: [reviewedById], references: [id])
+
+  reviewStage     WorkflowStage
+  laboratoryId    String?
+  laboratory      Laboratory?  @relation(fields: [laboratoryId], references: [id])
+  authorityId     String?
+  authority       RegulatoryAuthority? @relation(fields: [authorityId], references: [id])
+
+  status          String       // PENDING | APPROVED | REJECTED | CORRECTION_REQUESTED
+  findings        String?
+  comments        String?
+  correctionNotes String?
+  technicalScore  Decimal?     @db.Decimal(5, 2)
+  complianceScore Decimal?     @db.Decimal(5, 2)
+
+  // For lab: sample/analysis details
+  samplesAnalysed Int?
+  testMethodsUsed String[]
+  labFindings     Json?
+
+  // For regulatory: enforcement details
+  enforcementActions Json?
+  noticesIssued    Boolean     @default(false)
+
+  documentKeys    String[]
+  reviewedAt      DateTime?
+  dueDate         DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([reportId])
+  @@index([reviewStage])
+  @@map("report_reviews")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  LAB SAMPLES & CHAIN OF CUSTODY
+// ─────────────────────────────────────────────────────────────────
+
+model LabSample {
+  id              String     @id @default(uuid())
+  sampleId        String     @unique
+  barcodeId       String     @unique
+  qrCode          String?
+  laboratoryId    String
+  laboratory      Laboratory @relation(fields: [laboratoryId], references: [id])
+
+  organizationName String
+  reportId        String?
+  sampleType      String
+  collectionDate  DateTime
+  receivedDate    DateTime?
+  analystAssigned String?
+  priority        String     @default("NORMAL")
+  status          String     @default("RECEIVED")
+
+  testParameters  Json
+  testResults     Json?
+  qaValidated     Boolean    @default(false)
+  qaValidatedBy   String?
+  qaValidatedAt   DateTime?
+
+  custody         Json?      // chain-of-custody log
+  turnaroundDays  Int?
+  completedAt     DateTime?
+  notes           String?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([laboratoryId])
+  @@index([status])
+  @@map("lab_samples")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  CERTIFICATES
+// ─────────────────────────────────────────────────────────────────
+
+model Certificate {
+  id                  String          @id @default(uuid())
+  certificateNumber   String          @unique
+  qrCode              String?
+  qrCodeKey           String?
+
+  organizationId      String
+  organization        Organization    @relation(fields: [organizationId], references: [id])
+  reportId            String?         @unique
+  report              Report?         @relation(fields: [reportId], references: [id])
+
+  issuedById          String
+  issuedBy            User            @relation("CertIssuedBy", fields: [issuedById], references: [id])
+  issuingLabId        String?
+  issuingLaboratory   Laboratory?     @relation("LabCerts", fields: [issuingLabId], references: [id])
+  issuingAuthId       String?
+  issuingAuthority    RegulatoryAuthority? @relation("RegCerts", fields: [issuingAuthId], references: [id])
+
+  certificateType     CertificateType @default(ENVIRONMENTAL_COMPLIANCE)
+  title               String
+  description         String?
+  issuedDate          DateTime        @default(now())
+  expiryDate          DateTime
+  validFrom           DateTime        @default(now())
+  validUntil          DateTime        @default(now())
+  standards           String[]
+  scope               String?
+
+  complianceScore     Decimal?        @db.Decimal(5, 2)
+  esgScore            Decimal?        @db.Decimal(5, 2)
+  carbonScore         Decimal?        @db.Decimal(5, 2)
+
+  documentKey         String?
+  pdfKey              String?
+  qrCodeUrl           String?
+  verificationUrl     String?
+  digitalSignature    String?
+  verificationHash    String          @unique
+
+  status              String          @default("ACTIVE")
+  isRevoked           Boolean         @default(false)
+  revokedAt           DateTime?
+  revokedReason       String?
+
+  isPublic            Boolean         @default(true)
+  verificationCount   Int             @default(0)
+  lastVerifiedAt      DateTime?
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([organizationId])
+  @@index([certificateType])
+  @@index([verificationHash])
+  @@map("certificates")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  COMPLIANCE NOTICES
+// ─────────────────────────────────────────────────────────────────
+
+model ComplianceNotice {
+  id                  String              @id @default(uuid())
+  noticeNumber        String              @unique
+  authorityId         String
+  authority           RegulatoryAuthority @relation(fields: [authorityId], references: [id])
+
+  organizationId      String
+  organizationName    String
+  reportId            String?
+
+  noticeType          String
+  title               String
+  description         String?
+  violations          Json?
+  penaltyAmount       Decimal?            @db.Decimal(15, 2)
+  penalty             String?
+
+  status              String              @default("ISSUED")
+  issuedDate          DateTime            @default(now())
+  responseDeadline    DateTime
+  responseReceived    Boolean             @default(false)
+  responseDate        DateTime?
+  response            String?
+  resolvedAt          DateTime?
+
+  documentKey         String?
+  acknowledgementKey  String?
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([authorityId])
+  @@index([organizationId])
+  @@map("compliance_notices")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  INSPECTIONS
+// ─────────────────────────────────────────────────────────────────
+
+model Inspection {
+  id              String              @id @default(uuid())
+  inspectionNumber String             @unique
+  authorityId     String
+  authority       RegulatoryAuthority @relation(fields: [authorityId], references: [id])
+
+  organizationId  String
+  organizationName String?
+  inspectorName   String?
+  inspectorId     String?
+
+  scheduledDate   DateTime
+  conductedDate   DateTime?
+  status          String              @default("SCHEDULED")
+  inspectionType  String
+
+  checklist       Json?
+  findings        Json?
+  score           Decimal?            @db.Decimal(5, 2)
+  remarks         String?
+  followUpRequired Boolean            @default(false)
+  followUpDate    DateTime?
+
+  reportKey       String?
+  photos          String[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([authorityId])
+  @@index([organizationId])
+  @@map("inspections")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  WORKFLOW HISTORY
+// ─────────────────────────────────────────────────────────────────
+
+model WorkflowHistory {
+  id              String        @id @default(uuid())
+  reportId        String
+  report          Report        @relation(fields: [reportId], references: [id])
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+  performedById   String
+  performedBy     User          @relation(fields: [performedById], references: [id])
+
+  stage           WorkflowStage
+  fromStatus      ReportStatus
+  toStatus        ReportStatus
+  action          String
+  comments        String?
+  attachments     String[]
+  metadata        Json?
+
+  performedAt     DateTime      @default(now())
+
+  @@index([reportId])
+  @@index([organizationId])
+  @@map("workflow_history")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────
+
+model Notification {
+  id              String             @id @default(uuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  organizationId  String?
+  organization    Organization?      @relation(fields: [organizationId], references: [id])
+  laboratoryId    String?
+  laboratory      Laboratory?        @relation(fields: [laboratoryId], references: [id])
+  authorityId     String?
+  authority       RegulatoryAuthority? @relation(fields: [authorityId], references: [id])
+  reportId        String?
+  report          Report?            @relation(fields: [reportId], references: [id])
+
+  type            NotificationType   @default(IN_APP)
+  status          NotificationStatus @default(PENDING)
+  title           String
+  message         String
+  data            Json?
+  actionUrl       String?
+  link            String?
+  entityType      String?
+  entityId        String?
+
+  priority        String             @default("NORMAL")
+  isRead          Boolean            @default(false)
+  readAt          DateTime?
+  sentAt          DateTime?
+  failedReason    String?
+  retryCount      Int                @default(0)
+
+  externalId      String?
+  templateId      String?
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  AI CONVERSATIONS (EcoBot)
+// ─────────────────────────────────────────────────────────────────
+
+model AIConversation {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  organizationId  String?
+  title           String?
+  sessionId       String    @default("")
+  context         String?
+  tokensUsed      Int       @default(0)
+  model           String    @default("gpt-3.5-turbo")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  messages        AIMessage[]
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("ai_conversations")
+}
+
+model AIMessage {
+  id              String    @id @default(uuid())
+  conversationId  String
+  conversation    AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role            String    // USER | ASSISTANT | SYSTEM
+  content         String
+  tokensUsed      Int?
+  model           String?
+  createdAt       DateTime  @default(now())
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+model AIRecommendation {
+  id              String    @id @default(uuid())
+  organizationId  String
+  reportId        String?
+  monitoringId    String?
+  type            String
+  priority        String
+  title           String
+  description     String
+  potentialImpact String?
+  estimatedSaving Decimal?  @db.Decimal(15, 2)
+  carbonReduction Decimal?  @db.Decimal(15, 4)
+  isImplemented   Boolean   @default(false)
+  implementedAt   DateTime?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+
+  @@index([organizationId])
+  @@map("ai_recommendations")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  SUBSCRIPTIONS & BILLING
+// ─────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                  String             @id @default(uuid())
+  organizationId      String?            @unique
+  organization        Organization?      @relation(fields: [organizationId], references: [id])
+  laboratoryId        String?            @unique
+  laboratory          Laboratory?        @relation(fields: [laboratoryId], references: [id])
+
+  plan                SubscriptionPlan   @default(BASIC)
+  status              SubscriptionStatus @default(TRIAL)
+  startDate           DateTime
+  endDate             DateTime
+  trialEndsAt         DateTime?
+  cancelledAt         DateTime?
+  cancelledReason     String?
+
+  // Pricing
+  amount              Decimal            @db.Decimal(10, 2) @default(0)
+  monthlyAmount       Decimal            @db.Decimal(10, 2) @default(0)
+  annualAmount        Decimal?           @db.Decimal(10, 2)
+  currency            String             @default("INR")
+  gstPercentage       Decimal            @db.Decimal(5, 2) @default(18.00)
+
+  // Limits per plan
+  maxUsers            Int                @default(5)
+  maxMonitoringStations Int              @default(3)
+  maxReportsPerMonth  Int                @default(10)
+  maxStorageGb        Int                @default(5)
+
+  // Payment
+  razorpaySubscriptionId String?
+  razorpayCustomerId  String?
+  nextBillingDate     DateTime?
+  lastBilledAt        DateTime?
+
+  autoRenew           Boolean            @default(true)
+  features            Json?
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  transactions        PaymentTransaction[]
+
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model PaymentTransaction {
+  id                  String         @id @default(uuid())
+  subscriptionId      String?
+  subscription        Subscription?  @relation(fields: [subscriptionId], references: [id])
+  organizationId      String?
+  organization        Organization?  @relation(fields: [organizationId], references: [id])
+  laboratoryId        String?
+  laboratory          Laboratory?    @relation(fields: [laboratoryId], references: [id])
+
+  userId              String?
+  user                User?          @relation(fields: [userId], references: [id])
+
+  // Plan info
+  plan                String?
+  orderId             String?        // alias for razorpayOrderId — used by billing controller
+  paymentId           String?        // alias for razorpayPaymentId — used by billing controller
+
+  amount              Decimal        @db.Decimal(10, 2)
+  gstAmount           Decimal        @db.Decimal(10, 2) @default(0)
+  totalAmount         Decimal        @db.Decimal(10, 2) @default(0)
+  currency            String         @default("INR")
+  status              PaymentStatus  @default(PENDING)
+
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  razorpaySignature   String?
+
+  invoiceNumber       String?        @unique
+  invoiceKey          String?
+  description         String?
+
+  paidAt              DateTime?
+  failedAt            DateTime?
+  failedReason        String?
+  refundedAt          DateTime?
+  refundAmount        Decimal?       @db.Decimal(10, 2)
+  refundReason        String?
+
+  metadata            Json?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  AUDIT LOGS
+// ─────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id              String      @id @default(uuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  action          AuditAction
+  entityType      String
+  entityId        String?
+  description     String
+  oldData         Json?
+  newData         Json?
+  ipAddress       String?
+  userAgent       String?
+  requestId       String?
+  duration        Int?
+  statusCode      Int?
+  errorMessage    String?
+  metadata        Json?
+  performedAt     DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([performedAt])
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  SYSTEM CONFIG
+// ─────────────────────────────────────────────────────────────────
+
+model SystemConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  isPublic    Boolean  @default(false)
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@map("system_configs")
+}
+
+model IndustryConfig {
+  id                  String   @id @default(uuid())
+  industryType        String   @unique
+  monitoringTypes     String[]
+  mandatoryParams     Json
+  cpcbLimits          Json
+  reportingFrequency  String
+  certificationTypes  String[]
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("industry_configs")
+}
+
+model NotificationTemplate {
+  id          String   @id @default(uuid())
+  templateId  String   @unique
+  type        String
+  channel     NotificationType
+  subject     String?
+  body        String
+  variables   String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notification_templates")
+}
+
+// ═════════════════════════════════════════════════════════════════
+//  ESG MODULE — DATABASE SCHEMA
+//  Phase 1: Data Collection Tables for all 13 ESG Sections
+//  Standards: GRI 2021 · BRSR · TCFD · SASB · UNGC · MCA CSR
+// ═════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────
+//  ESG ENUMS
+// ─────────────────────────────────────────────────────────────────
+
+enum EsgSectionStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+}
+
+enum EsgSection {
+  PROFILE
+  ENERGY
+  WATER
+  EMISSIONS
+  WASTE
+  BIODIVERSITY
+  EMPLOYEES
+  SAFETY
+  GOVERNANCE
+  CSR
+}
+
+enum EsgReportFormat {
+  GRI_2021
+  BRSR
+  TCFD
+  SASB
+  UNGC
+  INTEGRATED
+  CUSTOM
+}
+
+enum EsgScoreRating {
+  A_PLUS
+  A
+  B_PLUS
+  B
+  C_PLUS
+  C
+  D
+}
+
+enum EsgScoreTrend {
+  IMPROVING
+  STABLE
+  DECLINING
+}
+
+enum EsgHistoryStatus {
+  GENERATED
+  SHARED
+  DOWNLOADED
+  ARCHIVED
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  1. ESG ORGANIZATION PROFILE
+//  GRI 2-1, 2-2, 2-3, 2-6 | BRSR Section A
+// ─────────────────────────────────────────────────────────────────
+
+model EsgProfile {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String           // e.g. "FY 2024-25"
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // Reporting Scope & Boundary
+  siteName              String?
+  facilityLocation      String?
+  operationalBoundary   String?          // "Operational Control" | "Financial Control" | "Equity Share"
+  reportingScope        String?          // "All Operations" | "Single Site" | "Multi-Site"
+  reportingStandards    String[]         // ["GRI 2021", "BRSR", "TCFD", "SASB", "UNGC"]
+  materialTopics        String[]         // Material topics identified in assessment
+
+  // Leadership & Sustainability Narrative
+  ceoName               String?
+  ceoTitle              String?
+  ceoMessage            String?          @db.Text
+  sustainHeadName       String?
+  sustainHeadTitle      String?
+  sustainabilityTheme   String?
+  vision                String?          @db.Text
+  mission               String?          @db.Text
+
+  // Business Context
+  revenueCurr           Decimal?         @db.Decimal(18, 2)  // Current year ₹
+  revenuePrev           Decimal?         @db.Decimal(18, 2)  // Previous year ₹
+  revenueUnit           String?          @default("INR")
+  totalEmployeesCurr    Int?
+  totalEmployeesPrev    Int?
+  countriesPresent      Int?
+  facilitiesCount       Int?
+
+  // External Assurance
+  assuranceProvider     String?
+  assuranceLevel        String?          // "Limited" | "Reasonable" | "None"
+  assuranceStandard     String?          // "ISAE 3000" | "AA1000AS"
+  assuranceYear         String?
+
+  // ESG Contact
+  esgContactName        String?
+  esgContactEmail       String?
+  esgContactPhone       String?
+
+  // Stakeholder Engagement
+  stakeholderEngaged    String[]         // ["Investors","Employees","Community","Regulators","Suppliers"]
+  engagementMethods     String[]         // ["Surveys","Town Halls","Focus Groups","AGM"]
+  grievanceMechanism    Boolean?
+
+  notes                 String?          @db.Text
+  submittedById         String?          // User.id — no FK constraint, app-level ref
+  verifiedById          String?          // User.id — no FK constraint, app-level ref
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_profiles")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  2. ESG ENERGY
+//  GRI 302 | BRSR Principle 6 | SASB EM | TCFD Metrics
+// ─────────────────────────────────────────────────────────────────
+
+model EsgEnergy {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Non-Renewable Energy Consumed (Current Year)
+  gridElecKwh           Decimal?         @db.Decimal(18, 2)   // Purchased grid electricity
+  dieselLitres          Decimal?         @db.Decimal(18, 2)   // Diesel / HSD
+  furnaceOilLitres      Decimal?         @db.Decimal(18, 2)
+  lpgKg                 Decimal?         @db.Decimal(18, 2)
+  natGasM3              Decimal?         @db.Decimal(18, 2)
+  coalTonne             Decimal?         @db.Decimal(18, 2)
+  petCokeTonne          Decimal?         @db.Decimal(18, 2)
+  otherFuelGj           Decimal?         @db.Decimal(18, 2)   // Any other fuel in GJ
+  purchasedSteamGj      Decimal?         @db.Decimal(18, 2)   // Purchased steam / heat / cooling
+  nonRenewableTotalGj   Decimal?         @db.Decimal(18, 4)   // Computed: total non-renewable GJ
+
+  // ── Renewable Energy Consumed (Current Year)
+  solarKwh              Decimal?         @db.Decimal(18, 2)
+  windKwh               Decimal?         @db.Decimal(18, 2)
+  biomassGj             Decimal?         @db.Decimal(18, 2)
+  biogasM3              Decimal?         @db.Decimal(18, 2)
+  hydroKwh              Decimal?         @db.Decimal(18, 2)
+  greenH2Kg             Decimal?         @db.Decimal(18, 2)
+  otherRenewableGj      Decimal?         @db.Decimal(18, 2)
+  renewableTotalGj      Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Energy Sold / Exported (Current Year)
+  energySoldGj          Decimal?         @db.Decimal(18, 4)
+
+  // ── Aggregates (Current Year)
+  totalEnergyConsumedGj Decimal?         @db.Decimal(18, 4)   // Computed: non-renewable + renewable - sold
+  renewablePct          Decimal?         @db.Decimal(6, 2)    // Computed
+
+  // ── Previous Year (for YoY trend)
+  gridElecKwhPrev       Decimal?         @db.Decimal(18, 2)
+  dieselLitresPrev      Decimal?         @db.Decimal(18, 2)
+  solarKwhPrev          Decimal?         @db.Decimal(18, 2)
+  windKwhPrev           Decimal?         @db.Decimal(18, 2)
+  totalEnergyGjPrev     Decimal?         @db.Decimal(18, 4)
+  renewablePctPrev      Decimal?         @db.Decimal(6, 2)
+
+  // ── Intensity
+  energyIntensityUnit   String?          // "GJ / ₹ Mn Revenue" | "GJ / MT Product"
+  intensityDenomCurr    Decimal?         @db.Decimal(18, 4)
+  intensityDenomPrev    Decimal?         @db.Decimal(18, 4)
+  energyIntensityCurr   Decimal?         @db.Decimal(18, 6)   // Computed
+  energyIntensityPrev   Decimal?         @db.Decimal(18, 6)   // Computed
+  yoyIntensityChangePct Decimal?         @db.Decimal(6, 2)    // Computed
+
+  // ── Targets & Commitments
+  reductionTargetPct    Decimal?         @db.Decimal(6, 2)
+  renewableTargetPct    Decimal?         @db.Decimal(6, 2)
+  targetYear            String?
+  reTargetMw            Decimal?         @db.Decimal(10, 2)   // RE capacity target
+
+  // ── Narrative
+  energyInitiatives     String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_energy")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  3. ESG WATER
+//  GRI 303 | BRSR Principle 6 | CPCB ZLD Guidelines
+// ─────────────────────────────────────────────────────────────────
+
+model EsgWater {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Water Withdrawal by Source (KL, Current Year)
+  groundwaterKl         Decimal?         @db.Decimal(18, 2)
+  surfaceWaterKl        Decimal?         @db.Decimal(18, 2)
+  municipalKl           Decimal?         @db.Decimal(18, 2)
+  rainwaterKl           Decimal?         @db.Decimal(18, 2)
+  thirdPartyKl          Decimal?         @db.Decimal(18, 2)   // Purchased / tanker
+  seawaterKl            Decimal?         @db.Decimal(18, 2)
+  otherWithdrawalKl     Decimal?         @db.Decimal(18, 2)
+  totalWithdrawalKl     Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Water Discharge by Destination (KL, Current Year)
+  dischargeSewerKl      Decimal?         @db.Decimal(18, 2)
+  dischargeSurfaceKl    Decimal?         @db.Decimal(18, 2)
+  dischargeGroundKl     Decimal?         @db.Decimal(18, 2)
+  dischargeSTPKl        Decimal?         @db.Decimal(18, 2)   // To STP / ETP
+  dischargeOtherKl      Decimal?         @db.Decimal(18, 2)
+  totalDischargeKl      Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Water Consumed (Withdrawal - Discharge)
+  totalConsumedKl       Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Recycled & Reused
+  recycledKl            Decimal?         @db.Decimal(18, 2)
+  treatedReusedKl       Decimal?         @db.Decimal(18, 2)
+  zetpKl                Decimal?         @db.Decimal(18, 2)   // Zero Liquid Discharge treated
+  recyclingRatePct      Decimal?         @db.Decimal(6, 2)    // Computed
+  zldAchieved           Boolean?
+
+  // ── Previous Year
+  totalWithdrawalKlPrev Decimal?         @db.Decimal(18, 4)
+  totalConsumedKlPrev   Decimal?         @db.Decimal(18, 4)
+  recyclingRatePctPrev  Decimal?         @db.Decimal(6, 2)
+
+  // ── Water Stress Context
+  waterStressArea       Boolean?
+  waterStressSource     String?          // "WRI Aqueduct" | "CGWB"
+  stressLevel           String?          // "High" | "Extremely High" | "Medium-High"
+
+  // ── Intensity
+  waterIntensityUnit    String?          // "KL / ₹ Mn Revenue" | "KL / MT Product"
+  intensityDenomCurr    Decimal?         @db.Decimal(18, 4)
+  intensityDenomPrev    Decimal?         @db.Decimal(18, 4)
+  waterIntensityCurr    Decimal?         @db.Decimal(18, 6)   // Computed
+  waterIntensityPrev    Decimal?         @db.Decimal(18, 6)   // Computed
+  yoyIntensityChangePct Decimal?         @db.Decimal(6, 2)
+
+  // ── Targets
+  reductionTargetPct    Decimal?         @db.Decimal(6, 2)
+  recyclingTargetPct    Decimal?         @db.Decimal(6, 2)
+  targetYear            String?
+
+  waterInitiatives      String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_water")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  4. ESG EMISSIONS (GHG)
+//  GRI 305 | GHG Protocol (Scope 1/2/3) | IPCC AR6 Factors
+//  BRSR Principle 6 | TCFD Metrics & Targets
+// ─────────────────────────────────────────────────────────────────
+
+model EsgEmissions {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Scope 1 — Direct Emissions (tCO₂e, Current Year)
+  sc1StationaryKgco2e   Decimal?         @db.Decimal(18, 4)   // Stationary combustion
+  sc1MobileKgco2e       Decimal?         @db.Decimal(18, 4)   // Mobile combustion (fleet)
+  sc1FugitiveKgco2e     Decimal?         @db.Decimal(18, 4)   // Fugitive (refrigerants, leaks)
+  sc1ProcessKgco2e      Decimal?         @db.Decimal(18, 4)   // Industrial process emissions
+  sc1BiogenicKgco2e     Decimal?         @db.Decimal(18, 4)   // Biogenic (reported separately)
+  scope1TotalTco2e      Decimal?         @db.Decimal(18, 4)   // Computed: sum of above
+
+  // ── Scope 2 — Indirect Energy (tCO₂e, Current Year)
+  sc2MarketBasedTco2e   Decimal?         @db.Decimal(18, 4)   // Using supplier emission factors
+  sc2LocationBasedTco2e Decimal?         @db.Decimal(18, 4)   // Using grid average factors
+  sc2SteamTco2e         Decimal?         @db.Decimal(18, 4)   // Purchased steam / cooling
+  scope2TotalTco2e      Decimal?         @db.Decimal(18, 4)   // Computed (market-based preferred)
+
+  // ── Scope 3 — Value Chain (tCO₂e, Current Year) — GHG Protocol 15 categories
+  sc3Cat1PurchasedGoods Decimal?         @db.Decimal(18, 4)
+  sc3Cat2CapGoods       Decimal?         @db.Decimal(18, 4)
+  sc3Cat3FuelEnergy     Decimal?         @db.Decimal(18, 4)
+  sc3Cat4UpstreamTransp Decimal?         @db.Decimal(18, 4)
+  sc3Cat5WasteOps       Decimal?         @db.Decimal(18, 4)
+  sc3Cat6BusinessTravel Decimal?         @db.Decimal(18, 4)
+  sc3Cat7EmpCommute     Decimal?         @db.Decimal(18, 4)
+  sc3Cat8UpstreamAssets Decimal?         @db.Decimal(18, 4)
+  sc3Cat9DownstreamTrp  Decimal?         @db.Decimal(18, 4)
+  sc3Cat10ProcProducts  Decimal?         @db.Decimal(18, 4)
+  sc3Cat11UseSoldProd   Decimal?         @db.Decimal(18, 4)
+  sc3Cat12EOLSoldProd   Decimal?         @db.Decimal(18, 4)
+  sc3Cat13DownAssets    Decimal?         @db.Decimal(18, 4)
+  sc3Cat14Franchises    Decimal?         @db.Decimal(18, 4)
+  sc3Cat15Investments   Decimal?         @db.Decimal(18, 4)
+  scope3TotalTco2e      Decimal?         @db.Decimal(18, 4)   // Computed: sum Cat 1-15
+
+  // ── GHG Breakdown by Gas (tonne, Current Year)
+  co2Tonne              Decimal?         @db.Decimal(18, 4)
+  ch4Tonne              Decimal?         @db.Decimal(18, 4)
+  n2oTonne              Decimal?         @db.Decimal(18, 4)
+  hfcsTonne             Decimal?         @db.Decimal(18, 4)
+  pfcsTonne             Decimal?         @db.Decimal(18, 4)
+  sf6Tonne              Decimal?         @db.Decimal(18, 4)
+  nf3Tonne              Decimal?         @db.Decimal(18, 4)
+
+  // ── Combined Scopes (Computed)
+  scope12TotalTco2e     Decimal?         @db.Decimal(18, 4)
+  scope123TotalTco2e    Decimal?         @db.Decimal(18, 4)
+
+  // ── Previous Year
+  scope1TotalPrev       Decimal?         @db.Decimal(18, 4)
+  scope2TotalPrev       Decimal?         @db.Decimal(18, 4)
+  scope3TotalPrev       Decimal?         @db.Decimal(18, 4)
+  scope123TotalPrev     Decimal?         @db.Decimal(18, 4)
+
+  // ── Emission Factors Used
+  scope1FactorSource    String?          // "IPCC AR6" | "MoEFCC" | "GHG Protocol"
+  scope2GridFactor      Decimal?         @db.Decimal(10, 6)   // kgCO₂e / kWh
+  scope2GridSource      String?          // "CEA 2024" | "IEA 2024"
+
+  // ── Intensity
+  emissionsIntensityUnit String?         // "tCO₂e / ₹ Mn Revenue" | "tCO₂e / MT Product"
+  intensityDenomCurr    Decimal?         @db.Decimal(18, 4)
+  intensityDenomPrev    Decimal?         @db.Decimal(18, 4)
+  emissionsIntensityCurr Decimal?        @db.Decimal(18, 6)   // Computed
+  emissionsIntensityPrev Decimal?        @db.Decimal(18, 6)   // Computed
+  yoyIntensityChangePct Decimal?         @db.Decimal(6, 2)
+
+  // ── Base Year
+  baseYear              String?
+  baseYearScope1        Decimal?         @db.Decimal(18, 4)
+  baseYearScope2        Decimal?         @db.Decimal(18, 4)
+  baseYearScope3        Decimal?         @db.Decimal(18, 4)
+  baseYearTotal         Decimal?         @db.Decimal(18, 4)
+  baseYearReason        String?          // Reason for recalculation if any
+
+  // ── Carbon Offsets
+  offsetsTco2e          Decimal?         @db.Decimal(18, 4)
+  offsetProvider        String?
+  offsetStandard        String?          // "VCS" | "GS" | "CDM"
+  netEmissionsTco2e     Decimal?         @db.Decimal(18, 4)   // Computed: total - offsets
+
+  // ── Targets & Commitments
+  scienceBasedTarget    Boolean?
+  sbtiCommitted         Boolean?
+  sbtiStatus            String?          // "Committed" | "Validated" | "Achieved"
+  nzeTarget             Boolean?
+  nzeTargetYear         String?
+  reductionTargetPct    Decimal?         @db.Decimal(6, 2)
+  reductionTargetYear   String?          // vs base year
+  carbonNeutralTarget   Boolean?
+  carbonNeutralYear     String?
+
+  // ── Third-Party Verification
+  thirdPartyVerified    Boolean?
+  verifierOrg           String?
+  verificationStandard  String?          // "ISO 14064-3" | "ISAE 3410"
+  verificationYear      String?
+
+  ghgInitiatives        String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_emissions")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  5. ESG WASTE
+//  GRI 306 | BRSR Principle 2 | CPCB HWM Rules 2016
+// ─────────────────────────────────────────────────────────────────
+
+model EsgWaste {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Hazardous Waste Generated (tonne, Current Year)
+  hazIncinTonne         Decimal?         @db.Decimal(18, 4)   // Incineration
+  hazLandfillTonne      Decimal?         @db.Decimal(18, 4)   // Landfill / secured landfill
+  hazRecycleTonne       Decimal?         @db.Decimal(18, 4)   // Recycling / recovery
+  hazCoProcessTonne     Decimal?         @db.Decimal(18, 4)   // Co-processing in cement kilns
+  hazStoredOnSiteTonne  Decimal?         @db.Decimal(18, 4)   // Stored on-site pending disposal
+  hazOtherTonne         Decimal?         @db.Decimal(18, 4)
+  hazWasteTotalTonne    Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Non-Hazardous Waste Generated (tonne, Current Year)
+  nhRecycleTonne        Decimal?         @db.Decimal(18, 4)
+  nhCompostTonne        Decimal?         @db.Decimal(18, 4)
+  nhLandfillTonne       Decimal?         @db.Decimal(18, 4)
+  nhIncinTonne          Decimal?         @db.Decimal(18, 4)
+  nhReuseOrRepairTonne  Decimal?         @db.Decimal(18, 4)
+  nhOtherTonne          Decimal?         @db.Decimal(18, 4)
+  nhWasteTotalTonne     Decimal?         @db.Decimal(18, 4)   // Computed
+
+  // ── Specific Waste Streams (Current Year)
+  ewasteKg              Decimal?         @db.Decimal(18, 4)
+  plasticTonne          Decimal?         @db.Decimal(18, 4)
+  plasticRecycledTonne  Decimal?         @db.Decimal(18, 4)
+  biomedicalTonne       Decimal?         @db.Decimal(18, 4)
+  constructionWasteTonne Decimal?        @db.Decimal(18, 4)
+  foodWasteTonne        Decimal?         @db.Decimal(18, 4)
+
+  // ── Aggregates & Rates (Computed)
+  totalWasteTonne       Decimal?         @db.Decimal(18, 4)
+  diversionFromLandfill Decimal?         @db.Decimal(18, 4)   // recycled + composted + co-proc
+  diversionRatePct      Decimal?         @db.Decimal(6, 2)
+  recyclingRatePct      Decimal?         @db.Decimal(6, 2)
+
+  // ── Previous Year
+  hazWasteTotalPrev     Decimal?         @db.Decimal(18, 4)
+  nhWasteTotalPrev      Decimal?         @db.Decimal(18, 4)
+  totalWastePrev        Decimal?         @db.Decimal(18, 4)
+  recyclingRatePrev     Decimal?         @db.Decimal(6, 2)
+
+  // ── Intensity
+  wasteIntensityUnit    String?          // "kg / ₹ Mn Revenue" | "kg / MT Product"
+  intensityDenomCurr    Decimal?         @db.Decimal(18, 4)
+  intensityDenomPrev    Decimal?         @db.Decimal(18, 4)
+  wasteIntensityCurr    Decimal?         @db.Decimal(18, 6)
+  wasteIntensityPrev    Decimal?         @db.Decimal(18, 6)
+  yoyIntensityChangePct Decimal?         @db.Decimal(6, 2)
+
+  // ── Regulatory Compliance
+  pchwmAuthorized       Boolean?         // Authorized under HWM Rules
+  pchwmAuthorizationNo  String?
+  pchwmExpiry           DateTime?
+  authorizedTransporters String[]
+  authorizedDisposalSites String[]
+
+  // ── Targets
+  reductionTargetPct    Decimal?         @db.Decimal(6, 2)
+  diversionTargetPct    Decimal?         @db.Decimal(6, 2)
+  targetYear            String?
+  zeroWasteToLandfill   Boolean?
+
+  wasteInitiatives      String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_waste")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  6. ESG BIODIVERSITY
+//  GRI 304 | BRSR Principle 6 | MoEFCC EIA Guidelines
+// ─────────────────────────────────────────────────────────────────
+
+model EsgBiodiversity {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Site Proximity to Sensitive Areas
+  nearProtectedArea     Boolean?
+  protectedAreaName     String?
+  distanceToProtAreaKm  Decimal?         @db.Decimal(8, 2)
+  protectedAreaType     String?          // "National Park" | "Wildlife Sanctuary" | "Biosphere Reserve" | "Ramsar Site" | "CRZ"
+  ecoSensitiveZone      Boolean?
+  eszDistanceKm         Decimal?         @db.Decimal(8, 2)
+  criticalHabitat       Boolean?
+
+  // ── Land Use
+  facilityAreaHa        Decimal?         @db.Decimal(10, 4)
+  greenCoverHa          Decimal?         @db.Decimal(10, 4)
+  greenCoverPct         Decimal?         @db.Decimal(6, 2)   // Computed
+  totalTreesPlanted     Int?
+  treeSurvivalRatePct   Decimal?         @db.Decimal(6, 2)
+  landRehabilitatedHa   Decimal?         @db.Decimal(10, 4)
+  newLandClearedHa      Decimal?         @db.Decimal(10, 4)
+
+  // ── Species & Habitat
+  keySpeciesPresent     String[]         // Common names
+  threatenedSpeciesCount Int?
+  endemicSpeciesCount   Int?
+  invasiveSpeciesRisk   Boolean?
+  invasiveSpeciesNotes  String?          @db.Text
+  migratoryCorridor     Boolean?
+  waterBodyAffected     Boolean?
+  waterBodyDetails      String?
+
+  // ── Biodiversity Impact Assessment
+  eiaCompleted          Boolean?
+  lastEiaYear           String?
+  biodivAssessmentDone  Boolean?
+  lastBiodivAssessDate  DateTime?
+  assessedBy            String?
+  majorImpactsIdentified String?        @db.Text
+
+  // ── Conservation Initiatives
+  afforestationPlanActive Boolean?
+  mitigationHierarchyApplied Boolean?
+  biodivOffsets         Boolean?
+  offsetSiteDetails     String?
+  conservationPartnerships String[]
+
+  // ── Previous Year (simple totals)
+  totalTreesPrev        Int?
+  greenCoverHaPrev      Decimal?         @db.Decimal(10, 4)
+
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_biodiversity")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  7. ESG EMPLOYEES (Social)
+//  GRI 401, 405, 406 | BRSR Principle 3, 5 | Equal Remuneration
+// ─────────────────────────────────────────────────────────────────
+
+model EsgEmployees {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Workforce Composition (Current Year, as at period end)
+  permanentMale         Int?
+  permanentFemale       Int?
+  permanentOther        Int?
+  contractMale          Int?
+  contractFemale        Int?
+  contractOther         Int?
+  casualWorkers         Int?
+  apprentices           Int?
+  interns               Int?
+  seniorMgmtMale        Int?
+  seniorMgmtFemale      Int?
+  midMgmtMale           Int?
+  midMgmtFemale         Int?
+  juniorMale            Int?
+  juniorFemale          Int?
+  totalPermanent        Int?             // Computed
+  totalContract         Int?             // Computed
+  totalWorkforce        Int?             // Computed
+
+  // ── Previous Year Headcount
+  permanentMalePrev     Int?
+  permanentFemalePrev   Int?
+  contractMalePrev      Int?
+  contractFemalePrev    Int?
+  totalWorkforcePrev    Int?
+
+  // ── Diversity Metrics (Current Year)
+  womenLeadershipPct    Decimal?         @db.Decimal(6, 2)    // % women in senior management
+  womenBoardPct         Decimal?         @db.Decimal(6, 2)    // % women on board
+  pwdCount              Int?             // Persons with Disabilities
+  lgbtqCount            Int?
+  scStCount             Int?             // SC/ST employees
+  obcCount              Int?             // OBC employees
+  nationalityDiversity  String[]         // Countries represented
+
+  // ── Previous Year Diversity
+  womenLeadershipPrev   Decimal?         @db.Decimal(6, 2)
+  womenBoardPrev        Decimal?         @db.Decimal(6, 2)
+
+  // ── New Hires & Attrition (Current Year)
+  newHiresMale          Int?
+  newHiresFemale        Int?
+  newHiresTotal         Int?             // Computed
+  newHireRatePct        Decimal?         @db.Decimal(6, 2)
+  attritionMale         Int?
+  attritionFemale       Int?
+  attritionTotal        Int?             // Computed
+  voluntaryAttritionPct Decimal?         @db.Decimal(6, 2)
+  involuntaryAttritionPct Decimal?       @db.Decimal(6, 2)
+
+  // ── Compensation & Benefits (Current Year)
+  medianSalaryMale      Decimal?         @db.Decimal(15, 2)
+  medianSalaryFemale    Decimal?         @db.Decimal(15, 2)
+  ceoToMedianPayRatio   Decimal?         @db.Decimal(8, 2)   // GRI 2-21
+  livingWageAdherence   Boolean?
+  equalPayAuditDone     Boolean?
+  pfCoveredPct          Decimal?         @db.Decimal(6, 2)
+  esicCoveredPct        Decimal?         @db.Decimal(6, 2)
+  gratuityProvisionInr  Decimal?         @db.Decimal(18, 2)
+  healthInsurancePct    Decimal?         @db.Decimal(6, 2)
+
+  // ── Training & Development (Current Year)
+  avgTrainingHrsMale    Decimal?         @db.Decimal(8, 2)
+  avgTrainingHrsFemale  Decimal?         @db.Decimal(8, 2)
+  avgTrainingHrsTotal   Decimal?         @db.Decimal(8, 2)
+  trainingInvestmentInr Decimal?         @db.Decimal(18, 2)
+  skillUpgradedCount    Int?
+  performanceReviewPct  Decimal?         @db.Decimal(6, 2)
+
+  // ── Parental Leave
+  parentalLeaveEligibleMale   Int?
+  parentalLeaveEligibleFemale Int?
+  parentalLeaveTakenMale      Int?
+  parentalLeaveTakenFemale    Int?
+  parentalReturnRatePct       Decimal?   @db.Decimal(6, 2)
+
+  // ── Labor Relations
+  unionizedPct          Decimal?         @db.Decimal(6, 2)
+  collectiveBargaining  Boolean?
+  rightToOrganize       Boolean?
+  noticePeriodDays      Int?
+
+  // ── Human Rights
+  humanRightsDueDiligence Boolean?
+  childLaborRisk        Boolean?
+  forcedLaborRisk       Boolean?
+  supplyChainHRAssessed Boolean?
+
+  hrInitiatives         String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_employees")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  8. ESG HEALTH & SAFETY
+//  GRI 403 | BRSR Principle 3 | ISO 45001 | Factories Act 1948
+// ─────────────────────────────────────────────────────────────────
+
+model EsgSafety {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Man-Hours Worked (Current Year)
+  manHoursEmp           Decimal?         @db.Decimal(18, 2)
+  manHoursCon           Decimal?         @db.Decimal(18, 2)   // Contractors
+  manHoursTotal         Decimal?         @db.Decimal(18, 2)   // Computed
+
+  // ── Employee Incidents (Current Year)
+  fatalitiesEmp         Int?
+  ltiEmp                Int?             // Lost Time Injuries
+  recordableIncidentsEmp Int?            // TRIR numerator
+  medicalCasesEmp       Int?
+  restrictedWorkCasesEmp Int?
+  nearMissEmp           Int?
+  firstAidCasesEmp      Int?
+  lostDaysEmp           Int?
+
+  // ── Contractor Incidents (Current Year)
+  fatalitiesCon         Int?
+  ltiCon                Int?
+  recordableIncidentsCon Int?
+  medicalCasesCon       Int?
+  nearMissCon           Int?
+  lostDaysCon           Int?
+
+  // ── Computed Rates (per 200,000 person-hours worked)
+  ltirEmp               Decimal?         @db.Decimal(10, 4)   // LTIR = (LTI × 200,000) / man-hrs
+  trirEmp               Decimal?         @db.Decimal(10, 4)   // TRIR = (recordable × 200,000) / man-hrs
+  sirEmp                Decimal?         @db.Decimal(10, 4)   // Severity Index
+  ltirCon               Decimal?         @db.Decimal(10, 4)
+  trirCon               Decimal?         @db.Decimal(10, 4)
+  ltirTotal             Decimal?         @db.Decimal(10, 4)
+  trirTotal             Decimal?         @db.Decimal(10, 4)
+
+  // ── Previous Year
+  fatalitiesEmpPrev     Int?
+  ltiEmpPrev            Int?
+  ltirEmpPrev           Decimal?         @db.Decimal(10, 4)
+  trirEmpPrev           Decimal?         @db.Decimal(10, 4)
+  manHoursEmpPrev       Decimal?         @db.Decimal(18, 2)
+  fatalitiesConPrev     Int?
+  ltiConPrev            Int?
+
+  // ── Occupational Diseases
+  occDiseasesCasesEmp   Int?
+  occDiseasesTypeEmp    String[]         // Disease names
+  occDiseasesCasesCon   Int?
+
+  // ── Safety Management System
+  iso45001Certified     Boolean?
+  ohsmsImplemented      Boolean?
+  safetyPolicyPublished Boolean?
+  safetyCommitteeActive Boolean?
+  workerSafetyRightKnown Boolean?
+
+  // ── Training & Awareness
+  safetyTrainingHrsAvg  Decimal?         @db.Decimal(8, 2)
+  safetyTrainingCovPct  Decimal?         @db.Decimal(6, 2)
+  firstAidTrainedPct    Decimal?         @db.Decimal(6, 2)
+  emergencyDrillsCount  Int?
+  ppeCompliancePct      Decimal?         @db.Decimal(6, 2)
+
+  // ── Audits & Inspections
+  internalSafetyAudits  Int?
+  externalSafetyAudits  Int?
+  regulatoryInspections Int?
+  ncRaisedCount         Int?             // Non-conformances
+  ncClosedCount         Int?
+
+  // ── Wellness Programs
+  mentalHealthProgram   Boolean?
+  ergonomicsAssessed    Boolean?
+  ergoImprovementsDone  Boolean?
+  employeeAssistanceProg Boolean?
+
+  safetyInitiatives     String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_safety")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  9. ESG GOVERNANCE
+//  GRI 2-9 to 2-20 | BRSR Section C | SEBI LODR | Companies Act
+// ─────────────────────────────────────────────────────────────────
+
+model EsgGovernance {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── Board Composition
+  boardSizeTotal        Int?
+  boardIndependentCount Int?
+  boardIndependentPct   Decimal?         @db.Decimal(6, 2)    // Computed
+  boardWomenCount       Int?
+  boardWomenPct         Decimal?         @db.Decimal(6, 2)    // Computed
+  boardDiverseCount     Int?             // Diverse (ethnicity / nationality)
+  boardAvgAgencyYrs     Decimal?         @db.Decimal(5, 1)    // Average tenure
+  executiveDirectors    Int?
+  nonExecDirectors      Int?
+  nomineeDirectors      Int?
+  boardMeetingsCount    Int?
+  avgBoardAttendancePct Decimal?         @db.Decimal(6, 2)
+
+  // ── Board Committees (Boolean — present or absent)
+  auditCommittee        Boolean?
+  riskCommittee         Boolean?
+  esgSustainCommittee   Boolean?
+  nominationRemunCommittee Boolean?
+  csrCommittee          Boolean?
+  stakeholderRelCommittee Boolean?
+
+  // ── ESG Oversight
+  boardEsgOversight     Boolean?         // Board has direct ESG oversight
+  esgInBoardCharter     Boolean?
+  esgKpisLinkedPay      Boolean?         // ESG KPIs linked to executive compensation
+  esgBoardMeetingsCount Int?
+  chiefSustainabilityOfficer Boolean?
+
+  // ── Ethics & Anti-Corruption (GRI 205, 206)
+  codeOfConductPublished Boolean?
+  whistleblowerPolicy   Boolean?
+  supplierCodeOfConduct Boolean?
+  antiCorruptionPolicy  Boolean?
+  antiCompetitionPolicy Boolean?
+  conflictOfInterestPolicy Boolean?
+  giftAndEntertainPolicy Boolean?
+  ethicsTrainingCovPct  Decimal?         @db.Decimal(6, 2)
+  ethicsComplaintsReceived Int?
+  ethicsComplaintsResolved Int?
+  corruptionIncidents   Int?
+  legalProceedingsCount Int?             // Significant legal / regulatory cases
+
+  // ── Risk Management
+  erpFrameworkImplemented Boolean?
+  climateRiskAssessed   Boolean?
+  tcfdAligned           Boolean?
+  physicalClimateRisksId String[]        // Identified risk names
+  transitionClimateRisksId String[]
+  cyberRiskAssessed     Boolean?
+  supplyChainRiskAssessed Boolean?
+
+  // ── Transparency & Reporting
+  annualReportPublished Boolean?
+  griIndex              Boolean?
+  brsrFiled             Boolean?
+  tcfdReport            Boolean?
+  sasbDisclosure        Boolean?
+  ungcCop               Boolean?         // Communication on Progress
+  integratedReporting   Boolean?
+
+  // ── Data Privacy & Cybersecurity (GRI 418)
+  dataPrivacyPolicyPublished Boolean?
+  gdprComplianceApplicable Boolean?
+  gdprCompliant         Boolean?
+  itSecurityAuditDone   Boolean?
+  dataBreachIncidents   Int?
+  dataBreachNotifications Int?
+
+  govInitiatives        String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_governance")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  10. ESG CSR (Community & Corporate Social Responsibility)
+//  GRI 413 | Companies Act 2013 Schedule VII | MCA CSR Rules 2021
+// ─────────────────────────────────────────────────────────────────
+
+model EsgCsr {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+  status                EsgSectionStatus @default(DRAFT)
+
+  // ── CSR Financials (₹, Current Year)
+  netProfitAvgInr       Decimal?         @db.Decimal(18, 2)   // Avg net profit for CSR calc
+  csrObligationInr      Decimal?         @db.Decimal(18, 2)   // 2% of avg net profit
+  csrSpentInr           Decimal?         @db.Decimal(18, 2)
+  csrOngoingProjectInr  Decimal?         @db.Decimal(18, 2)
+  csrUnspentTransferInr Decimal?         @db.Decimal(18, 2)   // Transferred to fund / account
+  csrCarriedForwardInr  Decimal?         @db.Decimal(18, 2)
+  csrSpendingPct        Decimal?         @db.Decimal(6, 2)    // Computed: spent / obligation
+
+  // ── Previous Year
+  csrObligationPrev     Decimal?         @db.Decimal(18, 2)
+  csrSpentPrev          Decimal?         @db.Decimal(18, 2)
+
+  // ── CSR Focus Areas (Boolean — active area or not)
+  focusEducation        Boolean?
+  focusHealthcare       Boolean?
+  focusWomenEmpowerment Boolean?
+  focusRuralDev         Boolean?
+  focusEnvSustainability Boolean?
+  focusDrinkingWater    Boolean?
+  focusLivelihoods      Boolean?
+  focusDisasterRelief   Boolean?
+  focusArtsCulture      Boolean?
+  focusSportsNutrition  Boolean?
+  focusPmFunds          Boolean?
+  focusOther            Boolean?
+  focusOtherDescription String?
+
+  // ── Beneficiaries (Current Year)
+  directBeneficiaries   Int?
+  indirectBeneficiaries Int?
+  beneficiaryWomen      Int?
+  beneficiaryChildren   Int?
+  beneficiaryPwd        Int?
+
+  // ── Geographic Reach (Current Year)
+  villagesCovered       Int?
+  districtsCovered      Int?
+  statesCovered         Int?
+  aspirationalDistricts Int?             // Niti Aayog aspirational districts
+
+  // ── Implementation Mode
+  directImplementation  Boolean?
+  throughOwnFoundation  Boolean?
+  throughTrust          Boolean?
+  throughNgo            Boolean?
+  throughSection8       Boolean?         // Section 8 company
+  implementationPartners String[]        // Partner names
+
+  // ── Impact Assessment
+  impactAssessmentDone  Boolean?
+  impactAssessmentBy    String?
+  impactAssessmentYear  String?
+  impactAssessmentKey   String?          // S3 key to report
+
+  // ── SDG Alignment
+  sdgsAddressed         String[]         // ["SDG 1", "SDG 3", "SDG 4", "SDG 13"]
+
+  keyInitiatives        String?          @db.Text
+  notes                 String?          @db.Text
+  submittedById         String?
+  verifiedById          String?
+  verifiedAt            DateTime?
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_csr")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  11. ESG EVIDENCE UPLOADS
+//  Linked to any ESG section; stored on AWS S3
+// ─────────────────────────────────────────────────────────────────
+
+model EsgEvidence {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  section               EsgSection       // Which ESG section this belongs to
+  fieldReference        String?          // Specific field or metric it evidences
+
+  // ── File Metadata
+  fileName              String           // Sanitized filename stored in S3
+  originalName          String           // Original user-uploaded filename
+  mimeType              String           // "application/pdf" | "image/jpeg" | etc.
+  sizeBytes             Int
+
+  // ── S3 Location
+  s3Key                 String           // Full S3 object key
+  s3Bucket              String
+  presignedUrlExpiry    DateTime?        // When current pre-signed URL expires
+
+  // ── Metadata
+  description           String?
+  tags                  String[]         // Auto + manual tags for search
+  uploadedById          String?          // User.id (no FK constraint)
+
+  // ── Verification
+  isVerified            Boolean          @default(false)
+  verifiedById          String?          // User.id (no FK constraint)
+  verifiedAt            DateTime?
+
+  // ── Quality (for PDF report auto-selection)
+  qualityScore          Int?             // 1-100: resolution / relevance score
+  isCoverImage          Boolean          @default(false)
+  displayOrder          Int?             // Order within section evidence gallery
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, reportingYear])
+  @@index([organizationId, section])
+  @@index([reportingYear])
+  @@map("esg_evidence")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  12. ESG SCORE
+//  Computed scores per reporting period (updated by analytics engine)
+// ─────────────────────────────────────────────────────────────────
+
+model EsgScore {
+  id                    String           @id @default(uuid())
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+
+  // ── Pillar Scores (0-100)
+  envScore              Decimal?         @db.Decimal(6, 2)
+  socialScore           Decimal?         @db.Decimal(6, 2)
+  govScore              Decimal?         @db.Decimal(6, 2)
+  overallScore          Decimal?         @db.Decimal(6, 2)
+  esgRating             EsgScoreRating?
+
+  // ── Environment Sub-Scores
+  energyScore           Decimal?         @db.Decimal(6, 2)
+  waterScore            Decimal?         @db.Decimal(6, 2)
+  emissionsScore        Decimal?         @db.Decimal(6, 2)
+  wasteScore            Decimal?         @db.Decimal(6, 2)
+  biodiversityScore     Decimal?         @db.Decimal(6, 2)
+
+  // ── Social Sub-Scores
+  employeeScore         Decimal?         @db.Decimal(6, 2)
+  safetyScore           Decimal?         @db.Decimal(6, 2)
+  csrScore              Decimal?         @db.Decimal(6, 2)
+
+  // ── Governance Sub-Scores
+  boardScore            Decimal?         @db.Decimal(6, 2)
+  ethicsScore           Decimal?         @db.Decimal(6, 2)
+  transparencyScore     Decimal?         @db.Decimal(6, 2)
+
+  // ── Completeness (% of required fields filled per pillar)
+  envCompletenessP      Decimal?         @db.Decimal(6, 2)
+  socialCompletenessP   Decimal?         @db.Decimal(6, 2)
+  govCompletenessP      Decimal?         @db.Decimal(6, 2)
+  overallCompletenessP  Decimal?         @db.Decimal(6, 2)
+
+  // ── Industry Benchmark
+  industryAvgEnv        Decimal?         @db.Decimal(6, 2)
+  industryAvgSocial     Decimal?         @db.Decimal(6, 2)
+  industryAvgGov        Decimal?         @db.Decimal(6, 2)
+  industryAvgOverall    Decimal?         @db.Decimal(6, 2)
+  industryRank          Int?             // Percentile rank (1-100)
+
+  // ── Year-on-Year Trend
+  prevYearEnv           Decimal?         @db.Decimal(6, 2)
+  prevYearSocial        Decimal?         @db.Decimal(6, 2)
+  prevYearGov           Decimal?         @db.Decimal(6, 2)
+  prevYearOverall       Decimal?         @db.Decimal(6, 2)
+  envTrend              EsgScoreTrend?
+  socialTrend           EsgScoreTrend?
+  govTrend              EsgScoreTrend?
+  overallTrend          EsgScoreTrend?
+  yoyOverallChangePts   Decimal?         @db.Decimal(6, 2)   // Positive = improved
+
+  // ── Materiality
+  materialTopics        String[]         // Top material topics for this period
+  reportingGaps         String[]         // Missing / insufficient data areas
+
+  // ── Computation Metadata
+  computedAt            DateTime?
+  computedByModel       String?          // "rules-engine-v2" | "openai-gpt4o"
+  scoringVersion        String?          // Schema version used for scoring
+
+  notes                 String?          @db.Text
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@unique([organizationId, reportingYear])
+  @@index([organizationId])
+  @@index([reportingYear])
+  @@map("esg_scores")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  13. ESG REPORT HISTORY
+//  Each generated ESG report stored with scores snapshot
+// ─────────────────────────────────────────────────────────────────
+
+model EsgReportHistory {
+  id                    String            @id @default(uuid())
+  organizationId        String
+  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingYear         String
+  periodFrom            DateTime
+  periodTo              DateTime
+
+  // ── Report Identity
+  reportFormat          EsgReportFormat   @default(CUSTOM)
+  reportTitle           String?
+  templateVersion       String?           // e.g. "v3.1"
+  reportLanguage        String            @default("en")
+
+  // ── Generation
+  generatedById         String?           // User.id (no FK constraint)
+  generatedAt           DateTime          @default(now())
+  generationDurationMs  Int?
+
+  // ── Storage
+  s3Key                 String?
+  s3Bucket              String?
+  fileName              String?
+  fileSizeBytes         Int?
+  mimeType              String            @default("application/pdf")
+
+  // ── Scores Snapshot at Time of Generation
+  envScoreSnapshot      Decimal?          @db.Decimal(6, 2)
+  socialScoreSnapshot   Decimal?          @db.Decimal(6, 2)
+  govScoreSnapshot      Decimal?          @db.Decimal(6, 2)
+  overallScoreSnapshot  Decimal?          @db.Decimal(6, 2)
+  esgRatingSnapshot     EsgScoreRating?
+
+  // ── Data Sections Included
+  sectionsIncluded      EsgSection[]      // Sections included in this report
+
+  // ── Lifecycle
+  status                EsgHistoryStatus  @default(GENERATED)
+  sharedWith            String[]          // Email addresses shared with
+  sharedAt              DateTime?
+  accessCount           Int               @default(0)
+  lastAccessedAt        DateTime?
+  archivedAt            DateTime?
+
+  notes                 String?           @db.Text
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, reportingYear])
+  @@index([reportingYear])
+  @@index([generatedAt])
+  @@map("esg_report_history")
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  EIA MODULE — Environmental Impact Assessment
+//  Phase 6 | 10 modules linked to EiaProject per organization
+// ═══════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────────────────────────────
+
+enum EiaProjectStatus {
+  DRAFT
+  ACTIVE
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CLOSED
+}
+
+enum EiaProjectType {
+  GREENFIELD
+  BROWNFIELD
+  EXPANSION
+  MODERNISATION
+  DECOMMISSIONING
+}
+
+enum EiaProjectCategory {
+  CATEGORY_A
+  CATEGORY_B1
+  CATEGORY_B2
+}
+
+enum EiaMonitoringFrequency {
+  DAILY
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  ANNUALLY
+}
+
+enum EiaImpactSignificance {
+  NEGLIGIBLE
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+}
+
+enum EiaImpactType {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
+enum EiaImpactDuration {
+  SHORT_TERM
+  MEDIUM_TERM
+  LONG_TERM
+  PERMANENT
+}
+
+enum EiaMitigationStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  NOT_APPLICABLE
+  DEFERRED
+}
+
+enum EiaReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum EiaReportType {
+  BASELINE
+  MONITORING
+  COMPLIANCE
+  HALF_YEARLY
+  ANNUAL
+  FINAL_EIA
+  CLOSURE
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  1. EIA PROJECT  (root entity — all modules link here)
+// ─────────────────────────────────────────────────────────────────
+
+model EiaProject {
+  id                   String             @id @default(cuid())
+  organizationId       String
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  projectName          String
+  projectNumber        String?
+  projectType          EiaProjectType
+  projectCategory      EiaProjectCategory
+  status               EiaProjectStatus   @default(DRAFT)
+  description          String?            @db.Text
+  industry             String?
+  activity             String?            // Activity / product as per Schedule of EIA Notification
+
+  // Location
+  location             String?
+  state                String?
+  district             String?
+  village              String?
+  latitude             Decimal?           @db.Decimal(10, 8)
+  longitude            Decimal?           @db.Decimal(11, 8)
+  areaHectares         Decimal?           @db.Decimal(12, 4)
+
+  // Financial
+  investmentCrores     Decimal?           @db.Decimal(15, 2)
+  proposedCapacity     String?
+
+  // Proponent & Consultant
+  projectProponent     String?
+  consultantName       String?
+  consultantAccNo      String?            // NABET / QCI accreditation number
+
+  // Regulatory clearances
+  eiaNotificationYear  String?
+  tocGranted           Boolean            @default(false)
+  tocDate              DateTime?
+  ecGranted            Boolean            @default(false)
+  ecDate               DateTime?
+  ecNumber             String?
+  ecIssuingAuthority   String?            // MoEFCC | SEIAA | DEIAA
+  cteGranted           Boolean            @default(false)  // Consent to Establish
+  cteNumber            String?
+  ctoGranted           Boolean            @default(false)  // Consent to Operate
+  ctoNumber            String?
+
+  // Public Hearing
+  publicHearingDone    Boolean            @default(false)
+  publicHearingDate    DateTime?
+  publicHearingVenue   String?
+
+  // Study Period
+  studyPeriodFrom      DateTime?
+  studyPeriodTo        DateTime?
+  reportingYear        String
+
+  createdBy            String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Module relations
+  airMonitoring        EiaAirMonitoring[]
+  waterMonitoring      EiaWaterMonitoring[]
+  soilMonitoring       EiaSoilMonitoring[]
+  noiseMonitoring      EiaNoiseMonitoring[]
+  impactAssessments    EiaImpactAssessment[]
+  mitigationMeasures   EiaMitigationMeasure[]
+  monitoringProgram    EiaMonitoringProgram?
+  evidence             EiaEvidence[]
+  reportHistory        EiaReportHistory[]
+
+  @@index([organizationId])
+  @@index([organizationId, reportingYear])
+  @@index([status])
+  @@index([reportingYear])
+  @@map("eia_projects")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  2. AIR MONITORING
+//  Per project — multiple stations, multiple dates
+// ─────────────────────────────────────────────────────────────────
+
+model EiaAirMonitoring {
+  id               String    @id @default(cuid())
+  projectId        String
+  project          EiaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Station & date
+  stationName      String
+  stationCode      String?
+  monitoringDate   DateTime
+  monitoringPeriod String?   // "24-hour", "8-hour", "4-hour"
+  location         String?
+  phase            String?   // "PRE_CONSTRUCTION", "CONSTRUCTION", "OPERATION", "POST_OPERATION"
+
+  // Criteria pollutants (μg/m³)
+  pm25             Decimal?  @db.Decimal(8, 3)
+  pm10             Decimal?  @db.Decimal(8, 3)
+  rspm             Decimal?  @db.Decimal(8, 3)   // Respirable SPM
+  spm              Decimal?  @db.Decimal(8, 3)   // Total SPM
+  so2              Decimal?  @db.Decimal(8, 3)
+  nox              Decimal?  @db.Decimal(8, 3)
+  no2              Decimal?  @db.Decimal(8, 3)
+  co               Decimal?  @db.Decimal(8, 3)   // mg/m³
+  o3               Decimal?  @db.Decimal(8, 3)
+  nh3              Decimal?  @db.Decimal(8, 3)
+  pb               Decimal?  @db.Decimal(8, 3)   // Lead
+  benzene          Decimal?  @db.Decimal(8, 3)
+  benzoPyrene      Decimal?  @db.Decimal(8, 3)   // Benzo(a)pyrene
+  hc               Decimal?  @db.Decimal(8, 3)   // Hydrocarbons
+
+  // Meteorological
+  windSpeed        Decimal?  @db.Decimal(6, 2)   // m/s
+  windDirection    String?
+  temperature      Decimal?  @db.Decimal(5, 2)   // °C
+  relHumidity      Decimal?  @db.Decimal(5, 2)   // %
+  stability        String?   // Pasquill class A–F
+
+  // CPCB standards (μg/m³)
+  pm25Std          Decimal?  @db.Decimal(8, 3)
+  pm10Std          Decimal?  @db.Decimal(8, 3)
+  so2Std           Decimal?  @db.Decimal(8, 3)
+  noxStd           Decimal?  @db.Decimal(8, 3)
+
+  // Exceedance flags
+  pm25Exceedance   Boolean   @default(false)
+  pm10Exceedance   Boolean   @default(false)
+  so2Exceedance    Boolean   @default(false)
+  noxExceedance    Boolean   @default(false)
+  anyExceedance    Boolean   @default(false)
+
+  labName          String?
+  labAccreditation String?
+  remarks          String?   @db.Text
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, monitoringDate])
+  @@index([anyExceedance])
+  @@map("eia_air_monitoring")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  3. WATER MONITORING
+// ─────────────────────────────────────────────────────────────────
+
+model EiaWaterMonitoring {
+  id               String    @id @default(cuid())
+  projectId        String
+  project          EiaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Source
+  sourceType       String    // "SURFACE_WATER" | "GROUNDWATER" | "EFFLUENT" | "DRINKING_WATER" | "RAINWATER"
+  sourceName       String
+  monitoringDate   DateTime
+  location         String?
+  depth            Decimal?  @db.Decimal(6, 2)   // metres (groundwater)
+  phase            String?
+
+  // Physical parameters
+  pH               Decimal?  @db.Decimal(5, 2)
+  temperature      Decimal?  @db.Decimal(5, 2)   // °C
+  turbidity        Decimal?  @db.Decimal(8, 2)   // NTU
+  tds              Decimal?  @db.Decimal(8, 2)   // mg/L
+  tss              Decimal?  @db.Decimal(8, 2)   // mg/L
+  conductivity     Decimal?  @db.Decimal(8, 2)   // μS/cm
+  dissolvedO2      Decimal?  @db.Decimal(6, 2)   // mg/L
+  colour           String?
+
+  // Chemical parameters (mg/L)
+  bod              Decimal?  @db.Decimal(8, 2)
+  cod              Decimal?  @db.Decimal(8, 2)
+  hardness         Decimal?  @db.Decimal(8, 2)
+  alkalinity       Decimal?  @db.Decimal(8, 2)
+  chlorides        Decimal?  @db.Decimal(8, 2)
+  sulfates         Decimal?  @db.Decimal(8, 2)
+  nitrates         Decimal?  @db.Decimal(8, 2)
+  nitrites         Decimal?  @db.Decimal(8, 2)
+  phosphates       Decimal?  @db.Decimal(8, 2)
+  fluorides        Decimal?  @db.Decimal(8, 2)
+  silica           Decimal?  @db.Decimal(8, 2)
+
+  // Heavy metals (mg/L)
+  arsenic          Decimal?  @db.Decimal(8, 4)
+  cadmium          Decimal?  @db.Decimal(8, 4)
+  chromium         Decimal?  @db.Decimal(8, 4)
+  copper           Decimal?  @db.Decimal(8, 4)
+  iron             Decimal?  @db.Decimal(8, 4)
+  lead             Decimal?  @db.Decimal(8, 4)
+  manganese        Decimal?  @db.Decimal(8, 4)
+  mercury          Decimal?  @db.Decimal(8, 4)
+  nickel           Decimal?  @db.Decimal(8, 4)
+  zinc             Decimal?  @db.Decimal(8, 4)
+
+  // Biological
+  coliformTotal    Decimal?  @db.Decimal(10, 0)  // MPN/100mL
+  coliformFecal    Decimal?  @db.Decimal(10, 0)
+
+  // Exceedance
+  exceedanceFlag   Boolean   @default(false)
+  exceedanceParams String?   // comma-separated params that exceeded limits
+
+  labName          String?
+  labAccreditation String?
+  remarks          String?   @db.Text
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, monitoringDate])
+  @@index([sourceType])
+  @@map("eia_water_monitoring")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  4. SOIL MONITORING
+// ─────────────────────────────────────────────────────────────────
+
+model EiaSoilMonitoring {
+  id               String    @id @default(cuid())
+  projectId        String
+  project          EiaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  sampleId         String?
+  sampleLocation   String
+  monitoringDate   DateTime
+  depth            String?   // "0-15cm", "15-30cm", "30-60cm"
+  soilType         String?   // "CLAY", "SANDY", "LOAMY", "SILT"
+  landUse          String?
+  phase            String?
+
+  // Physical properties
+  pH               Decimal?  @db.Decimal(5, 2)
+  electricalCond   Decimal?  @db.Decimal(8, 3)  // dS/m
+  organicCarbon    Decimal?  @db.Decimal(7, 3)  // %
+  organicMatter    Decimal?  @db.Decimal(7, 3)  // %
+  bulkDensity      Decimal?  @db.Decimal(6, 3)  // g/cm³
+  moisture         Decimal?  @db.Decimal(6, 2)  // %
+  texture          String?
+  waterHolding     Decimal?  @db.Decimal(6, 2)  // %
+
+  // Nutrients (kg/ha or mg/kg)
+  nitrogen         Decimal?  @db.Decimal(8, 2)
+  phosphorus       Decimal?  @db.Decimal(8, 2)
+  potassium        Decimal?  @db.Decimal(8, 2)
+  sulfur           Decimal?  @db.Decimal(8, 2)
+
+  // Heavy metals (mg/kg dry weight)
+  arsenic          Decimal?  @db.Decimal(8, 3)
+  cadmium          Decimal?  @db.Decimal(8, 3)
+  chromium         Decimal?  @db.Decimal(8, 3)
+  copper           Decimal?  @db.Decimal(8, 3)
+  iron             Decimal?  @db.Decimal(8, 3)
+  lead             Decimal?  @db.Decimal(8, 3)
+  manganese        Decimal?  @db.Decimal(8, 3)
+  nickel           Decimal?  @db.Decimal(8, 3)
+  zinc             Decimal?  @db.Decimal(8, 3)
+  mercury          Decimal?  @db.Decimal(8, 3)
+
+  exceedanceFlag   Boolean   @default(false)
+  exceedanceParams String?
+
+  labName          String?
+  labAccreditation String?
+  remarks          String?   @db.Text
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, monitoringDate])
+  @@map("eia_soil_monitoring")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  5. NOISE MONITORING
+// ─────────────────────────────────────────────────────────────────
+
+model EiaNoiseMonitoring {
+  id               String    @id @default(cuid())
+  projectId        String
+  project          EiaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  locationName     String
+  locationType     String?   // "RESIDENTIAL" | "COMMERCIAL" | "INDUSTRIAL" | "SILENCE_ZONE"
+  monitoringDate   DateTime
+  phase            String?
+
+  // Measurements dB(A)
+  dayAvgDb         Decimal?  @db.Decimal(5, 2)  // 6 AM – 10 PM
+  nightAvgDb       Decimal?  @db.Decimal(5, 2)  // 10 PM – 6 AM
+  dayMinDb         Decimal?  @db.Decimal(5, 2)
+  dayMaxDb         Decimal?  @db.Decimal(5, 2)
+  nightMinDb       Decimal?  @db.Decimal(5, 2)
+  nightMaxDb       Decimal?  @db.Decimal(5, 2)
+  leq              Decimal?  @db.Decimal(5, 2)  // Equivalent Continuous Sound Level
+  l10              Decimal?  @db.Decimal(5, 2)  // Exceeded for 10% of time
+  l50              Decimal?  @db.Decimal(5, 2)  // Exceeded for 50% of time
+  l90              Decimal?  @db.Decimal(5, 2)  // Exceeded for 90% of time (background)
+  lmax             Decimal?  @db.Decimal(5, 2)  // Maximum
+  lmin             Decimal?  @db.Decimal(5, 2)  // Minimum
+  ldn              Decimal?  @db.Decimal(5, 2)  // Day-Night Level
+
+  // CPCB / EIA standards (dB(A))
+  daytimeStd       Decimal?  @db.Decimal(5, 2)
+  nighttimeStd     Decimal?  @db.Decimal(5, 2)
+
+  // Exceedance
+  dayExceedance    Boolean   @default(false)
+  nightExceedance  Boolean   @default(false)
+  anyExceedance    Boolean   @default(false)
+
+  // Instrument
+  instrumentModel  String?
+  calibrated       Boolean   @default(false)
+  calibrationDate  DateTime?
+
+  remarks          String?   @db.Text
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, monitoringDate])
+  @@map("eia_noise_monitoring")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  6. IMPACT ASSESSMENT
+// ─────────────────────────────────────────────────────────────────
+
+model EiaImpactAssessment {
+  id               String              @id @default(cuid())
+  projectId        String
+  project          EiaProject          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  component        String              // "AIR" | "WATER" | "SOIL" | "NOISE" | "ECOLOGY" | "SOCIOECONOMIC" | "HERITAGE" | "HYDROLOGY"
+  impactType       EiaImpactType
+  significance     EiaImpactSignificance
+  duration         EiaImpactDuration?
+  description      String              @db.Text
+
+  reversibility    String?             // "REVERSIBLE" | "IRREVERSIBLE"
+  probability      String?             // "LOW" | "MEDIUM" | "HIGH" | "CERTAIN"
+  spatialExtent    String?             // "LOCAL" | "REGIONAL" | "NATIONAL" | "TRANSBOUNDARY"
+  magnitude        Int?                // 1-10 scale
+  sensitivity      Int?                // 1-5 scale (receptor sensitivity)
+  significance_score Int?              // magnitude × sensitivity
+
+  // Phase applicability
+  constructionPhase Boolean            @default(false)
+  operationPhase    Boolean            @default(true)
+  decommPhase       Boolean            @default(false)
+
+  // Cumulative impact
+  cumulativeImpact  Boolean            @default(false)
+  cumulativeDesc    String?            @db.Text
+
+  residualImpact    String?            @db.Text
+  mitigationPossible Boolean          @default(true)
+  remarks           String?            @db.Text
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  mitigations       EiaMitigationMeasure[]
+
+  @@index([projectId])
+  @@index([projectId, component])
+  @@index([significance])
+  @@map("eia_impact_assessments")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  7. MITIGATION MEASURES
+// ─────────────────────────────────────────────────────────────────
+
+model EiaMitigationMeasure {
+  id               String              @id @default(cuid())
+  projectId        String
+  project          EiaProject          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  impactId         String?
+  impact           EiaImpactAssessment? @relation(fields: [impactId], references: [id])
+
+  component        String              // "AIR" | "WATER" | "SOIL" | "NOISE" | "ECOLOGY" | "SOCIOECONOMIC" | "WASTE"
+  measureTitle     String
+  description      String              @db.Text
+  measureType      String?             // "PREVENTIVE" | "CONTROL" | "REMEDIAL" | "COMPENSATORY"
+  implementedBy    String?             // Responsible party
+  timeline         String?             // "Immediate" | "Short-term" | "Long-term"
+  estimatedCost    Decimal?            @db.Decimal(12, 2)  // ₹ Lakhs
+  status           EiaMitigationStatus @default(PLANNED)
+
+  // KPI tracking
+  kpi              String?
+  targetValue      String?
+  actualValue      String?
+  performanceNote  String?             @db.Text
+
+  // Phase
+  constructionPhase Boolean            @default(false)
+  operationPhase    Boolean            @default(true)
+  decommPhase       Boolean            @default(false)
+
+  completionDate   DateTime?
+  verifiedBy       String?
+  verifiedAt       DateTime?
+  remarks          String?             @db.Text
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, status])
+  @@index([component])
+  @@map("eia_mitigation_measures")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  8. MONITORING PROGRAM
+//  One record per project — schedule and lab details
+// ─────────────────────────────────────────────────────────────────
+
+model EiaMonitoringProgram {
+  id               String                 @id @default(cuid())
+  projectId        String                 @unique
+  project          EiaProject             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Air monitoring schedule
+  airFrequency     EiaMonitoringFrequency?
+  airParameters    String?
+  airStationsCount Int?
+  airSamplingMethod String?
+
+  // Water monitoring schedule
+  waterFrequency   EiaMonitoringFrequency?
+  waterParameters  String?
+  waterSourcesCount Int?
+  waterSamplingMethod String?
+
+  // Soil monitoring schedule
+  soilFrequency    EiaMonitoringFrequency?
+  soilParameters   String?
+  soilLocationsCount Int?
+
+  // Noise monitoring schedule
+  noiseFrequency   EiaMonitoringFrequency?
+  noiseParameters  String?
+  noiseLocationsCount Int?
+
+  // Ecology monitoring
+  ecologyMonitoring Boolean            @default(false)
+  ecologyFrequency  EiaMonitoringFrequency?
+  ecologyParameters String?
+
+  // Accredited Lab
+  labName          String?
+  labNablNo        String?
+  labContact       String?
+
+  // EMC / Environmental Monitoring Consultant
+  emcName          String?
+  emcAccreditation String?
+  emcContact       String?
+
+  // Budget & schedule
+  annualBudgetLakhs Decimal?           @db.Decimal(10, 2)
+  nextMonitoringDate DateTime?
+  lastMonitoringDate DateTime?
+
+  // Compliance
+  spcbSubmission   Boolean             @default(false)
+  spcbFrequency    EiaMonitoringFrequency?
+  moefccSubmission Boolean             @default(false)
+
+  remarks          String?             @db.Text
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@map("eia_monitoring_programs")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  9. EVIDENCE MANAGEMENT
+// ─────────────────────────────────────────────────────────────────
+
+model EiaEvidence {
+  id               String    @id @default(cuid())
+  projectId        String
+  project          EiaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  module           String    // "air" | "water" | "soil" | "noise" | "impact" | "mitigation" | "general"
+  documentType     String?   // "LAB_REPORT" | "SITE_PHOTO" | "MAP" | "CERTIFICATE" | "EC_LETTER" | "OTHER"
+  originalName     String
+  fileName         String
+  mimeType         String
+  fileSize         Int?
+  s3Key            String
+  s3Bucket         String
+
+  description      String?
+  tags             String?
+  monitoringDate   DateTime?
+  uploadedBy       String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, module])
+  @@map("eia_evidence")
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  10. REPORT HISTORY
+// ─────────────────────────────────────────────────────────────────
+
+model EiaReportHistory {
+  id               String          @id @default(cuid())
+  projectId        String
+  project          EiaProject      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  reportTitle      String
+  reportType       EiaReportType
+  reportPeriod     String?         // e.g. "Apr 2024 – Mar 2025"
+  reportFormat     String          @default("PDF")
+  status           EiaReportStatus @default(DRAFT)
+
+  generatedBy      String?
+  generatedAt      DateTime        @default(now())
+
+  // Storage
+  s3Key            String?
+  s3Bucket         String?
+  fileName         String?
+  fileSizeBytes    Int?
+
+  // Submission
+  submittedTo      String?         // "MoEFCC" | "SPCB" | "DEIAA" | "SEAC"
+  submissionDate   DateTime?
+  submissionRefNo  String?
+
+  // Approval
+  approvalDate     DateTime?
+  approvalNumber   String?
+  approvedBy       String?
+
+  notes            String?         @db.Text
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, reportType])
+  @@index([status])
+  @@map("eia_report_history")
+}

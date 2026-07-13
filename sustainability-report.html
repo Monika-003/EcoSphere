@@ -1,0 +1,1624 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sustainability Report — EcoSphere</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   PHASE 13 — SUSTAINABILITY REPORT DESIGN ENGINE
+   MSN-inspired palette · A4 · Print-safe SVG
+═══════════════════════════════════════════════ */
+:root{
+  --forest:#0F4C2A; --forest2:#1A6B3C; --forest3:#2D8C54; --forest-pale:#E8F5EE;
+  --teal:#146B5E;   --teal2:#1E8F7E;   --teal-pale:#E6F4F2;
+  --amber:#C67B2F;  --amber2:#E8963F;  --amber-pale:#FDF3E7;
+  --slate:#1E2832;  --charcoal:#374151; --mid:#6B7280;
+  --light:#9CA3AF;  --pale:#E5E7EB;    --ghost:#F3F4F6; --white:#FFFFFF;
+  --c-env:#2D8C54;  --c-soc:#146B5E;   --c-gov:#C67B2F;
+  --f-serif:'Georgia','Times New Roman',serif;
+  --f-sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --page-w:794px; --page-h:1123px; --page-pad:52px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D1D5DB;font-family:var(--f-sans);color:var(--charcoal)}
+
+/* ── Config Panel ── */
+.cfg{background:var(--forest);color:var(--white);padding:14px 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.cfg-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cfg-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.cfg-brand svg{flex-shrink:0}
+.cfg-fields{display:flex;gap:12px;flex:1;flex-wrap:wrap}
+.cfg-fields label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:600;color:#A7F3D0}
+.cfg-fields input{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:var(--white);border-radius:6px;padding:5px 10px;font-size:13px;width:140px;outline:none}
+.cfg-fields input::placeholder{color:rgba(255,255,255,.4)}
+.cfg-fields input:focus{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.18)}
+.cfg-actions{display:flex;gap:8px;align-items:flex-end}
+.btn-gen{background:var(--amber);color:var(--white);border:none;border-radius:7px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-gen:hover{background:var(--amber2)}
+.btn-pdf{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-pdf:hover:not(:disabled){background:rgba(255,255,255,.1)}
+.btn-pdf:disabled{opacity:.35;cursor:default}
+.cfg-status{font-size:12px;color:#A7F3D0;white-space:nowrap}
+
+/* ── Report Shell ── */
+.report-shell{padding:32px;display:flex;flex-direction:column;align-items:center;gap:0}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 0;color:var(--mid)}
+.empty-state p{font-size:15px}
+
+/* ── A4 Page ── */
+.rp{
+  width:var(--page-w);background:var(--white);margin-bottom:4px;
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+  page-break-after:always;break-after:page;
+}
+.rp-body{padding:var(--page-pad);padding-top:24px;padding-bottom:60px;min-height:calc(var(--page-h) - 48px)}
+
+/* ── Page Header (repeating) ── */
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px var(--page-pad) 10px;border-bottom:2px solid var(--forest);margin-bottom:0}
+.ph-logo{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--forest);letter-spacing:.04em;text-transform:uppercase}
+.ph-right{text-align:right;font-size:10px;color:var(--mid)}
+.ph-chapter{font-weight:600;color:var(--charcoal);font-size:11px}
+
+/* ── Page Footer ── */
+.pf{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:10px var(--page-pad);border-top:1px solid var(--pale);font-size:10px;color:var(--light)}
+.pf-line{width:40px;height:3px;border-radius:2px;margin-right:8px;display:inline-block;vertical-align:middle}
+
+/* ── COVER PAGE ── */
+.rp.cover{background:var(--forest);min-height:var(--page-h);display:flex;flex-direction:column}
+.cover-hero{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px var(--page-pad) 40px;position:relative}
+.cover-pattern{position:absolute;top:0;right:0;bottom:0;left:0;opacity:.06;background-image:
+  radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+  radial-gradient(circle at 20% 80%, white 1px, transparent 1px);
+  background-size:40px 40px}
+.cover-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#86EFAC;margin-bottom:32px;display:flex;align-items:center;gap:8px}
+.cover-tag::before{content:'';display:inline-block;width:32px;height:2px;background:#86EFAC}
+.cover-org{font-family:var(--f-serif);font-size:38px;font-weight:700;color:var(--white);line-height:1.1;max-width:480px;position:relative;z-index:1}
+.cover-title{font-size:18px;font-weight:400;color:#A7F3D0;margin-top:12px;letter-spacing:.04em;position:relative;z-index:1}
+.cover-year{font-family:var(--f-serif);font-size:64px;font-weight:700;color:rgba(255,255,255,.12);position:absolute;bottom:40px;right:var(--page-pad);line-height:1}
+.cover-meta{display:flex;gap:24px;margin-top:40px;position:relative;z-index:1}
+.cover-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--white);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600}
+.cover-divider{height:4px;background:linear-gradient(90deg,var(--amber) 0%,var(--amber2) 50%,transparent 100%);margin:0 var(--page-pad)}
+.cover-bottom{padding:24px var(--page-pad) 28px;display:flex;justify-content:space-between;align-items:center}
+.cover-standards{color:#86EFAC;font-size:11px;font-weight:600;letter-spacing:.05em}
+.cover-brand{color:rgba(255,255,255,.5);font-size:11px}
+
+/* ── TABLE OF CONTENTS ── */
+.toc-list{margin-top:24px;display:flex;flex-direction:column;gap:0}
+.toc-item{display:flex;align-items:center;gap:0;padding:10px 0;border-bottom:1px solid var(--ghost)}
+.toc-item:last-child{border-bottom:none}
+.toc-num{font-size:11px;font-weight:700;color:var(--forest3);width:28px;flex-shrink:0}
+.toc-title{flex:1;font-size:13px;color:var(--charcoal);font-weight:500}
+.toc-dots{flex:1;border-bottom:1px dotted var(--pale);margin:0 12px;height:1px;align-self:center}
+.toc-sub{font-size:11px;color:var(--mid);padding-left:28px;margin-top:-4px;margin-bottom:6px}
+.toc-chapter{background:var(--forest-pale);border-left:3px solid var(--forest);padding:8px 12px 8px 16px;margin:6px 0;border-radius:0 4px 4px 0}
+.toc-chapter .toc-title{font-weight:700;color:var(--forest)}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:var(--f-serif);font-size:22px;font-weight:700;color:var(--forest);margin-bottom:4px;line-height:1.2}
+.sec-sub{font-size:12px;color:var(--mid);margin-bottom:20px}
+.sec-rule{height:3px;border-radius:2px;margin-bottom:24px}
+.sec-rule.env{background:linear-gradient(90deg,var(--c-env),var(--forest-pale))}
+.sec-rule.soc{background:linear-gradient(90deg,var(--c-soc),var(--teal-pale))}
+.sec-rule.gov{background:linear-gradient(90deg,var(--c-gov),var(--amber-pale))}
+.sec-rule.all{background:linear-gradient(90deg,var(--forest),var(--teal),var(--amber))}
+
+/* ── CHAPTER OPENER ── */
+.rp.chapter-opener{min-height:var(--page-h);display:flex;flex-direction:column}
+.ch-banner{height:320px;display:flex;flex-direction:column;justify-content:flex-end;padding:40px var(--page-pad);position:relative;overflow:hidden}
+.ch-banner-bg{position:absolute;inset:0}
+.ch-num{font-size:96px;font-weight:900;position:absolute;top:20px;right:var(--page-pad);opacity:.15;font-family:var(--f-serif);color:var(--white);line-height:1}
+.ch-badge{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.2);color:var(--white);display:inline-block;margin-bottom:14px}
+.ch-title{font-family:var(--f-serif);font-size:36px;font-weight:700;color:var(--white);line-height:1.15;max-width:420px;position:relative;z-index:1}
+.ch-subtitle{font-size:14px;color:rgba(255,255,255,.8);margin-top:8px;position:relative;z-index:1}
+.ch-content{flex:1;padding:36px var(--page-pad);display:flex;flex-direction:column;gap:20px}
+.ch-intro{font-size:13px;line-height:1.7;color:var(--charcoal);max-width:600px}
+.ch-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+/* ── KPI CARDS ── */
+.kpi-card{background:var(--ghost);border-radius:10px;padding:18px 16px;position:relative;overflow:hidden}
+.kpi-card.env{background:var(--forest-pale);border-top:3px solid var(--c-env)}
+.kpi-card.soc{background:var(--teal-pale);border-top:3px solid var(--c-soc)}
+.kpi-card.gov{background:var(--amber-pale);border-top:3px solid var(--c-gov)}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:800;line-height:1;color:var(--slate)}
+.kpi-unit{font-size:12px;font-weight:400;color:var(--mid);margin-left:4px}
+.kpi-trend{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:11px}
+.kpi-trend.up{color:#DC2626}
+.kpi-trend.down{color:#16A34A}
+.kpi-trend.neutral{color:var(--mid)}
+.kpi-score-bar{margin-top:10px}
+.kpi-score-label{font-size:10px;color:var(--mid);display:flex;justify-content:space-between;margin-bottom:4px}
+
+/* ── EXECUTIVE SUMMARY ── */
+.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}
+.exec-score-panel{background:var(--forest);border-radius:12px;padding:28px 24px;color:var(--white);display:flex;flex-direction:column;align-items:center;text-align:center}
+.exec-score-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#86EFAC;margin-bottom:12px}
+.exec-score-rating{font-family:var(--f-serif);font-size:52px;font-weight:900;line-height:1;color:var(--white)}
+.exec-score-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+.exec-pillars{margin-top:16px;width:100%;display:flex;flex-direction:column;gap:8px}
+.exec-pillar{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.8)}
+.exec-pillar-name{width:80px;text-align:right}
+.exec-pillar-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.exec-pillar-bar-fill{height:100%;border-radius:3px}
+.exec-pillar-score{width:30px;font-weight:700;color:var(--white)}
+.exec-highlights{display:flex;flex-direction:column;gap:10px}
+.exec-highlight{display:flex;gap:12px;padding:10px 14px;background:var(--ghost);border-radius:8px;border-left:3px solid var(--forest)}
+.exec-highlight.sev-excellent{border-left-color:#16A34A;background:#F0FDF4}
+.exec-highlight.sev-good{border-left-color:#2D8C54;background:#F0FDF4}
+.exec-highlight.sev-moderate{border-left-color:#D97706;background:#FFFBEB}
+.exec-highlight.sev-concern{border-left-color:#DC2626;background:#FEF2F2}
+.exec-highlight.sev-critical{border-left-color:#7F1D1D;background:#FFF1F2}
+.exec-hl-icon{font-size:20px;flex-shrink:0}
+.exec-hl-body{flex:1}
+.exec-hl-title{font-size:12px;font-weight:700;color:var(--charcoal)}
+.exec-hl-text{font-size:11px;color:var(--mid);margin-top:2px;line-height:1.5}
+.ceo-message{display:grid;grid-template-columns:120px 1fr;gap:24px;margin-top:8px}
+.ceo-photo{width:100px;height:120px;background:var(--ghost);border-radius:8px;border:2px solid var(--pale);display:flex;align-items:center;justify-content:center;color:var(--light);font-size:11px;text-align:center}
+.ceo-text{font-size:13px;line-height:1.75;color:var(--charcoal);font-style:italic}
+.ceo-sig{margin-top:12px;font-weight:700;font-size:12px;color:var(--forest)}
+.ceo-sig-title{font-size:11px;color:var(--mid);font-style:normal}
+
+/* ── ESG SCORECARD ── */
+.scorecard-header{display:grid;grid-template-columns:200px 1fr;gap:32px;margin-bottom:28px}
+.scorecard-gauge{display:flex;flex-direction:column;align-items:center;gap:8px}
+.scorecard-gauge-label{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.06em}
+.scorecard-rating-badge{padding:4px 16px;border-radius:20px;font-size:14px;font-weight:800;letter-spacing:.04em}
+.score-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:16px}
+.score-table th{padding:8px 12px;text-align:left;background:var(--ghost);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mid)}
+.score-table td{padding:9px 12px;border-bottom:1px solid var(--ghost);vertical-align:middle}
+.score-table tr:last-child td{border-bottom:none}
+.score-table tr:hover td{background:var(--ghost)}
+.score-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:10px;font-weight:700}
+
+/* ── MATERIALITY MATRIX ── */
+.matrix-wrap{display:flex;gap:24px;margin-top:16px}
+.matrix-legend{display:flex;flex-direction:column;gap:6px;min-width:180px}
+.matrix-legend-item{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--charcoal)}
+.matrix-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.matrix-label{font-size:9px;text-anchor:middle;fill:#374151}
+.matrix-axis-label{font-size:10px;fill:#6B7280}
+
+/* ── RISK MATRIX ── */
+.risk-grid-item{font-size:9px;text-anchor:middle;dominant-baseline:central}
+.risk-item-badge{font-size:9px;padding:2px 6px;border-radius:3px;display:inline-flex;align-items:center;gap:3px;margin:1px}
+
+/* ── INFOGRAPHICS / CHARTS ── */
+.chart-section{margin-top:16px}
+.chart-title{font-size:12px;font-weight:700;color:var(--charcoal);margin-bottom:8px}
+.chart-sub{font-size:10px;color:var(--mid);margin-bottom:12px}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.metric-item{text-align:center;padding:14px 8px;background:var(--ghost);border-radius:8px}
+.metric-num{font-size:22px;font-weight:800;color:var(--slate);line-height:1}
+.metric-unit{font-size:10px;color:var(--mid)}
+.metric-label{font-size:10px;color:var(--mid);margin-top:4px}
+.metric-trend{font-size:10px;margin-top:2px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px}
+
+/* ── NARRATIVE CARD ── */
+.nar-card{padding:14px 16px;border-radius:8px;border-left:3px solid var(--pale);background:var(--ghost);margin-bottom:10px}
+.nar-card.EXCELLENT{border-left-color:#16A34A;background:#F0FDF4}
+.nar-card.GOOD{border-left-color:#2D8C54;background:#F0FDF4}
+.nar-card.MODERATE{border-left-color:#D97706;background:#FFFBEB}
+.nar-card.CONCERN{border-left-color:#DC2626;background:#FEF2F2}
+.nar-card.CRITICAL{border-left-color:#7F1D1D;background:#FFF1F2}
+.nar-sev{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.nar-sev.EXCELLENT,.nar-sev.GOOD{color:#16A34A}
+.nar-sev.MODERATE{color:#D97706}
+.nar-sev.CONCERN,.nar-sev.CRITICAL{color:#DC2626}
+.nar-text{font-size:11.5px;line-height:1.65;color:var(--charcoal);margin-top:4px}
+
+/* ── RECOMMENDATIONS ── */
+.rec-item{display:flex;gap:12px;padding:10px 14px;border-radius:8px;background:var(--ghost);margin-bottom:8px}
+.rec-priority{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:10px;flex-shrink:0;height:fit-content}
+.rec-priority.HIGH{background:#FEE2E2;color:#DC2626}
+.rec-priority.MEDIUM{background:#FEF3C7;color:#D97706}
+.rec-priority.LOW{background:#DCFCE7;color:#16A34A}
+.rec-body{flex:1}
+.rec-area{font-size:10px;font-weight:700;color:var(--forest);text-transform:uppercase;letter-spacing:.06em}
+.rec-action{font-size:12px;color:var(--charcoal);margin-top:2px}
+.rec-meta{font-size:10px;color:var(--mid);margin-top:4px}
+
+/* ── ROADMAP ── */
+.roadmap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.roadmap-horizon{border-radius:10px;padding:16px;border-top:3px solid}
+.roadmap-horizon.immediate{border-top-color:#DC2626;background:#FFF1F2}
+.roadmap-horizon.short{border-top-color:#D97706;background:#FFFBEB}
+.roadmap-horizon.medium{border-top-color:#2D8C54;background:#F0FDF4}
+.roadmap-horizon.long{border-top-color:#146B5E;background:#E6F4F2}
+.roadmap-period{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mid)}
+.roadmap-title{font-size:13px;font-weight:700;color:var(--slate);margin:4px 0 8px}
+.roadmap-actions{display:flex;flex-direction:column;gap:4px}
+.roadmap-action{font-size:11px;color:var(--charcoal);padding-left:12px;position:relative;line-height:1.5}
+.roadmap-action::before{content:'▸';position:absolute;left:0;color:var(--forest3);font-size:10px}
+
+/* ── GALLERY ── */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.gallery-item{border-radius:8px;overflow:hidden;background:var(--ghost);border:1px solid var(--pale)}
+.gallery-img{width:100%;height:120px;object-fit:cover;background:var(--ghost);display:flex;align-items:center;justify-content:center;color:var(--light)}
+.gallery-img-placeholder{width:100%;height:120px;background:linear-gradient(135deg,var(--ghost) 0%,var(--pale) 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;color:var(--light)}
+.gallery-caption{padding:8px 10px}
+.gallery-caption-title{font-size:10px;font-weight:700;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery-caption-meta{font-size:9px;color:var(--mid);margin-top:2px}
+.gallery-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600;background:var(--forest-pale);color:var(--forest)}
+.photo-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photo-grid-hero{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:10px}
+.photo-hero-main{grid-row:1/3}
+.evidence-card{background:var(--ghost);border-radius:10px;padding:14px;border:1px solid var(--pale);margin-bottom:10px;display:grid;grid-template-columns:60px 1fr;gap:14px}
+.evidence-icon{width:48px;height:48px;border-radius:8px;background:var(--forest-pale);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:20px;flex-shrink:0}
+.evidence-info{flex:1;min-width:0}
+.evidence-name{font-size:12px;font-weight:700;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evidence-meta{font-size:10px;color:var(--mid);margin-top:3px}
+.evidence-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.evidence-tag{font-size:9px;padding:1px 7px;border-radius:10px;font-weight:600}
+.evidence-tag.esg{background:var(--forest-pale);color:var(--forest)}
+.evidence-tag.eia{background:var(--teal-pale);color:var(--teal)}
+.evidence-tag.quality{background:var(--amber-pale);color:var(--amber)}
+
+/* ── ASSURANCE ── */
+.assurance-box{border:2px solid var(--forest);border-radius:10px;padding:24px;margin-top:16px}
+.assurance-logo{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.assurance-provider{font-size:16px;font-weight:700;color:var(--forest)}
+.assurance-level-badge{padding:3px 12px;background:var(--forest);color:var(--white);border-radius:12px;font-size:11px;font-weight:700}
+.assurance-text{font-size:12px;line-height:1.7;color:var(--charcoal)}
+
+/* ── BACK COVER ── */
+.rp.back-cover{background:var(--slate);min-height:var(--page-h)}
+.back-cover-content{padding:80px var(--page-pad);display:flex;flex-direction:column;gap:32px;height:100%}
+.back-cover-logo{font-family:var(--f-serif);font-size:28px;font-weight:700;color:var(--white)}
+.back-cover-contact{color:rgba(255,255,255,.6);font-size:13px;line-height:1.8}
+.back-cover-contact strong{color:var(--white)}
+.back-cover-foot{margin-top:auto;font-size:11px;color:rgba(255,255,255,.3)}
+
+/* ── PRINT ── */
+@media print{
+  body{background:transparent}
+  .cfg,.empty-state{display:none!important}
+  .report-shell{padding:0;gap:0;align-items:flex-start}
+  .rp{box-shadow:none;margin-bottom:0}
+  .rp-body{padding:40px 52px 56px}
+}
+@page{size:A4 portrait;margin:0}
+/* Corner decorations */
+.rp::before { content: ''; position: absolute; top: 0; left: 0; width: 80px; height: 80px; background: linear-gradient(135deg, #0d9488 0%, #3b82f6 50%, transparent 70%); border-radius: 0 0 80px 0; opacity: 0.18; pointer-events: none; }
+.rp::after { content: ''; position: absolute; bottom: 0; right: 0; width: 80px; height: 80px; background: linear-gradient(315deg, #7c3aed 0%, #ec4899 50%, transparent 70%); border-radius: 80px 0 0 0; opacity: 0.18; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="cfg" id="cfg">
+  <div class="cfg-inner">
+    <div class="cfg-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#86EFAC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <strong>EcoSphere</strong>&nbsp;·&nbsp;Sustainability Report
+    </div>
+    <div class="cfg-fields">
+      <label>Organisation ID<input id="orgId" type="text" placeholder="e.g. org-001"></label>
+      <label>Year<input id="year" type="number" value="2024" min="2000" max="2100" style="width:90px"></label>
+      <label>EIA Project ID<input id="projectId" type="text" placeholder="optional"></label>
+    </div>
+    <div class="cfg-actions">
+      <button class="btn-gen" onclick="generate()">Generate Report</button>
+      <button class="btn-pdf" id="btnPdf" onclick="showFmtPicker()" disabled>⬇ Download Report</button>
+      <button class="btn-gen" onclick="loadSampleReport()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-left:4px" title="Download a sample report with demo data">📄 Sample Report</button>
+    </div>
+    <span id="cfgStatus" class="cfg-status"></span>
+  </div>
+</div>
+
+<div id="report" class="report-shell">
+  <div class="empty-state">
+    <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+      <rect x="8" y="4" width="40" height="52" rx="4" fill="#E5E7EB"/>
+      <rect x="14" y="16" width="28" height="3" rx="1.5" fill="#9CA3AF"/>
+      <rect x="14" y="24" width="20" height="3" rx="1.5" fill="#9CA3AF"/>
+      <rect x="14" y="32" width="24" height="3" rx="1.5" fill="#9CA3AF"/>
+      <circle cx="48" cy="48" r="14" fill="#0F4C2A"/>
+      <path d="M42 48l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>Enter Organisation ID and click <strong>Generate Report</strong></p>
+  </div>
+</div>
+
+<script>
+'use strict';
+const API = '/api/v1';
+
+/* ═══ SVG HELPERS ═══ */
+function hBar(pct, color, w=220, h=8){
+  const f = Math.max(0,Math.min(100,pct||0));
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" rx="${h/2}" fill="#E5E7EB"/><rect width="${(f/100)*w}" height="${h}" rx="${h/2}" fill="${color}"/></svg>`;
+}
+
+function donut(pct, color, size=110){
+  const r=size*0.36, cx=size/2, cy=size/2, sw=size*0.1;
+  const circ=2*Math.PI*r, fill=(Math.min(100,Math.max(0,pct||0))/100)*circ;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E5E7EB" stroke-width="${sw}"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}"
+      stroke-dasharray="${fill.toFixed(2)} ${circ.toFixed(2)}" stroke-linecap="round"
+      transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="${size*0.2}" font-weight="800" fill="${color}" font-family="Segoe UI,sans-serif">${Math.round(pct||0)}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="${size*0.1}" fill="#9CA3AF" font-family="Segoe UI,sans-serif">/ 100</text>
+  </svg>`;
+}
+
+function vBars(items, h=100, w){
+  if(!items||!items.length) return '';
+  const bw=36, gap=12, padL=8;
+  w = w || (items.length*(bw+gap)+padL*2);
+  const vals=items.map(i=>i.v||0);
+  const max=Math.max(...vals,1);
+  const bars=items.map((it,i)=>{
+    const bh=Math.max(2,((it.v||0)/max)*(h-24));
+    const x=padL+i*(bw+gap);
+    const y=h-20-bh;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" fill="${it.c||'#2D8C54'}"/>
+      <text x="${x+bw/2}" y="${h-6}" text-anchor="middle" font-size="9" fill="#9CA3AF" font-family="Segoe UI,sans-serif">${it.l||''}</text>
+      <text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="9" font-weight="700" fill="${it.c||'#2D8C54'}" font-family="Segoe UI,sans-serif">${it.v||0}</text>`;
+  }).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${bars}</svg>`;
+}
+
+function sparkline(vals, color, w=200, h=40){
+  if(!vals||vals.length<2) return '';
+  const max=Math.max(...vals,1), min=Math.min(...vals,0);
+  const range=max-min||1;
+  const pts=vals.map((v,i)=>{
+    const x=(i/(vals.length-1))*w;
+    const y=h-((v-min)/range)*(h-4)-2;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function matrixSVG(topics){
+  const W=340, H=300, pad=32;
+  const iW=W-pad*2, iH=H-pad*2;
+  const colors=['#0F4C2A','#146B5E','#C67B2F','#2D8C54','#1E8F7E','#E8963F','#374151','#6B7280','#1A6B3C','#1E2832'];
+  const items=(topics||['Climate Change','Water Management','Energy Efficiency','Waste Reduction','Employee Wellbeing','Community Impact','Biodiversity','Supply Chain','Governance','Ethics'])
+    .slice(0,10);
+  const circles=items.map((t,i)=>{
+    const x=pad+(0.15+Math.random()*0.7)*iW;
+    const y=pad+(0.1+Math.random()*0.75)*iH;
+    const r=7+Math.random()*6;
+    return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(0)}" fill="${colors[i]}" opacity="0.85"/>
+      <text x="${x.toFixed(0)}" y="${(y+r+10).toFixed(0)}" text-anchor="middle" font-size="8" fill="#374151" font-family="Segoe UI,sans-serif">${i+1}</text>`;
+  }).join('');
+  const legendItems=items.map((t,i)=>
+    `<text x="0" y="${i*14}" font-size="9" fill="#374151" font-family="Segoe UI,sans-serif">
+      <tspan fill="${colors[i]}" font-weight="700">${i+1}.</tspan> ${t}
+    </text>`).join('');
+  return {circles,legendItems,items,colors};
+}
+
+function riskSVG(risks){
+  const W=280, H=260, pad=28, cellW=(W-pad*2)/5, cellH=(H-pad*2)/5;
+  const riskColors=[
+    ['#DCFCE7','#DCFCE7','#FEF9C3','#FEF9C3','#FEF9C3'],
+    ['#DCFCE7','#FEF9C3','#FEF9C3','#FEE2E2','#FEE2E2'],
+    ['#FEF9C3','#FEF9C3','#FEE2E2','#FEE2E2','#FEE2E2'],
+    ['#FEF9C3','#FEE2E2','#FEE2E2','#FCA5A5','#FCA5A5'],
+    ['#FEE2E2','#FEE2E2','#FCA5A5','#FCA5A5','#EF4444'],
+  ];
+  let cells='';
+  for(let row=0;row<5;row++){
+    for(let col=0;col<5;col++){
+      const x=pad+col*cellW, y=pad+row*cellH;
+      cells+=`<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" fill="${riskColors[row][col]}" stroke="white" stroke-width="1.5"/>`;
+    }
+  }
+  const plotted=(risks||[]).slice(0,8).map((r,i)=>{
+    const prob=Math.min(5,Math.max(1,r.probability||3));
+    const imp=Math.min(5,Math.max(1,r.impact||3));
+    const cx=pad+(imp-1)*cellW+cellW/2;
+    const cy=pad+(5-prob)*cellH+cellH/2;
+    return `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="7" fill="#1E2832" opacity="0.75"/>
+      <text x="${cx.toFixed(0)}" y="${(cy+3.5).toFixed(0)}" text-anchor="middle" font-size="8" fill="white" font-weight="700" font-family="Segoe UI,sans-serif">${i+1}</text>`;
+  }).join('');
+  const axisLabels=['1','2','3','4','5'];
+  const xLabels=axisLabels.map((l,i)=>`<text x="${pad+i*cellW+cellW/2}" y="${H-2}" text-anchor="middle" font-size="9" fill="#9CA3AF" font-family="Segoe UI,sans-serif">${l}</text>`).join('');
+  const yLabels=axisLabels.map((l,i)=>`<text x="${pad-6}" y="${pad+(4-i)*cellH+cellH/2+3}" text-anchor="end" font-size="9" fill="#9CA3AF" font-family="Segoe UI,sans-serif">${l}</text>`).join('');
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${cells}${plotted}${xLabels}${yLabels}
+    <text x="${W/2}" y="${H}" text-anchor="middle" font-size="9" fill="#6B7280" font-family="Segoe UI,sans-serif">← Impact →</text>
+    <text x="8" y="${H/2}" text-anchor="middle" font-size="9" fill="#6B7280" font-family="Segoe UI,sans-serif" transform="rotate(-90 8 ${H/2})">← Probability →</text>
+  </svg>`;
+}
+
+/* ═══ UTILITY ═══ */
+const n=(v,d=1)=>v==null?'—':Number(v).toFixed(d);
+const ni=(v)=>v==null?'—':Math.round(Number(v)).toLocaleString();
+const pct=(v)=>v==null?'—':`${n(v,1)}%`;
+function trendIcon(t){
+  if(t==='IMPROVING'||t==='UP') return '<span style="color:#16A34A">▲</span>';
+  if(t==='DECLINING'||t==='DOWN') return '<span style="color:#DC2626">▼</span>';
+  return '<span style="color:#9CA3AF">→</span>';
+}
+function ratingBg(r){
+  const m={'A+':'#0F4C2A','A':'#1A6B3C','B+':'#2D8C54','B':'#D97706','C+':'#EA580C','C':'#DC2626','D':'#7F1D1D'};
+  return m[r]||'#374151';
+}
+function sevClass(s){return (s||'MODERATE').toUpperCase()}
+function scoreColor(s){
+  if(s>=80) return '#16A34A';
+  if(s>=60) return '#2D8C54';
+  if(s>=40) return '#D97706';
+  return '#DC2626';
+}
+
+/* ═══ PAGE HEADER / FOOTER ═══ */
+function ph(orgName, chapter, year){
+  return `<div class="ph">
+    <div class="ph-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#0F4C2A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      EcoSphere
+    </div>
+    <div class="ph-right">
+      <div class="ph-chapter">${chapter||''}</div>
+      <div>${orgName||''} · ${year||''} Sustainability Report</div>
+    </div>
+  </div>`;
+}
+function pf(pageNum, chapterColor){
+  const color=chapterColor||'#0F4C2A';
+  return `<div class="pf"><span><span class="pf-line" style="background:${color}"></span>EcoSphere Sustainability Report</span><span>${pageNum}</span></div>`;
+}
+
+/* ═══ RENDER FUNCTIONS ═══ */
+
+function renderCover(profile, score){
+  const org=profile?.siteName||profile?.facilityLocation||'Our Organisation';
+  const year=profile?.reportingYear||new Date().getFullYear();
+  const rating=score?.esgRating||'—';
+  const overall=Math.round(score?.overallScore||0);
+  const standards=(profile?.reportingStandards||'GRI Standards 2021').split(',').map(s=>s.trim()).slice(0,3);
+  const period=profile?.periodFrom&&profile?.periodTo?`${profile.periodFrom} – ${profile.periodTo}`:`January – December ${year}`;
+  return `<div class="rp cover" style="min-height:${getComputedStyle(document.documentElement).getPropertyValue('--page-h')||'1123px'}">
+    <div class="cover-hero">
+      <div class="cover-pattern"></div>
+      <div class="cover-tag">Environmental · Social · Governance</div>
+      <div class="cover-org">${org}</div>
+      <div class="cover-title">Sustainability Report ${year}</div>
+      <div class="cover-meta">
+        <div class="cover-chip">ESG Rating: ${rating}</div>
+        <div class="cover-chip">Overall Score: ${overall}/100</div>
+        ${standards.map(s=>`<div class="cover-chip">${s}</div>`).join('')}
+      </div>
+      <div class="cover-year">${year}</div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-bottom">
+      <div class="cover-standards">${period}</div>
+      <div class="cover-brand">Prepared with EcoSphere Environmental Intelligence Platform</div>
+    </div>
+  </div>`;
+}
+
+function renderTOC(orgName, year){
+  const chapters=[
+    {num:'01',title:'About the Organisation',sub:'Profile · Operations · Scope'},
+    {num:'02',title:'CEO Message',sub:'Leadership commitment to sustainability'},
+    {num:'03',title:'Environmental Performance',sub:'Energy · Emissions · Water · Waste · Biodiversity',color:'#2D8C54'},
+    {num:'04',title:'Social Performance',sub:'Employees · Safety · CSR',color:'#146B5E'},
+    {num:'05',title:'Governance',sub:'Board · Ethics · Transparency',color:'#C67B2F'},
+    {num:'06',title:'ESG Scorecard',sub:'Scores · Benchmarks · Trends'},
+    {num:'07',title:'Materiality Assessment',sub:'Material topics · Stakeholder priorities'},
+    {num:'08',title:'Risk Overview',sub:'ESG risks · Mitigation strategies'},
+    {num:'09',title:'AI Insights & Roadmap',sub:'Performance narratives · Sustainability roadmap'},
+    {num:'10',title:'Evidence Gallery',sub:'Images · Documentation · Verification'},
+    {num:'11',title:'Assurance Statement',sub:'Third-party verification'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'Table of Contents',year)}
+    <div class="rp-body">
+      <div class="sec-title">Contents</div>
+      <div class="sec-sub">EcoSphere Sustainability Report ${year}</div>
+      <div class="sec-rule all"></div>
+      <div class="toc-list">
+        ${chapters.map(c=>`
+          <div class="toc-item${c.color?' toc-chapter':''}">
+            <div class="toc-num">${c.num}</div>
+            <div class="toc-title" style="${c.color?`color:${c.color}`:''}"> ${c.title}</div>
+          </div>
+          ${c.sub?`<div class="toc-sub">${c.sub}</div>`:''}
+        `).join('')}
+      </div>
+    </div>
+    ${pf('Contents')}
+  </div>`;
+}
+
+function renderAbout(profile, score, orgName, year){
+  const emp=ni(profile?.totalEmployeesCurr)||'—';
+  const empPrev=ni(profile?.totalEmployeesPrev);
+  const countries=profile?.countriesPresent||1;
+  const facilities=profile?.facilitiesCount||1;
+  const revenues=profile?.revenueCurr?`${n(profile.revenueCurr,1)} ${profile.revenueUnit||'Cr'}`:null;
+  const topics=(profile?.materialTopics||'').split(',').filter(Boolean).map(t=>t.trim());
+  const methods=(profile?.engagementMethods||'').split(',').filter(Boolean).map(m=>m.trim());
+  return `<div class="rp">
+    ${ph(orgName,'About the Organisation',year)}
+    <div class="rp-body">
+      <div class="sec-title">About the Organisation</div>
+      <div class="sec-sub">${profile?.facilityLocation||''}</div>
+      <div class="sec-rule all"></div>
+      <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="metric-item"><div class="metric-num">${emp}</div><div class="metric-label">Total Employees</div>${empPrev?`<div class="metric-trend">${trendIcon(emp>empPrev?'UP':'DOWN')} vs ${empPrev} prev yr</div>`:''}</div>
+        <div class="metric-item"><div class="metric-num">${countries}</div><div class="metric-label">Countries of Operation</div></div>
+        <div class="metric-item"><div class="metric-num">${facilities}</div><div class="metric-label">Facilities / Sites</div></div>
+        ${revenues?`<div class="metric-item"><div class="metric-num">${revenues}</div><div class="metric-label">Revenue</div></div>`:'<div class="metric-item"><div class="metric-num">—</div><div class="metric-label">Revenue</div></div>'}
+      </div>
+      <div class="two-col" style="margin-top:24px">
+        <div>
+          <div class="chart-title">Operational Scope</div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;font-size:12px">
+            ${[['Site Name',profile?.siteName||'—'],['Location',profile?.facilityLocation||'—'],['Operational Boundary',profile?.operationalBoundary||'—'],['Reporting Scope',profile?.reportingScope||'—'],['Reporting Standards',profile?.reportingStandards||'—']].map(([k,v])=>`
+              <div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #F3F4F6">
+                <span style="color:#9CA3AF;width:160px;flex-shrink:0">${k}</span>
+                <span style="color:#374151;font-weight:500">${v}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="chart-title">Material Topics</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            ${(topics.length?topics:['Climate Action','Energy','Water','Waste','Employees','Safety','Governance']).map(t=>`<span style="padding:4px 10px;background:#E8F5EE;color:#0F4C2A;border-radius:12px;font-size:10px;font-weight:600">${t}</span>`).join('')}
+          </div>
+          <div class="chart-title" style="margin-top:16px">Stakeholder Engagement</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            ${(methods.length?methods:['Surveys','Meetings','Reports','Hotline']).map(m=>`<span style="padding:4px 10px;background:#E6F4F2;color:#146B5E;border-radius:12px;font-size:10px;font-weight:600">${m}</span>`).join('')}
+          </div>
+          ${profile?.vision?`<div class="nar-card GOOD" style="margin-top:16px"><div class="nar-sev GOOD">OUR VISION</div><div class="nar-text">${profile.vision}</div></div>`:''}
+        </div>
+      </div>
+    </div>
+    ${pf(2,'#0F4C2A')}
+  </div>`;
+}
+
+function renderCEOMessage(profile, orgName, year){
+  const msg=profile?.ceoMessage||'We remain committed to advancing our sustainability agenda and delivering meaningful environmental and social impact for all our stakeholders.';
+  const ceoName=profile?.ceoName||'Chief Executive Officer';
+  const ceoTitle=profile?.ceoTitle||'CEO & Managing Director';
+  const theme=profile?.sustainabilityTheme||'Building a Sustainable Future';
+  return `<div class="rp">
+    ${ph(orgName,'CEO Message',year)}
+    <div class="rp-body">
+      <div class="sec-title">Message from Leadership</div>
+      <div class="sec-sub">A word from ${ceoName}</div>
+      <div class="sec-rule all"></div>
+      <div style="padding:20px;background:linear-gradient(135deg,#E8F5EE 0%,#E6F4F2 100%);border-radius:12px;margin-bottom:24px;border-left:4px solid #0F4C2A">
+        <div style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#0F4C2A;line-height:1.3">"${theme}"</div>
+      </div>
+      <div class="ceo-message">
+        <div>
+          <div class="ceo-photo"><span style="font-size:10px;text-align:center">Photo<br>placeholder</span></div>
+          <div style="margin-top:10px;text-align:center">
+            <div style="font-size:11px;font-weight:700;color:#374151">${ceoName}</div>
+            <div style="font-size:10px;color:#9CA3AF">${ceoTitle}</div>
+          </div>
+        </div>
+        <div>
+          <div class="ceo-text">${msg.replace(/\n/g,'<br><br>')}</div>
+          <div class="ceo-sig">${ceoName}<div class="ceo-sig-title">${ceoTitle}</div></div>
+        </div>
+      </div>
+    </div>
+    ${pf(3,'#0F4C2A')}
+  </div>`;
+}
+
+function renderChapterOpener(num, title, subtitle, bgColor, textColor, orgName, year, intro, kpis){
+  bgColor=bgColor||'#0F4C2A';
+  textColor=textColor||'#FFFFFF';
+  const kpiHtml=(kpis||[]).map(k=>`
+    <div class="kpi-card${k.cls?' '+k.cls:''}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit||''}</span></div>
+      ${k.trend?`<div class="kpi-trend ${k.trendDir||'neutral'}">${trendIcon(k.trendDir==='down'?'DOWN':k.trendDir==='up'?'UP':'STABLE')} ${k.trend}</div>`:''}
+    </div>`).join('');
+  return `<div class="rp chapter-opener">
+    <div class="ch-banner" style="background:${bgColor}">
+      <div class="ch-num">${num}</div>
+      <div class="ch-badge">Chapter ${num}</div>
+      <div class="ch-title">${title}</div>
+      <div class="ch-subtitle">${subtitle||''}</div>
+    </div>
+    <div class="ch-content">
+      ${intro?`<div class="ch-intro">${intro}</div>`:''}
+      ${kpis&&kpis.length?`<div class="ch-kpis">${kpiHtml}</div>`:''}
+    </div>
+    ${pf(num*3,''+bgColor)}
+  </div>`;
+}
+
+function renderEnvPage(data, score, insights, placements, orgName, year){
+  const energy=data?.energy||data?.energyData||{};
+  const emissions=data?.emissions||data?.emissionsData||{};
+  const water=data?.water||data?.waterData||{};
+  const waste=data?.waste||data?.wasteData||{};
+  const biodiv=data?.biodiversity||data?.biodiversityData||{};
+  const eNar=insights?.esgInsights?.narratives||{};
+  const kpis=[
+    {label:'Total Energy Consumption',value:ni(energy?.totalEnergyConsumption||energy?.energyConsumptionTotal||0),unit:'GJ',score:score?.energyScore,color:'#2D8C54',trend:score?.envTrend},
+    {label:'Renewable Energy',value:n(energy?.renewableEnergyPct||energy?.renewablePct||0),unit:'%',score:null,color:'#16A34A'},
+    {label:'GHG Emissions (Scope 1+2)',value:ni((emissions?.scope1||0)+(emissions?.scope2||0)),unit:'tCO₂e',score:score?.emissionsScore,color:'#D97706',trend:score?.envTrend},
+    {label:'Water Withdrawal',value:ni(water?.totalWaterWithdrawal||water?.totalWithdrawal||0),unit:'KL',score:score?.waterScore,color:'#0891B2'},
+    {label:'Total Waste Generated',value:ni(waste?.totalWasteGenerated||waste?.totalWaste||0),unit:'MT',score:score?.wasteScore,color:'#7C3AED'},
+    {label:'Waste Diverted from Disposal',value:n(waste?.wasteRecycledPct||waste?.recycledPct||0),unit:'%',score:null,color:'#059669'},
+  ];
+  const subScoreItems=[
+    {label:'Energy',score:score?.energyScore||0,color:'#2D8C54'},
+    {label:'Water',score:score?.waterScore||0,color:'#0891B2'},
+    {label:'Emissions',score:score?.emissionsScore||0,color:'#D97706'},
+    {label:'Waste',score:score?.wasteScore||0,color:'#7C3AED'},
+    {label:'Biodiversity',score:score?.biodiversityScore||0,color:'#16A34A'},
+  ];
+  const barChart=vBars(subScoreItems.map(s=>({l:s.label.slice(0,5),v:Math.round(s.score),c:s.color})),120,280);
+  const envNar=eNar.energy||eNar.emissions||null;
+  return `<div class="rp">
+    ${ph(orgName,'Environmental Performance',year)}
+    <div class="rp-body">
+      <div class="sec-title">Environmental Performance</div>
+      <div class="sec-sub">Energy · Emissions · Water · Waste · Biodiversity</div>
+      <div class="sec-rule env"></div>
+      <div class="three-col">
+        ${kpis.map(k=>`<div class="kpi-card env">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
+          ${k.score!=null?`<div class="kpi-score-bar">${hBar(k.score,k.color,140,6)}<div class="kpi-score-label"><span>Score</span><span>${k.score}/100</span></div></div>`:''}
+        </div>`).join('')}
+      </div>
+      <div class="two-col" style="margin-top:20px">
+        <div>
+          <div class="chart-title">Environmental Sub-Scores</div>
+          <div class="chart-sub">Contribution to ENV pillar (40% of ESG)</div>
+          ${barChart}
+        </div>
+        <div>
+          <div class="chart-title">ENV Pillar Score</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+            ${donut(score?.envScore||0,'#2D8C54',100)}
+            <div>
+              <div style="font-size:28px;font-weight:800;color:#2D8C54">${Math.round(score?.envScore||0)}</div>
+              <div style="font-size:11px;color:#9CA3AF">out of 100</div>
+              <div style="margin-top:8px;font-size:11px;color:#374151">${trendIcon(score?.envTrend)} ${score?.envTrend||'Stable'}</div>
+              ${score?.prevYearEnv?`<div style="font-size:10px;color:#9CA3AF">prev: ${score.prevYearEnv}</div>`:''}
+            </div>
+          </div>
+          ${biodiv?.nearProtectedArea!=null?`
+          <div style="margin-top:16px;padding:10px 12px;background:#F0FDF4;border-radius:8px;border-left:3px solid #16A34A">
+            <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;letter-spacing:.05em">Biodiversity</div>
+            <div style="font-size:11px;color:#374151;margin-top:4px">
+              ${biodiv.nearProtectedArea?'Near protected area':'No protected area nearby'} ·
+              ${biodiv.totalTreesPlanted?`${ni(biodiv.totalTreesPlanted)} trees planted`:''}
+              ${biodiv.greenCoverPct?` · ${n(biodiv.greenCoverPct)}% green cover`:''}
+            </div>
+          </div>`:''}
+        </div>
+      </div>
+      ${envNar?`<div class="nar-card ${sevClass(envNar.severity)}" style="margin-top:16px">
+        <div class="nar-sev ${sevClass(envNar.severity)}">${envNar.severity||'ANALYSIS'}</div>
+        <div class="nar-text">${envNar.text||''}</div>
+      </div>`:''}
+    </div>
+    ${pf(5,'#2D8C54')}
+  </div>`;
+}
+
+function renderSocialPage(data, score, insights, orgName, year){
+  const employees=data?.employees||data?.employeeData||{};
+  const safety=data?.safety||data?.safetyData||{};
+  const csr=data?.csr||data?.csrData||{};
+  const eNar=insights?.esgInsights?.narratives||{};
+  const kpis=[
+    {label:'Total Employees',value:ni(employees?.totalEmployees||employees?.totalCount||0),unit:'',color:'#146B5E'},
+    {label:'Female Employees',value:n(employees?.femaleEmployeesPct||0),unit:'%',color:'#7C3AED'},
+    {label:'Training Hours/Employee',value:n(employees?.avgTrainingHrsPerEmployee||employees?.trainingHrsPerEmployee||0),unit:'hrs',color:'#0891B2'},
+    {label:'Lost Time Injury Rate',value:n(safety?.ltifr||safety?.lostTimeInjuryRate||0,2),unit:'',color:'#D97706'},
+    {label:'Total Recordable Incidents',value:ni(safety?.totalRecordableIncidents||safety?.recordableIncidents||0),unit:'',color:'#DC2626'},
+    {label:'CSR Spend',value:n(csr?.csrSpentInr||0,1),unit:' Cr',color:'#146B5E'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'Social Performance',year)}
+    <div class="rp-body">
+      <div class="sec-title">Social Performance</div>
+      <div class="sec-sub">Employees · Safety · Community & CSR</div>
+      <div class="sec-rule soc"></div>
+      <div class="three-col">
+        ${kpis.map(k=>`<div class="kpi-card soc">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
+        </div>`).join('')}
+      </div>
+      <div class="two-col" style="margin-top:20px">
+        <div>
+          <div class="chart-title">Social Sub-Scores</div>
+          ${vBars([
+            {l:'Empl.',v:Math.round(score?.employeeScore||0),c:'#146B5E'},
+            {l:'Safety',v:Math.round(score?.safetyScore||0),c:'#D97706'},
+            {l:'CSR',v:Math.round(score?.csrScore||0),c:'#7C3AED'},
+          ],110,200)}
+        </div>
+        <div>
+          <div class="chart-title">SOCIAL Pillar Score</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+            ${donut(score?.socialScore||0,'#146B5E',100)}
+            <div>
+              <div style="font-size:28px;font-weight:800;color:#146B5E">${Math.round(score?.socialScore||0)}</div>
+              <div style="font-size:11px;color:#9CA3AF">out of 100</div>
+              <div style="margin-top:8px;font-size:11px">${trendIcon(score?.socialTrend)} ${score?.socialTrend||'Stable'}</div>
+            </div>
+          </div>
+          ${csr?.directBeneficiaries?`
+          <div style="margin-top:16px;padding:10px 12px;background:#E6F4F2;border-radius:8px;border-left:3px solid #146B5E">
+            <div style="font-size:10px;font-weight:700;color:#146B5E;text-transform:uppercase;letter-spacing:.05em">CSR Impact</div>
+            <div style="font-size:11px;color:#374151;margin-top:4px">
+              ${ni(csr.directBeneficiaries)} direct beneficiaries
+              ${csr.villagesCovered?` · ${csr.villagesCovered} villages covered`:''}
+              ${csr.sdgsAddressed?` · SDGs: ${csr.sdgsAddressed}`:''}
+            </div>
+          </div>`:''}
+        </div>
+      </div>
+      ${(eNar.employees||eNar.safety)?`<div class="nar-card ${sevClass((eNar.employees||eNar.safety)?.severity)}" style="margin-top:16px">
+        <div class="nar-sev ${sevClass((eNar.employees||eNar.safety)?.severity)}">${(eNar.employees||eNar.safety)?.severity||'ANALYSIS'}</div>
+        <div class="nar-text">${(eNar.employees||eNar.safety)?.text||''}</div>
+      </div>`:''}
+    </div>
+    ${pf(7,'#146B5E')}
+  </div>`;
+}
+
+function renderGovPage(data, score, insights, orgName, year){
+  const gov=data?.governance||data?.governanceData||{};
+  const eNar=insights?.esgInsights?.narratives||{};
+  const kpis=[
+    {label:'Board Size',value:ni(gov?.boardSize||gov?.totalDirectors||0),unit:'',color:'#C67B2F'},
+    {label:'Independent Directors',value:n(gov?.independentDirectorsPct||0),unit:'%',color:'#C67B2F'},
+    {label:'Female Board Members',value:n(gov?.femaleBoardMembersPct||0),unit:'%',color:'#7C3AED'},
+    {label:'Ethics Violations',value:ni(gov?.ethicsViolations||gov?.ethicsComplaints||0),unit:'',color:'#DC2626'},
+    {label:'Sustainability Disclosures',value:gov?.sustainabilityDisclosures||'GRI',unit:'',color:'#0F4C2A'},
+    {label:'Audit Committee',value:gov?.auditCommitteeExists!==false?'Yes':'No',unit:'',color:'#2D8C54'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'Governance',year)}
+    <div class="rp-body">
+      <div class="sec-title">Governance</div>
+      <div class="sec-sub">Board Composition · Ethics · Transparency</div>
+      <div class="sec-rule gov"></div>
+      <div class="three-col">
+        ${kpis.map(k=>`<div class="kpi-card gov">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
+        </div>`).join('')}
+      </div>
+      <div class="two-col" style="margin-top:20px">
+        <div>
+          <div class="chart-title">Governance Sub-Scores</div>
+          ${vBars([
+            {l:'Board',v:Math.round(score?.boardScore||0),c:'#C67B2F'},
+            {l:'Ethics',v:Math.round(score?.ethicsScore||0),c:'#D97706'},
+            {l:'Trans.',v:Math.round(score?.transparencyScore||0),c:'#EA580C'},
+          ],110,200)}
+        </div>
+        <div>
+          <div class="chart-title">GOVERNANCE Pillar Score</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+            ${donut(score?.govScore||0,'#C67B2F',100)}
+            <div>
+              <div style="font-size:28px;font-weight:800;color:#C67B2F">${Math.round(score?.govScore||0)}</div>
+              <div style="font-size:11px;color:#9CA3AF">out of 100</div>
+              <div style="margin-top:8px;font-size:11px">${trendIcon(score?.govTrend)} ${score?.govTrend||'Stable'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${eNar.governance?`<div class="nar-card ${sevClass(eNar.governance.severity)}" style="margin-top:16px">
+        <div class="nar-sev ${sevClass(eNar.governance.severity)}">${eNar.governance.severity||'ANALYSIS'}</div>
+        <div class="nar-text">${eNar.governance.text||''}</div>
+      </div>`:''}
+    </div>
+    ${pf(9,'#C67B2F')}
+  </div>`;
+}
+
+function renderESGScorecard(score, orgName, year){
+  const overall=Math.round(score?.overallScore||0);
+  const rating=score?.esgRating||'—';
+  const pillars=[
+    {name:'Environmental',key:'env',score:Math.round(score?.envScore||0),weight:'40%',color:'#2D8C54',trend:score?.envTrend,prev:score?.prevYearEnv},
+    {name:'Social',key:'soc',score:Math.round(score?.socialScore||0),weight:'35%',color:'#146B5E',trend:score?.socialTrend,prev:score?.prevYearSocial},
+    {name:'Governance',key:'gov',score:Math.round(score?.govScore||0),weight:'25%',color:'#C67B2F',trend:score?.govTrend,prev:score?.prevYearGov},
+  ];
+  const subScores=[
+    {name:'Energy',score:score?.energyScore||0,pillar:'env',color:'#2D8C54'},
+    {name:'Water',score:score?.waterScore||0,pillar:'env',color:'#0891B2'},
+    {name:'Emissions',score:score?.emissionsScore||0,pillar:'env',color:'#D97706'},
+    {name:'Waste',score:score?.wasteScore||0,pillar:'env',color:'#7C3AED'},
+    {name:'Biodiversity',score:score?.biodiversityScore||0,pillar:'env',color:'#059669'},
+    {name:'Employees',score:score?.employeeScore||0,pillar:'soc',color:'#146B5E'},
+    {name:'Safety',score:score?.safetyScore||0,pillar:'soc',color:'#EA580C'},
+    {name:'CSR',score:score?.csrScore||0,pillar:'soc',color:'#6D28D9'},
+    {name:'Board',score:score?.boardScore||0,pillar:'gov',color:'#C67B2F'},
+    {name:'Ethics',score:score?.ethicsScore||0,pillar:'gov',color:'#B45309'},
+    {name:'Transparency',score:score?.transparencyScore||0,pillar:'gov',color:'#92400E'},
+  ];
+  const completeness=[
+    {name:'Environmental Completeness',val:score?.envCompletenessP||0,color:'#2D8C54'},
+    {name:'Social Completeness',val:score?.socialCompletenessP||0,color:'#146B5E'},
+    {name:'Governance Completeness',val:score?.govCompletenessP||0,color:'#C67B2F'},
+    {name:'Overall Completeness',val:score?.overallCompletenessP||0,color:'#0F4C2A'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'ESG Scorecard',year)}
+    <div class="rp-body">
+      <div class="sec-title">ESG Scorecard</div>
+      <div class="sec-sub">Comprehensive performance assessment · ${year}</div>
+      <div class="sec-rule all"></div>
+      <div class="scorecard-header">
+        <div class="scorecard-gauge">
+          ${donut(overall,ratingBg(rating),120)}
+          <div class="scorecard-gauge-label">Overall ESG Score</div>
+          <div class="scorecard-rating-badge" style="background:${ratingBg(rating)};color:white">${rating}</div>
+          ${score?.industryRank?`<div style="font-size:11px;color:#9CA3AF;margin-top:4px">Industry Rank #${score.industryRank}</div>`:''}
+        </div>
+        <div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${pillars.map(p=>`<div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:12px;font-weight:700;color:${p.color}">${p.name} <span style="font-size:10px;color:#9CA3AF">(${p.weight})</span></span>
+                <span style="font-size:12px;font-weight:700;color:${p.color}">${p.score} ${trendIcon(p.trend)}</span>
+              </div>
+              ${hBar(p.score,p.color,340,10)}
+              ${p.prev?`<div style="font-size:10px;color:#9CA3AF;margin-top:2px">Previous year: ${p.prev} | YoY: ${p.score-p.prev>0?'+':''}${p.score-p.prev} pts</div>`:''}
+            </div>`).join('')}
+          </div>
+          ${score?.yoyOverallChangePts!=null?`<div style="margin-top:16px;padding:10px 14px;background:#F0FDF4;border-radius:8px;font-size:12px;color:#16A34A;font-weight:600">
+            Year-on-Year Change: ${score.yoyOverallChangePts>0?'+':''}${n(score.yoyOverallChangePts,1)} points
+          </div>`:''}
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <div class="chart-title">Detailed Sub-Category Scores</div>
+        <table class="score-table" style="margin-top:8px">
+          <thead><tr><th>Category</th><th>Pillar</th><th>Score</th><th>Rating</th><th style="width:180px">Performance</th></tr></thead>
+          <tbody>
+            ${subScores.map(s=>{
+              const sbg=scoreColor(s.score);
+              const srating=s.score>=80?'A+':s.score>=70?'A':s.score>=60?'B+':s.score>=50?'B':s.score>=40?'C':' D';
+              return `<tr>
+                <td style="font-weight:600;color:#374151">${s.name}</td>
+                <td><span style="padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;background:${s.pillar==='env'?'#E8F5EE':s.pillar==='soc'?'#E6F4F2':'#FDF3E7'};color:${s.color}">${s.pillar.toUpperCase()}</span></td>
+                <td style="font-weight:700;color:${sbg}">${Math.round(s.score)}</td>
+                <td><span class="score-badge" style="background:${sbg}20;color:${sbg}">${srating}</span></td>
+                <td>${hBar(s.score,s.color,160,7)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:20px">
+        <div class="chart-title">Data Completeness</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          ${completeness.map(c=>`<div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11px;color:#374151;width:200px">${c.name}</span>
+            ${hBar(c.val,c.color,220,8)}
+            <span style="font-size:11px;font-weight:700;color:${c.color}">${Math.round(c.val)}%</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${pf(10,'#0F4C2A')}
+  </div>`;
+}
+
+function renderMaterialityMatrix(profile, insights, orgName, year){
+  const topics=(profile?.materialTopics||'').split(',').filter(Boolean).map(t=>t.trim());
+  const {circles,legendItems,items,colors}=matrixSVG(topics);
+  return `<div class="rp">
+    ${ph(orgName,'Materiality Assessment',year)}
+    <div class="rp-body">
+      <div class="sec-title">Materiality Matrix</div>
+      <div class="sec-sub">Material topics ranked by stakeholder importance × business impact</div>
+      <div class="sec-rule all"></div>
+      <div class="matrix-wrap">
+        <div>
+          <svg width="380" height="340" viewBox="0 0 380 340">
+            <!-- Quadrant backgrounds -->
+            <rect x="32" y="20" width="157" height="147" fill="#FEF9C3" opacity=".5"/>
+            <rect x="191" y="20" width="157" height="147" fill="#FEE2E2" opacity=".4"/>
+            <rect x="32" y="169" width="157" height="147" fill="#DCFCE7" opacity=".5"/>
+            <rect x="191" y="169" width="157" height="147" fill="#FEE2E2" opacity=".5"/>
+            <!-- Axis lines -->
+            <line x1="32" y1="316" x2="348" y2="316" stroke="#CBD5E1" stroke-width="1"/>
+            <line x1="32" y1="20" x2="32" y2="316" stroke="#CBD5E1" stroke-width="1"/>
+            <line x1="189" y1="20" x2="189" y2="316" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="4"/>
+            <line x1="32" y1="168" x2="348" y2="168" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="4"/>
+            <!-- Quadrant labels -->
+            <text x="110" y="44" text-anchor="middle" font-size="10" fill="#D97706" font-weight="700" font-family="Segoe UI,sans-serif">MONITOR</text>
+            <text x="269" y="44" text-anchor="middle" font-size="10" fill="#DC2626" font-weight="700" font-family="Segoe UI,sans-serif">MANAGE CLOSELY</text>
+            <text x="110" y="293" text-anchor="middle" font-size="10" fill="#6B7280" font-family="Segoe UI,sans-serif">LOW PRIORITY</text>
+            <text x="269" y="293" text-anchor="middle" font-size="10" fill="#16A34A" font-weight="700" font-family="Segoe UI,sans-serif">STRATEGIC FOCUS</text>
+            <!-- Circles -->
+            ${circles}
+            <!-- Axis labels -->
+            <text x="190" y="335" text-anchor="middle" font-size="10" fill="#6B7280" font-family="Segoe UI,sans-serif">← Business Impact →</text>
+            <text x="12" y="168" text-anchor="middle" font-size="10" fill="#6B7280" font-family="Segoe UI,sans-serif" transform="rotate(-90 12 168)">← Stakeholder Importance →</text>
+          </svg>
+        </div>
+        <div class="matrix-legend" style="margin-top:28px">
+          <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px">Material Topics</div>
+          <svg width="180" height="${items.length*16}" viewBox="0 0 180 ${items.length*16}">
+            ${legendItems}
+          </svg>
+        </div>
+      </div>
+      ${profile?.stakeholderEngaged?`<div style="margin-top:20px;padding:12px 16px;background:#F3F4F6;border-radius:8px">
+        <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px">Stakeholder Groups Engaged</div>
+        <div style="font-size:12px;color:#6B7280">${profile.stakeholderEngaged}</div>
+      </div>`:''}
+    </div>
+    ${pf(11,'#0F4C2A')}
+  </div>`;
+}
+
+function renderRiskMatrix(insights, orgName, year){
+  const riskNar=insights?.strategicInsights?.riskNarrative||{};
+  const risks=riskNar.risks||[
+    {name:'Climate Physical Risk',probability:4,impact:4,category:'Environmental'},
+    {name:'Regulatory Non-compliance',probability:3,impact:5,category:'Governance'},
+    {name:'Water Scarcity',probability:4,impact:3,category:'Environmental'},
+    {name:'Community Opposition',probability:2,impact:3,category:'Social'},
+    {name:'Supply Chain Disruption',probability:3,impact:4,category:'Social'},
+    {name:'Data Privacy Breach',probability:2,impact:4,category:'Governance'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'ESG Risk Overview',year)}
+    <div class="rp-body">
+      <div class="sec-title">ESG Risk Overview</div>
+      <div class="sec-sub">Probability × Impact assessment of material ESG risks</div>
+      <div class="sec-rule all"></div>
+      ${riskNar.summary?`<div class="nar-card ${sevClass(riskNar.overallRiskLevel)}" style="margin-bottom:16px">
+        <div class="nar-sev ${sevClass(riskNar.overallRiskLevel)}">${riskNar.overallRiskLevel||'RISK SUMMARY'}</div>
+        <div class="nar-text">${riskNar.summary}</div>
+      </div>`:''}
+      <div class="two-col">
+        <div>
+          ${riskSVG(risks)}
+          <div style="display:flex;gap:12px;margin-top:8px;font-size:10px">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#DCFCE7;border:1px solid #ccc;display:inline-block"></span>Low</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#FEF9C3;border:1px solid #ccc;display:inline-block"></span>Medium</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#FEE2E2;border:1px solid #ccc;display:inline-block"></span>High</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#EF4444;border:1px solid #ccc;display:inline-block"></span>Critical</span>
+          </div>
+        </div>
+        <div>
+          <div class="chart-title">Risk Register</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+            ${risks.map((r,i)=>{
+              const riskScore=(r.probability||3)*(r.impact||3);
+              const rColor=riskScore>=16?'#DC2626':riskScore>=9?'#D97706':'#16A34A';
+              return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#F9FAFB;border-radius:6px;border-left:3px solid ${rColor}">
+                <span style="font-size:11px;font-weight:800;color:${rColor};width:16px">${i+1}</span>
+                <span style="flex:1;font-size:11px;color:#374151">${r.name}</span>
+                <span style="font-size:10px;padding:1px 7px;background:${rColor}20;color:${rColor};border-radius:10px;font-weight:700">${r.category||''}</span>
+                <span style="font-size:10px;font-weight:700;color:${rColor}">${riskScore}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    ${pf(12,'#0F4C2A')}
+  </div>`;
+}
+
+function renderInsightsPage(insights, orgName, year){
+  const esgEx=insights?.esgInsights?.executiveSummary||{};
+  const recs=(insights?.esgInsights?.recommendations||[]).slice(0,4);
+  const roadmap=insights?.strategicInsights?.sustainabilityRoadmap||{};
+  const horizons=[
+    {key:'IMMEDIATE',cls:'immediate',label:'Immediate',period:'0–3 months'},
+    {key:'SHORT_TERM',cls:'short',label:'Short Term',period:'3–12 months'},
+    {key:'MEDIUM_TERM',cls:'medium',label:'Medium Term',period:'1–2 years'},
+    {key:'LONG_TERM',cls:'long',label:'Long Term',period:'3–5 years'},
+  ];
+  return `<div class="rp">
+    ${ph(orgName,'AI Insights & Roadmap',year)}
+    <div class="rp-body">
+      <div class="sec-title">AI Insights & Sustainability Roadmap</div>
+      <div class="sec-sub">Data-driven performance narratives and strategic recommendations</div>
+      <div class="sec-rule all"></div>
+      ${esgEx.text?`<div class="nar-card ${sevClass(esgEx.overallSeverity)}" style="margin-bottom:16px">
+        <div class="nar-sev ${sevClass(esgEx.overallSeverity)}">ESG EXECUTIVE SUMMARY · ${esgEx.overallSeverity||''}</div>
+        <div class="nar-text">${esgEx.text}</div>
+      </div>`:''}
+      ${recs.length?`<div>
+        <div class="chart-title" style="margin-bottom:8px">Top Recommendations</div>
+        ${recs.map(r=>`<div class="rec-item">
+          <div class="rec-priority ${r.priority||'MEDIUM'}">${r.priority||'MEDIUM'}</div>
+          <div class="rec-body">
+            <div class="rec-area">${r.area||''}</div>
+            <div class="rec-action">${r.action||''}</div>
+            <div class="rec-meta">${r.impact?`Impact: ${r.impact}`:''} ${r.timeline?`· Timeline: ${r.timeline}`:''}</div>
+          </div>
+        </div>`).join('')}
+      </div>`:''}
+      <div class="chart-title" style="margin-top:20px;margin-bottom:8px">Sustainability Roadmap</div>
+      <div class="roadmap">
+        ${horizons.map(h=>{
+          const actions=(roadmap[h.key]||roadmap[h.label]||[]);
+          return `<div class="roadmap-horizon ${h.cls}">
+            <div class="roadmap-period">${h.label} · ${h.period}</div>
+            <div class="roadmap-title">${h.label} Priorities</div>
+            <div class="roadmap-actions">
+              ${actions.length?actions.slice(0,4).map(a=>`<div class="roadmap-action">${typeof a==='string'?a:a.action||JSON.stringify(a)}</div>`).join('')
+              :`<div class="roadmap-action" style="color:#9CA3AF">No actions defined</div>`}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    ${pf(13,'#0F4C2A')}
+  </div>`;
+}
+
+function renderGalleryPage(imageData, orgName, year){
+  const gallery=imageData?.gallery||{};
+  const placements=imageData?.reportPlacements||{};
+  const summary=imageData?.summary||{};
+  const bestImages=Object.entries(placements).slice(0,6).map(([sec,p])=>p.primary).filter(Boolean);
+  const allEvidence=(imageData?.evidence||[]).filter(e=>e.qualityGrade==='EXCELLENT'||e.qualityGrade==='GOOD').slice(0,9);
+  const displayItems=bestImages.length?bestImages:allEvidence;
+  function imgCard(ev,size='normal'){
+    const h=size==='large'?160:120;
+    const isImg=(ev?.mimeType||'').startsWith('image/');
+    const name=ev?.fileName||ev?.name||'Evidence';
+    const cap=ev?.autoCaption||ev?.caption||name;
+    const sec=ev?.esgSection||ev?.eiaSection||ev?.category||'';
+    const grade=ev?.qualityGrade||ev?.grade||'';
+    const src=ev?.signedUrl||ev?.url||'';
+    return `<div class="gallery-item">
+      ${isImg&&src
+        ?`<img src="${src}" alt="${cap}" style="width:100%;height:${h}px;object-fit:cover" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+        :''}
+      <div class="gallery-img-placeholder" style="height:${h}px;${isImg&&src?'display:none':''}">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#9CA3AF" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" fill="#9CA3AF"/><path d="M3 15l5-5 4 4 3-3 6 6" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:9px">${ev?.mimeType||'File'}</span>
+      </div>
+      <div class="gallery-caption">
+        <div class="gallery-caption-title">${name}</div>
+        <div class="gallery-caption-meta">${sec?`<span class="gallery-tag">${sec}</span> `:''}${grade?`<span style="font-size:9px;color:#9CA3AF">${grade}</span>`:''}</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="rp">
+    ${ph(orgName,'Evidence Gallery',year)}
+    <div class="rp-body">
+      <div class="sec-title">Evidence Gallery</div>
+      <div class="sec-sub">Verified photographic and documentary evidence · ${year}</div>
+      <div class="sec-rule all"></div>
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        ${[
+          ['Total Evidence',summary.totalEvidence||0,'#0F4C2A'],
+          ['High Quality',summary.highQualityCount||0,'#16A34A'],
+          ['Sections Mapped',(summary.esgSectionsMapped||0)+(summary.eiaSectionsMapped||0),'#146B5E'],
+          ['Duplicates Removed',summary.duplicatesFound||0,'#D97706'],
+        ].map(([l,v,c])=>`<div style="padding:10px 16px;background:${c}15;border-radius:8px;border-left:3px solid ${c}">
+          <div style="font-size:20px;font-weight:800;color:${c}">${v}</div>
+          <div style="font-size:10px;color:#6B7280">${l}</div>
+        </div>`).join('')}
+      </div>
+      <div class="gallery-grid">
+        ${displayItems.slice(0,9).map(e=>imgCard(e)).join('')}
+        ${displayItems.length<9?Array(9-displayItems.length).fill(0).map(()=>`
+          <div class="gallery-item"><div class="gallery-img-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" stroke-width="1.5"/><path d="M3 15l5-5 4 4 3-3 6 6" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>`).join(''):''}
+      </div>
+    </div>
+    ${pf(14,'#0F4C2A')}
+  </div>`;
+}
+
+function renderEvidencePage(imageData, orgName, year){
+  const evidence=(imageData?.evidence||[]).slice(0,10);
+  const recs=(imageData?.recommendations||[]).slice(0,3);
+  function mimeIcon(mime){
+    if(!mime) return '📄';
+    if(mime.startsWith('image/')) return '🖼';
+    if(mime.includes('pdf')) return '📋';
+    if(mime.includes('spreadsheet')||mime.includes('excel')) return '📊';
+    return '📄';
+  }
+  return `<div class="rp">
+    ${ph(orgName,'Evidence Documentation',year)}
+    <div class="rp-body">
+      <div class="sec-title">Evidence Documentation</div>
+      <div class="sec-sub">Detailed evidence log with quality scores and section mappings</div>
+      <div class="sec-rule all"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${evidence.map(ev=>`<div class="evidence-card">
+          <div class="evidence-icon">${mimeIcon(ev.mimeType)}</div>
+          <div class="evidence-info">
+            <div class="evidence-name">${ev.fileName||ev.name||'Evidence'}</div>
+            <div class="evidence-meta">
+              ${ev.qualityScore!=null?`Quality Score: ${ev.qualityScore}/100 · `:''}
+              ${ev.qualityGrade?`${ev.qualityGrade} · `:''}
+              ${ev.sizeBytes||ev.fileSize?`${Math.round(((ev.sizeBytes||ev.fileSize||0))/1024)} KB · `:''}
+              ${ev.isDuplicate?'⚠ Duplicate · ':''}
+              ${ev.source||''}
+            </div>
+            <div class="evidence-tags">
+              ${ev.esgSection?`<span class="evidence-tag esg">${ev.esgSection}</span>`:''}
+              ${ev.eiaSection?`<span class="evidence-tag eia">${ev.eiaSection}</span>`:''}
+              ${ev.category?`<span class="evidence-tag quality">${ev.category.replace(/_/g,' ')}</span>`:''}
+            </div>
+            ${ev.autoCaption?`<div style="font-size:10px;color:#6B7280;margin-top:4px;font-style:italic">${ev.autoCaption}</div>`:''}
+          </div>
+        </div>`).join('')}
+      </div>
+      ${recs.length?`<div style="margin-top:16px">
+        <div class="chart-title" style="margin-bottom:8px">Evidence Recommendations</div>
+        ${recs.map(r=>`<div style="padding:8px 12px;background:#F0FDF4;border-radius:6px;border-left:3px solid #2D8C54;margin-bottom:6px;font-size:11px;color:#374151">${r}</div>`).join('')}
+      </div>`:''}
+    </div>
+    ${pf(15,'#0F4C2A')}
+  </div>`;
+}
+
+function renderAssurance(profile, orgName, year){
+  const provider=profile?.assuranceProvider||'Independent Assurance Provider';
+  const level=profile?.assuranceLevel||'Limited Assurance';
+  const standard=profile?.assuranceStandard||'ISAE 3000';
+  const assYear=profile?.assuranceYear||year;
+  const contact=profile?.esgContactName||'';
+  const email=profile?.esgContactEmail||'';
+  const phone=profile?.esgContactPhone||'';
+  return `<div class="rp">
+    ${ph(orgName,'Assurance & Contact',year)}
+    <div class="rp-body">
+      <div class="sec-title">Assurance Statement</div>
+      <div class="sec-sub">Third-party verification of sustainability data</div>
+      <div class="sec-rule all"></div>
+      <div class="assurance-box">
+        <div class="assurance-logo">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#0F4C2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <div class="assurance-provider">${provider}</div>
+            <div style="font-size:11px;color:#9CA3AF">${standard} · ${assYear}</div>
+          </div>
+          <div class="assurance-level-badge">${level}</div>
+        </div>
+        <div class="assurance-text">
+          This sustainability report has been prepared in accordance with the applicable reporting standards and guidelines. The data disclosed in this report has undergone ${level.toLowerCase()} by ${provider} in accordance with ${standard}.
+          <br><br>
+          The assurance engagement was conducted for the reporting period covering the financial year ${year}. The scope of assurance includes key environmental, social and governance performance indicators as disclosed in this report.
+        </div>
+      </div>
+      ${profile?.grievanceMechanism?`<div style="margin-top:20px;padding:16px;background:#F0FDF4;border-radius:8px;border-left:3px solid #0F4C2A">
+        <div style="font-size:11px;font-weight:700;color:#0F4C2A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Grievance Mechanism</div>
+        <div style="font-size:12px;color:#374151">${profile.grievanceMechanism}</div>
+      </div>`:''}
+      <div style="margin-top:20px">
+        <div class="chart-title" style="margin-bottom:10px">Sustainability Contact</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          ${contact?`<div style="padding:10px 14px;background:#F3F4F6;border-radius:8px"><div style="font-size:10px;color:#9CA3AF;margin-bottom:2px">Contact Person</div><div style="font-size:12px;font-weight:600;color:#374151">${contact}</div></div>`:''}
+          ${email?`<div style="padding:10px 14px;background:#F3F4F6;border-radius:8px"><div style="font-size:10px;color:#9CA3AF;margin-bottom:2px">Email</div><div style="font-size:12px;font-weight:600;color:#374151">${email}</div></div>`:''}
+          ${phone?`<div style="padding:10px 14px;background:#F3F4F6;border-radius:8px"><div style="font-size:10px;color:#9CA3AF;margin-bottom:2px">Phone</div><div style="font-size:12px;font-weight:600;color:#374151">${phone}</div></div>`:''}
+        </div>
+      </div>
+    </div>
+    ${pf(16,'#0F4C2A')}
+  </div>`;
+}
+
+function renderBackCover(profile, score, orgName, year){
+  const rating=score?.esgRating||'—';
+  const overall=Math.round(score?.overallScore||0);
+  const email=profile?.esgContactEmail||'sustainability@yourorg.com';
+  const standards=profile?.reportingStandards||'GRI Standards 2021';
+  return `<div class="rp back-cover">
+    <div class="back-cover-content">
+      <div>
+        <div class="back-cover-logo">EcoSphere</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px">Environmental Intelligence Platform</div>
+      </div>
+      <div style="padding:32px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#86EFAC;margin-bottom:16px">Report Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div style="font-size:32px;font-weight:900;color:white">${rating}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.5)">ESG Rating ${year}</div>
+          </div>
+          <div>
+            <div style="font-size:32px;font-weight:900;color:white">${overall}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.5)">Overall Score / 100</div>
+          </div>
+        </div>
+      </div>
+      <div class="back-cover-contact">
+        <strong>${orgName}</strong><br>
+        ${profile?.facilityLocation||''}<br>
+        ${email}
+      </div>
+      <div style="padding:16px;background:rgba(255,255,255,.05);border-radius:8px">
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:6px">Reporting Framework</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7)">${standards}</div>
+      </div>
+      <div class="back-cover-foot">
+        This report was generated using EcoSphere Environmental Intelligence Platform.<br>
+        © ${year} ${orgName}. All data sourced from verified organisational records.
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══ MAIN GENERATE ═══ */
+async function generate(){
+  const orgId=document.getElementById('orgId').value.trim();
+  const year=document.getElementById('year').value||'2024';
+  const projectId=document.getElementById('projectId').value.trim()||null;
+  if(!orgId){ alert('Please enter an Organisation ID.'); return; }
+  const status=document.getElementById('cfgStatus');
+  const report=document.getElementById('report');
+  status.textContent='Loading ESG data…';
+  report.innerHTML='<div class="empty-state"><div style="width:40px;height:40px;border:3px solid #E5E7EB;border-top-color:#0F4C2A;border-radius:50%;animation:spin .8s linear infinite"></div><p>Fetching data…</p></div>';
+  try{
+    const headers={'Content-Type':'application/json'};
+    const auth=localStorage.getItem('eco_access_token');
+    if(auth) headers['Authorization']=`Bearer ${auth}`;
+    const qs=`?year=${year}${projectId?`&projectId=${projectId}`:''}`;
+    const [r1,r2,r3]=await Promise.all([
+      fetch(`${API}/esg/${orgId}/report-data?year=${year}`,{headers}).then(r=>r.json()),
+      fetch(`${API}/insights/${orgId}${qs}`,{headers}).then(r=>r.json()),
+      fetch(`${API}/images/${orgId}/analyze${qs}`,{headers}).then(r=>r.json()),
+    ]);
+    if(!r1.success) throw new Error(r1.message||'Failed to load ESG data');
+    const rd=r1.data||{};
+    const id=r2.data||{};
+    const img=r3.data||{};
+    const profile=rd.profile||rd.esgProfile||{};
+    const score=rd.score||rd.esgScore||{};
+    const orgName=profile.siteName||orgId;
+    status.textContent='Rendering report…';
+    const pages=[
+      renderCover(profile,score),
+      renderTOC(orgName,year),
+      renderAbout(profile,score,orgName,year),
+      renderCEOMessage(profile,orgName,year),
+      renderChapterOpener('03','Environmental Performance','Energy · Emissions · Water · Waste · Biodiversity','#0F4C2A','#FFFFFF',orgName,year,
+        'This chapter presents our environmental performance data across energy consumption, greenhouse gas emissions, water usage, waste management, and biodiversity conservation efforts.',
+        [{label:'ENV Score',value:Math.round(score?.envScore||0),unit:'/100',cls:'env',trend:`${trendIcon(score?.envTrend)} ${score?.envTrend||'Stable'}`,trendDir:score?.envTrend==='IMPROVING'?'down':'up'}]
+      ),
+      renderEnvPage(rd,score,id,img,orgName,year),
+      renderChapterOpener('04','Social Performance','Employees · Safety · Community & CSR','#146B5E','#FFFFFF',orgName,year,
+        'Our social performance reflects our commitment to employee well-being, occupational health and safety, and meaningful community investment through our CSR programmes.',
+        [{label:'SOCIAL Score',value:Math.round(score?.socialScore||0),unit:'/100',cls:'soc',trend:`${trendIcon(score?.socialTrend)} ${score?.socialTrend||'Stable'}`,trendDir:'neutral'}]
+      ),
+      renderSocialPage(rd,score,id,orgName,year),
+      renderChapterOpener('05','Governance','Board Composition · Ethics · Transparency','#C67B2F','#FFFFFF',orgName,year,
+        'Sound governance underpins our sustainability commitments. This chapter covers our board structure, ethical conduct, and transparency in reporting.',
+        [{label:'GOV Score',value:Math.round(score?.govScore||0),unit:'/100',cls:'gov',trend:`${trendIcon(score?.govTrend)} ${score?.govTrend||'Stable'}`,trendDir:'neutral'}]
+      ),
+      renderGovPage(rd,score,id,orgName,year),
+      renderESGScorecard(score,orgName,year),
+      renderMaterialityMatrix(profile,id,orgName,year),
+      renderRiskMatrix(id,orgName,year),
+      renderInsightsPage(id,orgName,year),
+      renderGalleryPage(img,orgName,year),
+      renderEvidencePage(img,orgName,year),
+      renderAssurance(profile,orgName,year),
+      renderBackCover(profile,score,orgName,year),
+    ];
+    report.innerHTML=pages.join('');
+    document.getElementById('btnPdf').disabled=false;
+    status.textContent=`✓ Report generated — ${pages.length} pages`;
+  }catch(e){
+    status.textContent=`Error: ${e.message}`;
+    report.innerHTML=`<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/></svg><p style="color:#DC2626">${e.message}</p></div>`;
+  }
+}
+
+/* ═══ SAMPLE REPORT ═══ */
+function loadSampleReport(){
+  const SAMPLE = {
+    org:{ name:'GreenTech Industries Ltd.', industry:'Manufacturing', cin:'U12345MH2010PLC123456',
+      address:'Plot 42, MIDC Industrial Area, Pune, Maharashtra 411019',
+      reportYear:'2024-25', periodFrom:'April 1, 2024', periodTo:'March 31, 2025',
+      signatory:'Rajesh Sharma', designation:'Chief Sustainability Officer',
+      ceoName:'Priya Verma', ceoTitle:'Managing Director & CEO',
+      ceoMessage:'We are committed to embedding sustainability into every aspect of our business. Our 2024-25 report demonstrates measurable progress across environmental stewardship, social equity, and responsible governance.',
+      assuranceProvider:'BureauVeritas India Pvt. Ltd.', assuranceLevel:'Limited Assurance',
+      scopeDesc:'This report covers all manufacturing facilities and corporate offices of GreenTech Industries Ltd. across India for FY 2024-25.'
+    },
+    esg:{
+      ghgScope1:1240, ghgScope2:3180, ghgScope3:8900,
+      energyTotal:48600, renewableEnergy:12400, energyIntensity:182,
+      waterTotal:32500, waterRecycled:8200, waterIntensity:121,
+      wasteTotal:1840, wasteRecycled:1290, wasteHazardous:180,
+      airPM25:28, airPM10:54, airNOx:38, airSO2:12,
+      employees:2840, women:34, turnover:8.2, injuries:4, trainingHours:48,
+      csr:42.5, communities:14, suppliers:320, localSuppliers:68,
+      boardSize:11, independent:5, women_board:3, auditMeetings:4,
+      ethicsTraining:94, whistleblower:true, antiCorruption:true,
+      esgRating:'A', esgScore:82
+    }
+  };
+  /* Populate config fields */
+  document.getElementById('orgId').value = 'SAMPLE-DEMO-ORG';
+  document.getElementById('year').value  = '2024';
+  /* Build a rich sample report HTML */
+  const r = document.getElementById('report');
+  const S = SAMPLE;
+  r.innerHTML = `
+    <div class="cover-page">
+      <div class="cover-top">
+        <div class="cover-brand">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🌿</div>
+          <div>
+            <div class="cover-org" style="font-size:1rem;font-weight:800;color:#fff">${S.org.name}</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.7)">${S.org.industry}</div>
+          </div>
+        </div>
+        <div style="margin:auto 0;text-align:center;padding:20px 0">
+          <div style="font-size:.72rem;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:12px">Sustainability Report</div>
+          <div style="font-size:2.4rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:8px">${S.org.reportYear}</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.7)">${S.org.periodFrom} — ${S.org.periodTo}</div>
+          <div style="margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 16px">
+            <span style="font-size:.72rem;font-weight:700;color:#86efac">ESG Rating: ${S.esg.esgRating} · Score ${S.esg.esgScore}/100</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px">
+          ${['GRI 2021','BRSR 2024','TCFD','CDP','ISO 14001','UN SDGs'].map(t=>`<span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border-radius:20px;padding:4px 12px;font-size:.66rem;font-weight:700">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div style="background:rgba(0,0,0,.25);padding:14px 40px;display:flex;justify-content:space-between;font-size:.72rem;color:rgba(255,255,255,.6)">
+        <span>${S.org.address}</span><span>CIN: ${S.org.cin}</span>
+      </div>
+    </div>
+    <div class="rp"><div class="rp-body" style="padding:36px 44px">
+      <div style="font-size:1.1rem;font-weight:900;color:#0f172a;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #e2e8f0">Message from Leadership</div>
+      <div style="font-size:.82rem;color:#374151;line-height:1.8;font-style:italic;background:#f8fafc;border-left:4px solid #16a34a;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:20px">"${S.org.ceoMessage}"</div>
+      <div style="font-size:.84rem;font-weight:700;color:#0f172a">— ${S.org.ceoName}, ${S.org.ceoTitle}</div>
+      <div style="margin-top:30px;font-size:1rem;font-weight:900;color:#0f172a;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0">ESG Performance Highlights</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+        ${[
+          {label:'GHG Scope 1+2',val:(S.esg.ghgScope1+S.esg.ghgScope2).toLocaleString()+' tCO₂e',color:'#16a34a',icon:'leaf'},
+          {label:'Total Energy',val:S.esg.energyTotal.toLocaleString()+' GJ',color:'#0284c7',icon:'bolt'},
+          {label:'Renewable Energy',val:S.esg.renewableEnergy.toLocaleString()+' GJ',color:'#059669',icon:'sun'},
+          {label:'Water Consumed',val:S.esg.waterTotal.toLocaleString()+' KL',color:'#0891b2',icon:'tint'},
+          {label:'Waste Recycled',val:S.esg.wasteRecycled.toLocaleString()+' MT',color:'#7c3aed',icon:'recycle'},
+          {label:'Employees',val:S.esg.employees.toLocaleString(),color:'#d97706',icon:'users'}
+        ].map(k=>`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:900;color:${k.color}">${k.val}</div>
+          <div style="font-size:.7rem;color:#64748b;margin-top:3px">${k.label}</div>
+        </div>`).join('')}
+      </div>
+      <div style="font-size:1rem;font-weight:900;color:#0f172a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e2e8f0">Environmental Performance</div>
+      <table style="width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:20px">
+        <thead><tr style="background:#f0fdf4">${['Parameter','Value','Unit','YoY'].map(h=>`<th style="padding:8px 12px;text-align:left;font-weight:800;color:#166534;border-bottom:2px solid #bbf7d0">${h}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${[
+            ['GHG Scope 1 Emissions',S.esg.ghgScope1.toLocaleString(),'tCO₂e','↓ 4.2%'],
+            ['GHG Scope 2 Emissions',S.esg.ghgScope2.toLocaleString(),'tCO₂e','↓ 7.1%'],
+            ['GHG Scope 3 Emissions',S.esg.ghgScope3.toLocaleString(),'tCO₂e','↓ 2.8%'],
+            ['Energy Intensity',S.esg.energyIntensity,'GJ / ₹ Cr Revenue','↓ 5.3%'],
+            ['Water Intensity',S.esg.waterIntensity,'KL / ₹ Cr Revenue','↓ 3.6%'],
+            ['PM2.5',S.esg.airPM25,'µg/m³','✓ CPCB'],
+            ['NOx',S.esg.airNOx,'µg/m³','✓ CPCB']
+          ].map((r,i)=>`<tr style="background:${i%2?'#f8fafc':'#fff'}">
+            ${r.map(c=>`<td style="padding:7px 12px;border-bottom:1px solid #f1f5f9">${c}</td>`).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="font-size:1rem;font-weight:900;color:#0f172a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e2e8f0">Social & Governance</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px">
+          <div style="font-weight:800;color:#1e40af;margin-bottom:10px">Social Metrics</div>
+          ${[['Women in Workforce',S.esg.women+'%'],['Employee Turnover',S.esg.turnover+'%'],['Training Hours / Employee',S.esg.trainingHours+' hrs'],['Communities Engaged',S.esg.communities],['CSR Spend',`₹ ${S.esg.csr} Cr`]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #dbeafe;font-size:.78rem"><span style="color:#374151">${k}</span><span style="font-weight:700;color:#1e40af">${v}</span></div>`).join('')}
+        </div>
+        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:16px">
+          <div style="font-weight:800;color:#7c3aed;margin-bottom:10px">Governance Metrics</div>
+          ${[['Board Size',S.esg.boardSize],['Independent Directors',S.esg.independent],['Women on Board',S.esg.women_board],['Audit Committee Meetings',S.esg.auditMeetings],['Ethics Training Coverage',S.esg.ethicsTraining+'%']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e9d5ff;font-size:.78rem"><span style="color:#374151">${k}</span><span style="font-weight:700;color:#7c3aed">${v}</span></div>`).join('')}
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div style="color:#fff;font-size:.82rem"><div style="font-weight:800;margin-bottom:2px">${S.org.name} | ${S.org.reportYear}</div><div style="color:rgba(255,255,255,.6)">Assured by ${S.org.assuranceProvider} · ${S.org.assuranceLevel}</div></div>
+        <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 16px;color:#86efac;font-size:.8rem;font-weight:800">SAMPLE REPORT — FOR DEMONSTRATION ONLY</div>
+      </div>
+    </div></div>`;
+  document.getElementById('btnPdf').disabled = false;
+  document.getElementById('cfgStatus').textContent = '✅ Sample report loaded — click ⬇ Download PDF to save';
+  r.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ═══ PDF DOWNLOAD ═══ */
+function downloadPDF(){
+  const el=document.getElementById('report');
+  const orgName=el.querySelector('.cover-org')?.textContent||'Sustainability-Report';
+  const year=document.getElementById('year').value||'2024';
+  document.getElementById('cfgStatus').textContent='Generating PDF…';
+  const opt={
+    margin:0,
+    filename:`${orgName.replace(/\s+/g,'-')}-Sustainability-Report-${year}.pdf`,
+    image:{type:'jpeg',quality:0.97},
+    html2canvas:{scale:2,useCORS:true,letterRendering:true},
+    jsPDF:{unit:'px',format:[794,1123],orientation:'portrait',compress:true},
+    pagebreak:{mode:['css','legacy'],after:'.rp'},
+  };
+  html2pdf().set(opt).from(el).save().then(()=>{
+    document.getElementById('cfgStatus').textContent='✓ PDF downloaded';
+  }).catch(e=>{
+    document.getElementById('cfgStatus').textContent=`PDF error: ${e.message}`;
+  });
+}
+
+/* ── Format Picker (universal modal) ───────────────────────── */
+function showFmtPicker() {
+  var container = document.getElementById('report');
+  var orgName = (container && container.querySelector('.cover-org'))
+    ? container.querySelector('.cover-org').textContent.trim()
+    : '';
+  var year = document.getElementById('year') ? document.getElementById('year').value : '';
+  window.ecoExport({
+    title    : (orgName || 'Sustainability') + ' Report' + (year ? ' ' + year : ''),
+    subtitle : 'GRI-aligned Sustainability Report — Choose your preferred format',
+    formats  : ['pdf', 'word', 'pptx', 'excel', 'csv'],
+    onFormat : function (fmt) {
+      if      (fmt === 'pdf')   { downloadPDF(); }
+      else if (fmt === 'word')  { exportAsWord(); }
+      else if (fmt === 'pptx')  { exportAsPPT(); }
+      else if (fmt === 'excel') { _srExportExcel(); }
+      else if (fmt === 'csv')   { _srExportCsv(); }
+    }
+  });
+}
+
+/* ── Sustainability Report CSV Export ───────────────────────── */
+function _srExportCsv() {
+  var container = document.getElementById('report');
+  var orgName = (container && container.querySelector('.cover-org'))
+    ? container.querySelector('.cover-org').textContent.trim() : 'Organisation';
+  var year = document.getElementById('year') ? document.getElementById('year').value : '';
+  /* Extract key metric cells from rendered report */
+  var rows = [['Category', 'Metric', 'Value', 'Unit'], ['Report', 'Organisation', orgName, ''], ['Report', 'Year', year, '']];
+  if (container) {
+    container.querySelectorAll('[data-metric]').forEach(function (el) {
+      rows.push(['KPI', el.getAttribute('data-metric'), el.textContent.trim(), el.getAttribute('data-unit') || '']);
+    });
+  }
+  var csv = window._ecoRowsToCsv(rows);
+  var name = (orgName + (year ? '_' + year : '') + '_Sustainability').replace(/[^a-z0-9]/gi, '_');
+  window._ecoTriggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), name + '.csv');
+}
+
+/* ── Sustainability Report Excel Export ─────────────────────── */
+function _srExportExcel() {
+  var container = document.getElementById('report');
+  var orgName = (container && container.querySelector('.cover-org'))
+    ? container.querySelector('.cover-org').textContent.trim() : 'Organisation';
+  var year = document.getElementById('year') ? document.getElementById('year').value : '';
+  var rows = [['Category', 'Metric', 'Value', 'Unit'], ['Report', 'Organisation', orgName, ''], ['Report', 'Year', year, '']];
+  if (container) {
+    container.querySelectorAll('[data-metric]').forEach(function (el) {
+      rows.push(['KPI', el.getAttribute('data-metric'), el.textContent.trim(), el.getAttribute('data-unit') || '']);
+    });
+  }
+  var xls = window._ecoRowsToXls(rows, 'Sustainability Data');
+  var name = (orgName + (year ? '_' + year : '') + '_Sustainability').replace(/[^a-z0-9]/gi, '_');
+  window._ecoTriggerDownload(new Blob([xls], { type: 'application/vnd.ms-excel;charset=utf-8;' }), name + '.xls');
+}
+
+/* ── Corner decorations helper ──────────────────────────────── */
+function cornerDecorations() {
+  return '<div style="position:absolute;top:0;right:0;width:60px;height:60px;opacity:.22;pointer-events:none;overflow:hidden"><svg viewBox="0 0 60 60" width="60" height="60"><path d="M60 0 L60 60 L0 0 Z" fill="#16a34a"/><path d="M60 0 L60 40 L20 0 Z" fill="#0d9488" opacity=".6"/></svg></div>' +
+    '<div style="position:absolute;bottom:0;left:0;width:60px;height:60px;opacity:.22;pointer-events:none;overflow:hidden"><svg viewBox="0 0 60 60" width="60" height="60"><path d="M0 60 L0 0 L60 60 Z" fill="#7c3aed"/><path d="M0 60 L0 20 L40 60 Z" fill="#ec4899" opacity=".6"/></svg></div>';
+}
+
+/* ── Word Export ─────────────────────────────────────────────── */
+function exportAsWord() {
+  var container = document.getElementById('report');
+  if (!container || !container.querySelector('.rp')) {
+    alert('Please generate the report first.');
+    return;
+  }
+  var orgName = container.querySelector('.cover-org') ? container.querySelector('.cover-org').textContent : 'Sustainability-Report';
+  var year = document.getElementById('year') ? document.getElementById('year').value : '2024';
+  var title = orgName + ' Sustainability Report ' + year;
+  var styleEl = document.querySelector('style');
+  var css = styleEl ? styleEl.innerHTML : '';
+  var wordDoc = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>' + title + '</title><style>' + css + 'body{font-family:Calibri,sans-serif;font-size:11pt}.rp,.rpage{page-break-after:always;margin-bottom:20px;padding:20px}@page{margin:2cm}</style></head><body>' + container.innerHTML + '<script src="js/eco-cursor.js"></script>
+</body></html>';
+  var blob = new Blob(['﻿' + wordDoc], { type: 'application/msword' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = title.replace(/[^a-z0-9]/gi, '_') + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ── PowerPoint Export ───────────────────────────────────────── */
+function exportAsPPT() {
+  if (typeof PptxGenJS === 'undefined') {
+    alert('PowerPoint library not loaded. Check internet connection and try again.');
+    return;
+  }
+  var container = document.getElementById('report');
+  var orgName = (container && container.querySelector('.cover-org')) ? container.querySelector('.cover-org').textContent.trim() : 'Organisation';
+  var year = document.getElementById('year') ? document.getElementById('year').value : '2024';
+  var pptx = new PptxGenJS();
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.title = orgName + ' Sustainability Report ' + year;
+
+  var slide1 = pptx.addSlide();
+  slide1.background = { color: '0F4C2A' };
+  slide1.addText(orgName, { x:0.5, y:1.5, w:12, h:1, fontSize:36, color:'FFFFFF', bold:true, fontFace:'Calibri' });
+  slide1.addText('Sustainability Report — ' + year, { x:0.5, y:2.8, w:12, h:0.7, fontSize:22, color:'86efac', fontFace:'Calibri' });
+  slide1.addText('Generated by EcoSphere | ' + new Date().toLocaleDateString(), { x:0.5, y:3.8, w:12, h:0.5, fontSize:14, color:'a7f3d0', fontFace:'Calibri' });
+
+  var slide2 = pptx.addSlide();
+  slide2.background = { color: 'f8fafc' };
+  slide2.addText('Key Sustainability Metrics', { x:0.5, y:0.3, w:12, h:0.6, fontSize:28, bold:true, color:'0F4C2A', fontFace:'Calibri' });
+  var kpiItems = [];
+  if (container) {
+    var kpiEls = container.querySelectorAll('.kpi-value');
+    var kpiLabels = container.querySelectorAll('.kpi-label');
+    for (var i = 0; i < Math.min(kpiEls.length, 6); i++) {
+      kpiItems.push([(kpiLabels[i] ? kpiLabels[i].textContent.trim() : 'Metric '+(i+1)), kpiEls[i].textContent.trim()]);
+    }
+  }
+  if (kpiItems.length === 0) kpiItems = [['Energy Consumption','N/A'],['Water Usage','N/A'],['GHG Emissions','N/A'],['Waste Recycled','N/A']];
+  var rows2 = [['Metric','Value']].concat(kpiItems);
+  slide2.addTable(rows2, { x:0.5, y:1.2, w:12, colW:[7,5], fontSize:14, fontFace:'Calibri', border:{pt:1,color:'0F4C2A'}, fill:{color:'f0fdf4'}, valign:'middle' });
+
+  var slide3 = pptx.addSlide();
+  slide3.background = { color: 'f8fafc' };
+  slide3.addText('Environmental Performance', { x:0.5, y:0.3, w:12, h:0.6, fontSize:28, bold:true, color:'0F4C2A', fontFace:'Calibri' });
+  slide3.addText('Energy, Water, Emissions & Waste', { x:0.5, y:1.1, w:12, h:0.4, fontSize:16, color:'374151', fontFace:'Calibri' });
+  slide3.addText('• Energy consumption tracked against intensity targets\n• Water withdrawal and recycling efficiency monitored\n• GHG emissions reduction program in progress\n• Waste diversion and recycling rates measured quarterly', { x:0.5, y:1.7, w:12, h:2.0, fontSize:15, color:'064e3b', fontFace:'Calibri' });
+
+  var slide4 = pptx.addSlide();
+  slide4.background = { color: 'f8fafc' };
+  slide4.addText('Social & Governance', { x:0.5, y:0.3, w:12, h:0.6, fontSize:28, bold:true, color:'0f172a', fontFace:'Calibri' });
+  slide4.addText('• Workforce diversity and inclusion programs\n• Employee health, safety and well-being initiatives\n• Community development and CSR investments\n• Board governance and ethical conduct frameworks\n• Transparent stakeholder engagement', { x:0.5, y:1.2, w:12, h:2.5, fontSize:15, color:'374151', fontFace:'Calibri' });
+
+  var slide5 = pptx.addSlide();
+  slide5.background = { color: 'E8F5EE' };
+  slide5.addText('Summary & Future Commitments', { x:0.5, y:0.3, w:12, h:0.6, fontSize:28, bold:true, color:'0F4C2A', fontFace:'Calibri' });
+  slide5.addText('• GRI Standards 2021 aligned reporting\n• SEBI BRSR and TCFD disclosure compliance\n• Net-zero carbon pathway targets established\n• Continuous improvement culture embedded\n• Annual third-party assurance engagement', { x:0.5, y:1.2, w:12, h:2.5, fontSize:15, color:'064e3b', fontFace:'Calibri' });
+  slide5.addText('This report was generated by the EcoSphere platform.', { x:0.5, y:5.5, w:12, h:0.4, fontSize:13, color:'6B7280', fontFace:'Calibri', italic:true });
+
+  var slide6 = pptx.addSlide();
+  slide6.background = { color: '0F4C2A' };
+  slide6.addText(orgName, { x:0.5, y:1.5, w:12, h:0.8, fontSize:32, bold:true, color:'FFFFFF', fontFace:'Calibri' });
+  slide6.addText('Committed to a Sustainable Future', { x:0.5, y:2.5, w:12, h:0.6, fontSize:20, color:'86efac', fontFace:'Calibri', italic:true });
+  slide6.addText('Generated by EcoSphere Environmental Platform | ' + new Date().toLocaleDateString(), { x:0.5, y:5.5, w:12, h:0.4, fontSize:12, color:'a7f3d0', fontFace:'Calibri' });
+
+  pptx.writeFile({ fileName: orgName.replace(/[^a-z0-9]/gi,'_')+'_Sustainability_Report_'+year+'.pptx' });
+}
+
+/* ═══ INIT ═══ */
+(function init(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('orgId')) document.getElementById('orgId').value=p.get('orgId');
+  if(p.get('year'))  document.getElementById('year').value=p.get('year');
+  if(p.get('projectId')) document.getElementById('projectId').value=p.get('projectId');
+  const style=document.createElement('style');
+  style.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(style);
+  if(p.get('orgId')) generate();
+})();
+</script>
+
+<script src="js/eco-export.js"></script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

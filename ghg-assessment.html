@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GHG Compliance Assessment — EcoSphere</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;min-height:100vh;color:#0f172a}
+
+/* Header */
+.gha-header{background:linear-gradient(135deg,#0a1f3d 0%,#0a3d2e 100%);padding:0 28px;height:62px;display:flex;align-items:center;gap:16px;box-shadow:0 3px 14px rgba(0,0,0,.25);position:sticky;top:0;z-index:100}
+.gha-logo{background:rgba(255,255,255,.95);border-radius:8px;overflow:hidden;width:130px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gha-logo img{height:220px;width:220px;margin:-92px -46px}
+.gha-back{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 14px;color:rgba(255,255,255,.85);font-family:Poppins,sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:.15s}
+.gha-back:hover{background:rgba(255,255,255,.18)}
+.gha-title-wrap{flex:1}
+.gha-title{font-family:Poppins,sans-serif;font-size:.96rem;font-weight:800;color:#fff}
+.gha-sub{font-size:.72rem;color:rgba(255,255,255,.65);margin-top:1px}
+.gha-badge{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);border-radius:20px;padding:4px 12px;font-family:Poppins,sans-serif;font-size:.69rem;font-weight:800;color:#6ee7b7;white-space:nowrap}
+
+/* Body layout */
+.gha-body{max-width:920px;margin:32px auto;padding:0 20px 60px}
+
+/* Section cards */
+.gha-section{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;overflow:hidden;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:.2s}
+.gha-section-hd{display:flex;align-items:center;gap:12px;padding:16px 22px;cursor:pointer;user-select:none;border-bottom:1.5px solid transparent;transition:.15s}
+.gha-section-hd:hover{background:#f8fafc}
+.gha-section-hd.open{border-bottom-color:#e2e8f0}
+.gha-sec-num{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;flex-shrink:0}
+.gha-sec-info{flex:1}
+.gha-sec-name{font-family:Poppins,sans-serif;font-size:.88rem;font-weight:800;color:#0f172a}
+.gha-sec-desc{font-size:.72rem;color:#64748b;margin-top:1px}
+.gha-sec-score{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;margin-right:4px}
+.gha-sec-chevron{color:#94a3b8;transition:.22s;font-size:.8rem}
+.gha-section-body{display:none;padding:20px 22px}
+.gha-section-body.open{display:block}
+
+/* Form fields */
+.gha-field{margin-bottom:16px}
+.gha-label{display:block;font-size:.76rem;font-weight:700;color:#374151;margin-bottom:6px}
+.gha-label-sub{font-weight:400;color:#94a3b8;font-size:.7rem;margin-left:6px}
+.gha-radio-group,.gha-check-group{display:flex;flex-direction:column;gap:8px}
+.gha-radio,.gha-check{display:flex;align-items:flex-start;gap:10px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:10px 14px;cursor:pointer;transition:.15s}
+.gha-radio:hover,.gha-check:hover{border-color:#94a3b8;background:#f1f5f9}
+.gha-radio.sel,.gha-check.sel{border-color:#1d4ed8;background:#eff6ff}
+.gha-radio input,.gha-check input{margin-top:2px;accent-color:#1d4ed8;flex-shrink:0}
+.gha-radio-lbl,.gha-check-lbl{font-size:.78rem;color:#374151;line-height:1.5}
+.gha-radio-lbl strong,.gha-check-lbl strong{display:block;font-family:Poppins,sans-serif;font-size:.78rem;font-weight:700;color:#0f172a;margin-bottom:1px}
+.gha-input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-family:Inter,sans-serif;font-size:.83rem;color:#0f172a;background:#fff;transition:.15s}
+.gha-input:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.08)}
+.gha-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.gha-grid2{grid-template-columns:1fr}}
+
+/* Progress bar */
+.gha-progress-wrap{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.gha-prog-title{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;color:#0f172a;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.gha-sections-track{display:flex;gap:6px;flex-wrap:wrap}
+.gha-track-step{flex:1;min-width:80px;text-align:center;padding:7px 6px;border-radius:8px;font-family:Poppins,sans-serif;font-size:.66rem;font-weight:700;border:1.5px solid #e2e8f0;color:#94a3b8;background:#f8fafc;cursor:pointer;transition:.15s}
+.gha-track-step:hover{border-color:#94a3b8}
+.gha-track-step.done{background:#dcfce7;border-color:#86efac;color:#15803d}
+.gha-track-step.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+
+/* Score panel */
+.gha-score-panel{display:none;background:linear-gradient(135deg,#0a1f3d,#0a3d2e);border-radius:16px;padding:28px;margin-bottom:24px;color:#fff}
+.gha-score-panel.show{display:block}
+.gha-score-ring{width:120px;height:120px;margin:0 auto 20px;position:relative}
+.gha-score-ring svg{transform:rotate(-90deg)}
+.gha-score-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Poppins,sans-serif}
+.gha-score-num{font-size:2rem;font-weight:900;color:#fff;line-height:1}
+.gha-score-pct{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:2px}
+.gha-grade-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:20px;font-family:Poppins,sans-serif;font-size:.88rem;font-weight:800;margin-bottom:16px}
+.gha-findings{list-style:none;display:flex;flex-direction:column;gap:8px}
+.gha-finding{display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.08);border-radius:9px;padding:10px 14px;font-size:.76rem;color:rgba(255,255,255,.85);line-height:1.55}
+.gha-finding i{flex-shrink:0;margin-top:2px}
+
+/* Buttons */
+.btn-assess{width:100%;padding:14px;background:linear-gradient(135deg,#1d4ed8,#1e40af);border:none;border-radius:10px;color:#fff;font-family:Poppins,sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:22px;box-shadow:0 4px 14px rgba(29,78,216,.3);transition:.18s}
+.btn-assess:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(29,78,216,.4)}
+.btn-dl{padding:10px 22px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);border-radius:9px;color:#fff;font-family:Poppins,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s;margin-top:16px}
+.btn-dl:hover{background:rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="gha-header">
+  <div class="gha-logo"><img src="assets/logo.png" alt="EcoSphere"/></div>
+  <a href="javascript:history.back()" class="gha-back"><i class="fas fa-arrow-left"></i> Back</a>
+  <div class="gha-title-wrap">
+    <div class="gha-title"><i class="fas fa-smog" style="margin-right:7px;color:#6ee7b7"></i>GHG Compliance Assessment</div>
+    <div class="gha-sub">GHG Protocol · ISO 14064-1 · BRSR Core · SBTi</div>
+  </div>
+  <div class="gha-badge" id="ghaOrgBadge">Loading…</div>
+</header>
+
+<div class="gha-body">
+
+  <!-- Progress tracker -->
+  <div class="gha-progress-wrap">
+    <div class="gha-prog-title"><i class="fas fa-tasks" style="color:#1d4ed8"></i> Assessment Progress</div>
+    <div class="gha-sections-track">
+      <div class="gha-track-step active" id="trk-1" onclick="scrollToSection(1)"><i class="fas fa-building-user"></i><br/>Organisation</div>
+      <div class="gha-track-step" id="trk-2" onclick="scrollToSection(2)"><i class="fas fa-layer-group"></i><br/>GHG Inventory</div>
+      <div class="gha-track-step" id="trk-3" onclick="scrollToSection(3)"><i class="fas fa-search"></i><br/>Verification</div>
+      <div class="gha-track-step" id="trk-4" onclick="scrollToSection(4)"><i class="fas fa-bullseye"></i><br/>Targets</div>
+      <div class="gha-track-step" id="trk-5" onclick="scrollToSection(5)"><i class="fas fa-chart-pie"></i><br/>Disclosure</div>
+    </div>
+  </div>
+
+  <!-- Score panel (shown after submit) -->
+  <div class="gha-score-panel" id="ghgScorePanel">
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="gha-score-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="12"/>
+          <circle id="scoreArc" cx="60" cy="60" r="50" fill="none" stroke="#4ade80" stroke-width="12"
+                  stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="gha-score-val">
+          <span class="gha-score-num" id="scoreNum">—</span>
+          <span class="gha-score-pct">/ 100</span>
+        </div>
+      </div>
+      <div class="gha-grade-badge" id="gradeBadge"></div>
+      <div style="font-family:Poppins,sans-serif;font-size:.82rem;color:rgba(255,255,255,.7)">GHG Compliance Score — <span id="scoreOrgName"></span></div>
+    </div>
+    <ul class="gha-findings" id="ghgFindings"></ul>
+    <div style="text-align:center">
+      <button class="btn-dl" onclick="downloadGHGReport()"><i class="fas fa-download"></i> Download Assessment Report</button>
+    </div>
+  </div>
+
+  <!-- Section 1: Organisation & Baseline -->
+  <div class="gha-section" id="sec-1">
+    <div class="gha-section-hd open" onclick="toggleSection(1)">
+      <div class="gha-sec-num" style="background:#dbeafe;color:#1d4ed8">1</div>
+      <div class="gha-sec-info">
+        <div class="gha-sec-name">Organisation &amp; Baseline</div>
+        <div class="gha-sec-desc">Reporting boundary, industry type and inventory year</div>
+      </div>
+      <span class="gha-sec-score" id="sc-1" style="color:#94a3b8">—</span>
+      <i class="fas fa-chevron-up gha-sec-chevron" id="chv-1"></i>
+    </div>
+    <div class="gha-section-body open" id="body-1">
+      <div class="gha-grid2">
+        <div class="gha-field">
+          <label class="gha-label">Organisation Name</label>
+          <input class="gha-input" id="f-orgname" placeholder="Enter organisation name"/>
+        </div>
+        <div class="gha-field">
+          <label class="gha-label">Reporting Year</label>
+          <input class="gha-input" id="f-year" type="number" min="2015" max="2030" placeholder="e.g. 2024"/>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Industry / Sector</label>
+        <input class="gha-input" id="f-industry" placeholder="e.g. Manufacturing" readonly style="background:#f8fafc"/>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Organisational Boundary Approach<span class="gha-label-sub">How are GHG sources consolidated?</span></label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="boundary" value="operational"/>
+            <div class="gha-radio-lbl"><strong>Operational Control</strong>Control over financial and operating policies — most common for compliance</div>
+          </label>
+          <label class="gha-radio"><input type="radio" name="boundary" value="equity"/>
+            <div class="gha-radio-lbl"><strong>Equity Share</strong>Consolidate GHG emissions proportional to equity stake in operations</div>
+          </label>
+          <label class="gha-radio"><input type="radio" name="boundary" value="financial"/>
+            <div class="gha-radio-lbl"><strong>Financial Control</strong>Consolidate entities over which financial control is exercised</div>
+          </label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">GHG Inventory Prepared By</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="preparedby" value="internal"/><div class="gha-radio-lbl"><strong>Internal Team</strong>In-house sustainability / HSE team prepared the inventory</div></label>
+          <label class="gha-radio"><input type="radio" name="preparedby" value="thirdparty"/><div class="gha-radio-lbl"><strong>Third-Party Consultant</strong>External consultant / auditing firm prepared the inventory</div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: GHG Inventory Quality -->
+  <div class="gha-section" id="sec-2">
+    <div class="gha-section-hd" onclick="toggleSection(2)">
+      <div class="gha-sec-num" style="background:#dcfce7;color:#15803d">2</div>
+      <div class="gha-sec-info">
+        <div class="gha-sec-name">GHG Inventory Quality</div>
+        <div class="gha-sec-desc">Scope coverage, measurement methods and completeness</div>
+      </div>
+      <span class="gha-sec-score" id="sc-2" style="color:#94a3b8">—</span>
+      <i class="fas fa-chevron-down gha-sec-chevron" id="chv-2"></i>
+    </div>
+    <div class="gha-section-body" id="body-2">
+      <div class="gha-field">
+        <label class="gha-label">Scope 1 Emissions (Direct)<span class="gha-label-sub">fuel combustion, company vehicles, process emissions</span></label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="scope1" value="measured"/><div class="gha-radio-lbl"><strong>Measured / Metered</strong>Based on fuel meter readings, stack monitoring or CEMS data</div></label>
+          <label class="gha-radio"><input type="radio" name="scope1" value="estimated"/><div class="gha-radio-lbl"><strong>Estimated (Emission Factors)</strong>Calculated using IPCC / CEA / DEFRA emission factors</div></label>
+          <label class="gha-radio"><input type="radio" name="scope1" value="notcalculated"/><div class="gha-radio-lbl"><strong>Not Calculated</strong>Scope 1 emissions have not been quantified</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Scope 2 Emissions (Purchased Energy)<span class="gha-label-sub">grid electricity, purchased heat/steam</span></label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="scope2" value="locationbased"/><div class="gha-radio-lbl"><strong>Location-Based Method</strong>Using regional/national grid emission factor (CEA / IEA)</div></label>
+          <label class="gha-radio"><input type="radio" name="scope2" value="marketbased"/><div class="gha-radio-lbl"><strong>Market-Based Method</strong>Using supplier-specific / REC-adjusted emission factors</div></label>
+          <label class="gha-radio"><input type="radio" name="scope2" value="notcalculated"/><div class="gha-radio-lbl"><strong>Not Calculated</strong>Scope 2 emissions have not been quantified</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Scope 3 Coverage<span class="gha-label-sub">value chain / indirect emissions</span></label>
+        <div class="gha-check-group">
+          <label class="gha-check"><input type="checkbox" id="sc3-biz"/><div class="gha-check-lbl"><strong>Business Travel</strong>Air, rail, road travel by employees</div></label>
+          <label class="gha-check"><input type="checkbox" id="sc3-com"/><div class="gha-check-lbl"><strong>Employee Commuting</strong>Home-to-work travel by all staff</div></label>
+          <label class="gha-check"><input type="checkbox" id="sc3-sup"/><div class="gha-check-lbl"><strong>Supply Chain (Upstream)</strong>Purchased goods and services, raw materials</div></label>
+          <label class="gha-check"><input type="checkbox" id="sc3-waste"/><div class="gha-check-lbl"><strong>Waste Disposal</strong>Treatment/disposal of solid and liquid waste</div></label>
+          <label class="gha-check"><input type="checkbox" id="sc3-none"/><div class="gha-check-lbl"><strong>None — Scope 3 not assessed</strong></div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Base Year Established?<span class="gha-label-sub">A fixed reference year is required for tracking reductions</span></label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="baseyear" value="yes"/><div class="gha-radio-lbl"><strong>Yes</strong>A documented base year with verified emissions exists</div></label>
+          <label class="gha-radio"><input type="radio" name="baseyear" value="inprogress"/><div class="gha-radio-lbl"><strong>In Progress</strong>Base year being established for the first time</div></label>
+          <label class="gha-radio"><input type="radio" name="baseyear" value="no"/><div class="gha-radio-lbl"><strong>No</strong>No base year established</div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Verification & Assurance -->
+  <div class="gha-section" id="sec-3">
+    <div class="gha-section-hd" onclick="toggleSection(3)">
+      <div class="gha-sec-num" style="background:#ede9fe;color:#7c3aed">3</div>
+      <div class="gha-sec-info">
+        <div class="gha-sec-name">Verification &amp; Assurance</div>
+        <div class="gha-sec-desc">Third-party validation of GHG data and reporting accuracy</div>
+      </div>
+      <span class="gha-sec-score" id="sc-3" style="color:#94a3b8">—</span>
+      <i class="fas fa-chevron-down gha-sec-chevron" id="chv-3"></i>
+    </div>
+    <div class="gha-section-body" id="body-3">
+      <div class="gha-field">
+        <label class="gha-label">GHG Verification Status</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="verification" value="thirdparty"/><div class="gha-radio-lbl"><strong>Third-Party Verified (ISO 14064-3 / AA1000)</strong>Independent accredited verifier has assured the inventory — highest credibility</div></label>
+          <label class="gha-radio"><input type="radio" name="verification" value="firstparty"/><div class="gha-radio-lbl"><strong>First-Party / Internal Review</strong>Internal audit team has reviewed data for accuracy</div></label>
+          <label class="gha-radio"><input type="radio" name="verification" value="notverified"/><div class="gha-radio-lbl"><strong>Not Verified</strong>No formal verification has been conducted</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Assurance Level (if third-party verified)</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="assurance" value="reasonable"/><div class="gha-radio-lbl"><strong>Reasonable Assurance</strong>Equivalent to audit — verifier is satisfied emissions are accurate</div></label>
+          <label class="gha-radio"><input type="radio" name="assurance" value="limited"/><div class="gha-radio-lbl"><strong>Limited Assurance</strong>Review-level — no material misstatements noted</div></label>
+          <label class="gha-radio"><input type="radio" name="assurance" value="na"/><div class="gha-radio-lbl"><strong>Not Applicable</strong>No third-party verification conducted</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Data Management System</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="datamanagement" value="software"/><div class="gha-radio-lbl"><strong>Dedicated GHG / ESG Software</strong>Automated data collection minimises human error</div></label>
+          <label class="gha-radio"><input type="radio" name="datamanagement" value="spreadsheet"/><div class="gha-radio-lbl"><strong>Spreadsheets / Manual Calculation</strong>Acceptable but higher risk of error — document methodology</div></label>
+          <label class="gha-radio"><input type="radio" name="datamanagement" value="none"/><div class="gha-radio-lbl"><strong>No Formal System</strong>Data not systematically captured or stored</div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Targets & Commitments -->
+  <div class="gha-section" id="sec-4">
+    <div class="gha-section-hd" onclick="toggleSection(4)">
+      <div class="gha-sec-num" style="background:#fef3c7;color:#d97706">4</div>
+      <div class="gha-sec-info">
+        <div class="gha-sec-name">Reduction Targets &amp; Commitments</div>
+        <div class="gha-sec-desc">SBTi alignment, internal carbon pricing and reduction strategies</div>
+      </div>
+      <span class="gha-sec-score" id="sc-4" style="color:#94a3b8">—</span>
+      <i class="fas fa-chevron-down gha-sec-chevron" id="chv-4"></i>
+    </div>
+    <div class="gha-section-body" id="body-4">
+      <div class="gha-field">
+        <label class="gha-label">Science-Based Target (SBTi) Status</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="sbti" value="committed"/><div class="gha-radio-lbl"><strong>Committed — SBTi Approved Target</strong>Organisation has an approved SBTi 1.5°C aligned target</div></label>
+          <label class="gha-radio"><input type="radio" name="sbti" value="inprogress"/><div class="gha-radio-lbl"><strong>In Progress — Target Under Development</strong>SBTi commitment signed; target submission in progress</div></label>
+          <label class="gha-radio"><input type="radio" name="sbti" value="planned"/><div class="gha-radio-lbl"><strong>Planned — Intending to Set SBTi Target</strong>Organisation plans to submit a target within 2 years</div></label>
+          <label class="gha-radio"><input type="radio" name="sbti" value="none"/><div class="gha-radio-lbl"><strong>No Science-Based Target</strong>No SBTi commitment or target set</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Internal Carbon Price</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="carbonprice" value="yes"/><div class="gha-radio-lbl"><strong>Yes — Applied to Investment Decisions</strong>Internal carbon price (shadow price) used in capex evaluations</div></label>
+          <label class="gha-radio"><input type="radio" name="carbonprice" value="planned"/><div class="gha-radio-lbl"><strong>Planned — Under Development</strong>Internal carbon pricing mechanism being designed</div></label>
+          <label class="gha-radio"><input type="radio" name="carbonprice" value="no"/><div class="gha-radio-lbl"><strong>No — Not in Use</strong>No internal carbon price applied</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Renewable Energy Usage</label>
+        <div class="gha-grid2">
+          <div>
+            <label class="gha-label" style="font-weight:600;color:#64748b">% of electricity from renewables</label>
+            <input class="gha-input" id="f-renewable-pct" type="number" min="0" max="100" placeholder="e.g. 35"/>
+          </div>
+          <div>
+            <label class="gha-label" style="font-weight:600;color:#64748b">Target % by 2030</label>
+            <input class="gha-input" id="f-renewable-target" type="number" min="0" max="100" placeholder="e.g. 70"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Disclosure & Reporting -->
+  <div class="gha-section" id="sec-5">
+    <div class="gha-section-hd" onclick="toggleSection(5)">
+      <div class="gha-sec-num" style="background:#fdf4ff;color:#7c3aed">5</div>
+      <div class="gha-sec-info">
+        <div class="gha-sec-name">Disclosure &amp; Reporting</div>
+        <div class="gha-sec-desc">BRSR, CDP, GRI and public disclosure of GHG data</div>
+      </div>
+      <span class="gha-sec-score" id="sc-5" style="color:#94a3b8">—</span>
+      <i class="fas fa-chevron-down gha-sec-chevron" id="chv-5"></i>
+    </div>
+    <div class="gha-section-body" id="body-5">
+      <div class="gha-field">
+        <label class="gha-label">BRSR Disclosure<span class="gha-label-sub">Business Responsibility and Sustainability Report (SEBI mandated for top 1000 listed companies)</span></label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="brsr" value="full"/><div class="gha-radio-lbl"><strong>Full BRSR Core Disclosure</strong>All GHG metrics (Scope 1, 2, 3, intensity) disclosed in annual report</div></label>
+          <label class="gha-radio"><input type="radio" name="brsr" value="partial"/><div class="gha-radio-lbl"><strong>Partial Disclosure</strong>Some GHG metrics disclosed; complete disclosure in progress</div></label>
+          <label class="gha-radio"><input type="radio" name="brsr" value="notapplicable"/><div class="gha-radio-lbl"><strong>Not Applicable / Voluntary</strong>Organisation is not subject to BRSR mandate</div></label>
+          <label class="gha-radio"><input type="radio" name="brsr" value="no"/><div class="gha-radio-lbl"><strong>No Disclosure</strong>No BRSR disclosure made</div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">CDP / GRI Reporting</label>
+        <div class="gha-check-group">
+          <label class="gha-check"><input type="checkbox" id="rpt-cdp"/><div class="gha-check-lbl"><strong>CDP Climate Questionnaire</strong>Annual CDP disclosure submitted</div></label>
+          <label class="gha-check"><input type="checkbox" id="rpt-gri"/><div class="gha-check-lbl"><strong>GRI 305 (Emissions) Standard</strong>GRI Standards emissions disclosures published</div></label>
+          <label class="gha-check"><input type="checkbox" id="rpt-tcfd"/><div class="gha-check-lbl"><strong>TCFD Aligned Reporting</strong>Task Force on Climate-related Financial Disclosures applied</div></label>
+          <label class="gha-check"><input type="checkbox" id="rpt-none"/><div class="gha-check-lbl"><strong>None of the above</strong></div></label>
+        </div>
+      </div>
+      <div class="gha-field">
+        <label class="gha-label">Public Availability of GHG Data</label>
+        <div class="gha-radio-group">
+          <label class="gha-radio"><input type="radio" name="public" value="yes"/><div class="gha-radio-lbl"><strong>Publicly Available</strong>GHG inventory / emissions data published on website or annual report</div></label>
+          <label class="gha-radio"><input type="radio" name="public" value="stakeholders"/><div class="gha-radio-lbl"><strong>Available to Stakeholders on Request</strong>Data shared with investors/regulators but not publicly posted</div></label>
+          <label class="gha-radio"><input type="radio" name="public" value="no"/><div class="gha-radio-lbl"><strong>Not Disclosed Externally</strong>GHG data kept internal only</div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit button -->
+  <button class="btn-assess" onclick="calculateGHGScore()">
+    <i class="fas fa-calculator"></i> Calculate GHG Compliance Score
+  </button>
+
+</div><!-- end gha-body -->
+
+<script>
+var params = new URLSearchParams(window.location.search);
+var ORG_ID = params.get('orgId') || localStorage.getItem('eco_org_id') || '';
+var orgName = sessionStorage.getItem('ecoOrgName') || localStorage.getItem('ecoOrgName') || 'Your Organisation';
+var industry = sessionStorage.getItem('ecoIndustry') || localStorage.getItem('ecoIndustry') || '';
+
+/* Pre-fill org info */
+document.getElementById('ghaOrgBadge').textContent = orgName || 'GHG Assessment';
+if (orgName) document.getElementById('f-orgname').value = orgName;
+if (industry) document.getElementById('f-industry').value = industry;
+var year = new Date().getFullYear();
+document.getElementById('f-year').value = year;
+
+/* Highlight selected radio/check */
+document.addEventListener('change', function(e) {
+  if (e.target.type === 'radio') {
+    var grp = e.target.name;
+    document.querySelectorAll('input[name="'+grp+'"]').forEach(function(r){
+      r.closest('.gha-radio').classList.toggle('sel', r.checked);
+    });
+  }
+  if (e.target.type === 'checkbox') {
+    e.target.closest('.gha-check').classList.toggle('sel', e.target.checked);
+  }
+});
+
+/* Section toggle */
+function toggleSection(n) {
+  var body = document.getElementById('body-'+n);
+  var chv  = document.getElementById('chv-'+n);
+  var hd   = document.querySelector('#sec-'+n+' .gha-section-hd');
+  var open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  hd.classList.toggle('open', !open);
+  chv.className = 'fas fa-chevron-'+(open?'down':'up')+' gha-sec-chevron';
+}
+
+function scrollToSection(n) {
+  var el = document.getElementById('sec-'+n);
+  if (!el) return;
+  var body = document.getElementById('body-'+n);
+  if (!body.classList.contains('open')) toggleSection(n);
+  setTimeout(function(){ el.scrollIntoView({behavior:'smooth',block:'start'}); }, 80);
+}
+
+/* Score calculation */
+function calculateGHGScore() {
+  var score = 0; var findings = [];
+
+  /* S1: Organisation (15 pts) */
+  var s1 = 0;
+  var boundary = document.querySelector('input[name="boundary"]:checked');
+  var prepby   = document.querySelector('input[name="preparedby"]:checked');
+  if (boundary) s1 += 8;
+  if (prepby)   s1 += 7;
+  score += s1;
+  document.getElementById('sc-1').textContent = s1+'/15';
+  document.getElementById('sc-1').style.color = s1>=10?'#15803d':s1>=6?'#d97706':'#dc2626';
+  document.getElementById('trk-1').className = 'gha-track-step done';
+  if (!boundary) findings.push({icon:'fa-exclamation-triangle',col:'#fbbf24',txt:'Define your organisational boundary (operational control / equity share) for GHG consolidation.'});
+
+  /* S2: Inventory (30 pts) */
+  var s2 = 0;
+  var sc1 = document.querySelector('input[name="scope1"]:checked');
+  var sc2 = document.querySelector('input[name="scope2"]:checked');
+  var by  = document.querySelector('input[name="baseyear"]:checked');
+  if (sc1 && sc1.value==='measured')     s2 += 12;
+  else if (sc1 && sc1.value==='estimated') s2 += 8;
+  if (sc2 && sc2.value!=='notcalculated') s2 += 10;
+  var sc3checked = ['sc3-biz','sc3-com','sc3-sup','sc3-waste'].filter(function(id){return document.getElementById(id)&&document.getElementById(id).checked;});
+  s2 += Math.min(sc3checked.length*2, 5);
+  if (by && by.value==='yes') s2 += 3;
+  score += s2;
+  document.getElementById('sc-2').textContent = s2+'/30';
+  document.getElementById('sc-2').style.color = s2>=22?'#15803d':s2>=14?'#d97706':'#dc2626';
+  document.getElementById('trk-2').className = 'gha-track-step done';
+  if (!sc1 || sc1.value==='notcalculated') findings.push({icon:'fa-times-circle',col:'#ef4444',txt:'Scope 1 (direct) emissions have not been quantified — mandatory under GHG Protocol and BRSR Core.'});
+  if (!sc2 || sc2.value==='notcalculated') findings.push({icon:'fa-times-circle',col:'#ef4444',txt:'Scope 2 (purchased energy) emissions missing — required for BRSR GRI 305 disclosure.'});
+  if (sc3checked.length===0) findings.push({icon:'fa-exclamation-circle',col:'#f59e0b',txt:'Scope 3 not assessed. Material upstream/downstream emissions may be underreported — recommended for completeness.'});
+
+  /* S3: Verification (20 pts) */
+  var s3 = 0;
+  var veri  = document.querySelector('input[name="verification"]:checked');
+  var assur = document.querySelector('input[name="assurance"]:checked');
+  var datamgmt = document.querySelector('input[name="datamanagement"]:checked');
+  if (veri && veri.value==='thirdparty')  s3 += 12;
+  else if (veri && veri.value==='firstparty') s3 += 6;
+  if (assur && assur.value==='reasonable') s3 += 5;
+  else if (assur && assur.value==='limited') s3 += 3;
+  if (datamgmt && datamgmt.value==='software') s3 += 3;
+  else if (datamgmt && datamgmt.value==='spreadsheet') s3 += 1;
+  score += s3;
+  document.getElementById('sc-3').textContent = s3+'/20';
+  document.getElementById('sc-3').style.color = s3>=15?'#15803d':s3>=8?'#d97706':'#dc2626';
+  document.getElementById('trk-3').className = 'gha-track-step done';
+  if (!veri || veri.value==='notverified') findings.push({icon:'fa-shield-halved',col:'#f59e0b',txt:'Third-party verification absent. ISO 14064-3 verification increases credibility with regulators and investors.'});
+
+  /* S4: Targets (20 pts) */
+  var s4 = 0;
+  var sbti = document.querySelector('input[name="sbti"]:checked');
+  var cp   = document.querySelector('input[name="carbonprice"]:checked');
+  var renewPct = parseFloat(document.getElementById('f-renewable-pct').value)||0;
+  if (sbti && sbti.value==='committed')    s4 += 12;
+  else if (sbti && sbti.value==='inprogress') s4 += 8;
+  else if (sbti && sbti.value==='planned')    s4 += 4;
+  if (cp && cp.value==='yes')     s4 += 5;
+  else if (cp && cp.value==='planned') s4 += 2;
+  if (renewPct>=50) s4 += 3;
+  else if (renewPct>=25) s4 += 2;
+  else if (renewPct>0)   s4 += 1;
+  score += s4;
+  document.getElementById('sc-4').textContent = s4+'/20';
+  document.getElementById('sc-4').style.color = s4>=15?'#15803d':s4>=8?'#d97706':'#dc2626';
+  document.getElementById('trk-4').className = 'gha-track-step done';
+  if (!sbti || sbti.value==='none') findings.push({icon:'fa-seedling',col:'#f59e0b',txt:'No Science-Based Target set. SBTi commitment signals alignment with 1.5°C and is increasingly expected by investors.'});
+
+  /* S5: Disclosure (15 pts) */
+  var s5 = 0;
+  var brsr = document.querySelector('input[name="brsr"]:checked');
+  var pub  = document.querySelector('input[name="public"]:checked');
+  if (brsr && brsr.value==='full')    s5 += 7;
+  else if (brsr && brsr.value==='partial') s5 += 4;
+  var rptCount = ['rpt-cdp','rpt-gri','rpt-tcfd'].filter(function(id){return document.getElementById(id)&&document.getElementById(id).checked;}).length;
+  s5 += Math.min(rptCount*3, 6);
+  if (pub && pub.value==='yes') s5 += 2;
+  score += s5;
+  document.getElementById('sc-5').textContent = s5+'/15';
+  document.getElementById('sc-5').style.color = s5>=11?'#15803d':s5>=6?'#d97706':'#dc2626';
+  document.getElementById('trk-5').className = 'gha-track-step done';
+  if (!brsr || brsr.value==='no') findings.push({icon:'fa-file-alt',col:'#f59e0b',txt:'BRSR Core disclosure not completed. Required for SEBI-listed organisations; strongly recommended for all.'});
+  if (rptCount===0) findings.push({icon:'fa-eye-slash',col:'#94a3b8',txt:'No CDP/GRI/TCFD reporting. Publishing GHG data externally signals transparency to investors and regulators.'});
+
+  /* Save to localStorage */
+  var result = {score:score, industry:industry, orgName:orgName, year:year, savedAt:new Date().toISOString()};
+  try { localStorage.setItem('ghgAssessment_'+(ORG_ID||'default'), JSON.stringify(result)); } catch(e) {}
+
+  /* Show score panel */
+  var panel = document.getElementById('ghgScorePanel');
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreOrgName').textContent = orgName;
+
+  /* Animate ring */
+  var arc = document.getElementById('scoreArc');
+  var offset = 314 - (314 * score / 100);
+  arc.style.strokeDashoffset = offset;
+  arc.style.stroke = score>=75?'#4ade80':score>=50?'#fbbf24':'#f87171';
+
+  /* Grade */
+  var grade, gColor, gBg;
+  if (score>=85){grade='A — Excellent';gColor='#065f46';gBg='#dcfce7';}
+  else if (score>=70){grade='B — Good';gColor='#1e40af';gBg='#dbeafe';}
+  else if (score>=50){grade='C — Developing';gColor='#92400e';gBg='#fef3c7';}
+  else {grade='D — Needs Improvement';gColor='#dc2626';gBg='#fee2e2';}
+  var gb = document.getElementById('gradeBadge');
+  gb.textContent = grade; gb.style.background=gBg; gb.style.color=gColor;
+
+  /* Good findings */
+  if (score>=75) findings.unshift({icon:'fa-check-circle',col:'#4ade80',txt:'Strong GHG compliance posture — organisation demonstrates leadership in emissions management.'});
+  if (s3>=15)    findings.unshift({icon:'fa-shield-check',col:'#4ade80',txt:'Third-party verification in place — data credibility is high for regulatory and investor reporting.'});
+  if (s4>=15)    findings.unshift({icon:'fa-seedling',col:'#4ade80',txt:'Science-Based Target committed — aligned with Paris Agreement 1.5°C pathway.'});
+
+  /* Render findings */
+  var ul = document.getElementById('ghgFindings');
+  ul.innerHTML = findings.map(function(f){
+    return '<li class="gha-finding"><i class="fas '+f.icon+'" style="color:'+f.col+'"></i><span>'+f.txt+'</span></li>';
+  }).join('');
+}
+
+function downloadGHGReport() {
+  var score = parseInt(document.getElementById('scoreNum').textContent)||0;
+  var grade = document.getElementById('gradeBadge').textContent;
+  var lines = [
+    'GHG COMPLIANCE ASSESSMENT REPORT',
+    '=================================',
+    'Organisation : ' + (document.getElementById('f-orgname').value||orgName),
+    'Industry     : ' + (document.getElementById('f-industry').value||industry),
+    'Reporting Yr : ' + (document.getElementById('f-year').value||new Date().getFullYear()),
+    'Assessment   : ' + new Date().toLocaleDateString('en-IN'),
+    '',
+    'OVERALL SCORE : ' + score + ' / 100',
+    'GRADE         : ' + grade,
+    '',
+    'SECTION SCORES',
+    '--------------',
+    'Organisation & Baseline    : ' + (document.getElementById('sc-1').textContent||'—'),
+    'GHG Inventory Quality      : ' + (document.getElementById('sc-2').textContent||'—'),
+    'Verification & Assurance   : ' + (document.getElementById('sc-3').textContent||'—'),
+    'Targets & Commitments      : ' + (document.getElementById('sc-4').textContent||'—'),
+    'Disclosure & Reporting     : ' + (document.getElementById('sc-5').textContent||'—'),
+    '',
+    'FINDINGS',
+    '--------'
+  ];
+  document.querySelectorAll('.gha-finding span').forEach(function(f){lines.push('• '+f.textContent);});
+  lines.push('','Standards: GHG Protocol Corporate Standard | ISO 14064-1 | BRSR Core | SBTi 1.5°C','Generated by EcoSphere Platform');
+  var blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = (orgName||'Org').replace(/\s+/g,'_')+'_GHG_Assessment_'+new Date().getFullYear()+'.txt';
+  a.click();
+}
+</script>
+</body>
+</html>

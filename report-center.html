@@ -1,0 +1,1286 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Report Center – EcoSphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f9f4;color:#1e293b;min-height:100vh}
+a{text-decoration:none;color:inherit}
+/* HEADER */
+.hdr{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-logo{font-family:'Poppins',sans-serif;font-size:1.2rem;font-weight:800;color:#16a34a}
+.hdr-logo span{color:#0a3d2e}
+.hdr-back{background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;padding:7px 16px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer}
+.hdr-back:hover{background:#dcfce7}
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 60px)}
+/* SIDEBAR */
+.sidebar{width:230px;background:#fff;border-right:1px solid #e2e8f0;padding:20px 0;flex-shrink:0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.sidebar-title{font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;padding:0 20px 10px}
+.tab-btn{display:flex;align-items:center;gap:10px;width:100%;padding:11px 20px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:500;color:#64748b;text-align:left;transition:all .15s}
+.tab-btn:hover{background:#f0fdf4;color:#16a34a}
+.tab-btn.active{background:#f0fdf4;color:#16a34a;border-right:3px solid #16a34a;font-weight:600}
+.tab-btn .ico{font-size:1.1rem;width:22px}
+.sidebar-sep{height:1px;background:#f1f5f9;margin:10px 20px}
+/* MAIN */
+.main{flex:1;padding:28px;overflow-y:auto}
+.tab-panel{display:none}.tab-panel.active{display:block}
+/* CARDS */
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:22px;margin-bottom:20px}
+.card-title{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:#0a3d2e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+/* FORMS */
+.section-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#16a34a;background:#f0fdf4;border-left:3px solid #16a34a;padding:7px 12px;border-radius:0 6px 6px 0;margin:18px 0 12px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:.78rem;font-weight:600;color:#475569}
+.form-group input,.form-group select,.form-group textarea{border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:.88rem;font-family:'Inter',sans-serif;color:#1e293b;background:#fff;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.08)}
+.form-group textarea{resize:vertical;min-height:80px}
+/* BUTTONS */
+.btn{padding:10px 22px;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#16a34a;color:#fff}.btn-primary:hover{background:#15803d}
+.btn-secondary{background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0}.btn-secondary:hover{background:#dcfce7}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca}.btn-danger:hover{background:#fee2e2}
+.btn-blue{background:#1d4ed8;color:#fff}.btn-blue:hover{background:#1e40af}
+.btn-lg{padding:13px 28px;font-size:.95rem}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+/* ALERT */
+.alert-today{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;padding:11px 16px;border-radius:10px;font-size:.88rem;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead{background:#f0fdf4}
+th{padding:10px 12px;text-align:left;font-weight:700;color:#0a3d2e;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #bbf7d0}
+td{padding:9px 12px;border-bottom:1px solid #f1f5f9;color:#374151}
+tr:hover td{background:#f9fafb}
+.badge{padding:3px 8px;border-radius:5px;font-size:.72rem;font-weight:600}
+.badge-green{background:#dcfce7;color:#16a34a}
+.badge-yellow{background:#fef9c3;color:#854d0e}
+.badge-red{background:#fee2e2;color:#dc2626}
+/* CERT GRID */
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.cert-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;text-align:center;transition:all .2s}
+.cert-card:hover{border-color:#16a34a;box-shadow:0 4px 20px rgba(22,163,74,.12);transform:translateY(-2px)}
+.cert-icon{font-size:2.4rem;margin-bottom:10px}
+.cert-card h4{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:700;color:#0a3d2e;margin-bottom:6px}
+.cert-card p{font-size:.8rem;color:#64748b;margin-bottom:14px;line-height:1.5}
+/* TOAST */
+#toast{position:fixed;bottom:28px;right:28px;background:#0a3d2e;color:#fff;padding:13px 22px;border-radius:10px;font-size:.88rem;font-weight:500;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:9999;max-width:320px}
+#toast.show{opacity:1;transform:translateY(0)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:90%;max-width:700px;max-height:85vh;overflow-y:auto}
+.modal-title{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:700;color:#0a3d2e;margin-bottom:18px}
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:center}
+.stat-box .sv{font-size:1.5rem;font-weight:700;color:#16a34a}
+.stat-box .sl{font-size:.75rem;color:#64748b;margin-top:3px}
+/* DATE HEADER */
+.page-title{font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:800;color:#0a3d2e;margin-bottom:4px}
+.page-sub{font-size:.85rem;color:#64748b;margin-bottom:20px}
+/* SEARCH ROW */
+.search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search-row input,.search-row select{border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.85rem;font-family:'Inter',sans-serif;outline:none}
+.search-row input:focus,.search-row select:focus{border-color:#16a34a}
+.ml-auto{margin-left:auto}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">Eco<span>Sphere</span> <span style="font-size:.75rem;font-weight:500;color:#64748b;margin-left:8px">Report Center</span></div>
+  <button class="hdr-back" onclick="location.href='org-portal.html'">← Back to Portal</button>
+</header>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-title">Data & Reports</div>
+  <button class="tab-btn active" data-tab="daily"><span class="ico">📅</span>Daily Data Log</button>
+  <button class="tab-btn" data-tab="history"><span class="ico">📊</span>Data History</button>
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-title" style="margin-top:6px">Generate Reports</div>
+  <button class="tab-btn" data-tab="esg"><span class="ico">🌿</span>ESG / Sustainability</button>
+  <button class="tab-btn" data-tab="eia"><span class="ico">🗺️</span>EIA Report</button>
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-title" style="margin-top:6px">Certificates</div>
+  <button class="tab-btn" data-tab="certs"><span class="ico">🏅</span>Certificates</button>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ===== TAB 1: DAILY LOG ===== -->
+<section id="tab-daily" class="tab-panel active">
+  <div class="page-title">Daily Environmental Log</div>
+  <div class="page-sub">Enter today's environmental readings. All data is saved and used to generate monthly/annual reports.</div>
+  <div id="today-alert" class="alert-today" style="display:none">⚠️ No entry found for today. Please fill and save today's data below.</div>
+  <div class="card">
+    <div class="card-title">📅 Log Entry Date</div>
+    <div class="form-grid" style="grid-template-columns:220px 1fr">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="log-date">
+      </div>
+      <div class="form-group">
+        <label>Site / Location</label>
+        <input type="text" id="log-site" placeholder="e.g. Unit 1 – Hyderabad">
+      </div>
+    </div>
+  </div>
+
+  <!-- Air Quality -->
+  <div class="card">
+    <div class="section-label">A — Ambient Air Quality Parameters</div>
+    <div class="form-grid">
+      <div class="form-group"><label>PM2.5 (µg/m³)</label><input type="number" id="pm25" placeholder="e.g. 28.5" step="0.01"></div>
+      <div class="form-group"><label>PM10 (µg/m³)</label><input type="number" id="pm10" placeholder="e.g. 55.0" step="0.01"></div>
+      <div class="form-group"><label>SO2 (µg/m³)</label><input type="number" id="so2" placeholder="e.g. 12.3" step="0.01"></div>
+      <div class="form-group"><label>NOx (µg/m³)</label><input type="number" id="nox" placeholder="e.g. 18.7" step="0.01"></div>
+      <div class="form-group"><label>CO (mg/m³)</label><input type="number" id="co" placeholder="e.g. 1.2" step="0.01"></div>
+      <div class="form-group"><label>O3 (µg/m³)</label><input type="number" id="o3" placeholder="e.g. 45.0" step="0.01"></div>
+    </div>
+  </div>
+
+  <!-- Water Quality -->
+  <div class="card">
+    <div class="section-label">B — Water Quality Parameters</div>
+    <div class="form-grid">
+      <div class="form-group"><label>pH</label><input type="number" id="wph" placeholder="6.5 – 8.5" step="0.01"></div>
+      <div class="form-group"><label>BOD (mg/L)</label><input type="number" id="bod" placeholder="e.g. 3.2" step="0.01"></div>
+      <div class="form-group"><label>COD (mg/L)</label><input type="number" id="cod" placeholder="e.g. 15.0" step="0.01"></div>
+      <div class="form-group"><label>TSS (mg/L)</label><input type="number" id="tss" placeholder="e.g. 8.5" step="0.01"></div>
+      <div class="form-group"><label>TDS (mg/L)</label><input type="number" id="tds" placeholder="e.g. 420" step="0.01"></div>
+      <div class="form-group"><label>DO (mg/L)</label><input type="number" id="do_v" placeholder="e.g. 6.8" step="0.01"></div>
+    </div>
+  </div>
+
+  <!-- Energy -->
+  <div class="card">
+    <div class="section-label">C — Energy Consumption</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Grid Electricity (kWh)</label><input type="number" id="grid_kwh" placeholder="e.g. 12500" step="0.01"></div>
+      <div class="form-group"><label>Renewable Energy (kWh)</label><input type="number" id="renew_kwh" placeholder="e.g. 3200" step="0.01"></div>
+      <div class="form-group"><label>Diesel / HSD (Litres)</label><input type="number" id="diesel_l" placeholder="e.g. 450" step="0.01"></div>
+      <div class="form-group"><label>Natural Gas (m³)</label><input type="number" id="gas_m3" placeholder="e.g. 120" step="0.01"></div>
+      <div class="form-group"><label>LPG (kg)</label><input type="number" id="lpg_kg" placeholder="e.g. 35" step="0.01"></div>
+    </div>
+  </div>
+
+  <!-- Effluent -->
+  <div class="card">
+    <div class="section-label">D — Effluent Discharge</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Effluent Volume (KL)</label><input type="number" id="eff_vol" placeholder="e.g. 85" step="0.01"></div>
+      <div class="form-group"><label>Effluent pH</label><input type="number" id="eff_ph" placeholder="6.5 – 8.5" step="0.01"></div>
+      <div class="form-group"><label>Effluent BOD (mg/L)</label><input type="number" id="eff_bod" placeholder="e.g. 20" step="0.01"></div>
+      <div class="form-group"><label>Effluent COD (mg/L)</label><input type="number" id="eff_cod" placeholder="e.g. 85" step="0.01"></div>
+      <div class="form-group"><label>Effluent TSS (mg/L)</label><input type="number" id="eff_tss" placeholder="e.g. 30" step="0.01"></div>
+    </div>
+  </div>
+
+  <!-- Waste -->
+  <div class="card">
+    <div class="section-label">E — Waste Generated</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Hazardous Waste (kg)</label><input type="number" id="w_haz" placeholder="e.g. 120" step="0.01"></div>
+      <div class="form-group"><label>Non-Hazardous Waste (kg)</label><input type="number" id="w_nhaz" placeholder="e.g. 350" step="0.01"></div>
+      <div class="form-group"><label>Recycled Waste (kg)</label><input type="number" id="w_rec" placeholder="e.g. 200" step="0.01"></div>
+      <div class="form-group"><label>Waste to Landfill (kg)</label><input type="number" id="w_land" placeholder="e.g. 50" step="0.01"></div>
+    </div>
+  </div>
+
+  <!-- Noise & GHG -->
+  <div class="card">
+    <div class="section-label">F — Noise Levels</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Day Time Noise (dB)</label><input type="number" id="noise_day" placeholder="e.g. 65" step="0.1"></div>
+      <div class="form-group"><label>Night Time Noise (dB)</label><input type="number" id="noise_ngt" placeholder="e.g. 52" step="0.1"></div>
+    </div>
+    <div class="section-label" style="margin-top:16px">G — GHG Emissions (if metered)</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Scope 1 Direct (tCO2e)</label><input type="number" id="ghg1" placeholder="e.g. 2.4" step="0.001"></div>
+      <div class="form-group"><label>Scope 2 Indirect (tCO2e)</label><input type="number" id="ghg2" placeholder="e.g. 5.8" step="0.001"></div>
+    </div>
+    <div class="section-label" style="margin-top:16px">H — Water Consumption</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Fresh Water (KL)</label><input type="number" id="fw_fresh" placeholder="e.g. 220" step="0.01"></div>
+      <div class="form-group"><label>Recycled / Reused (KL)</label><input type="number" id="fw_recy" placeholder="e.g. 45" step="0.01"></div>
+      <div class="form-group"><label>Rainwater Harvested (KL)</label><input type="number" id="fw_rain" placeholder="e.g. 10" step="0.01"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Remarks / Observations</label>
+      <textarea id="log-remarks" placeholder="Note any abnormal readings, incidents, or observations..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-lg" onclick="saveEntry()">💾 Save Today's Entry</button>
+      <button class="btn btn-secondary" onclick="clearForm()">↺ Clear Form</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TAB 2: HISTORY ===== -->
+<section id="tab-history" class="tab-panel">
+  <div class="page-title">Data History</div>
+  <div class="page-sub">View, edit, and export all saved environmental data entries.</div>
+  <div class="card">
+    <div class="search-row">
+      <input type="text" id="hist-search" placeholder="🔍 Search by date or site..." oninput="renderHistory()">
+      <input type="date" id="hist-from" onchange="renderHistory()">
+      <span style="color:#94a3b8;font-size:.85rem">to</span>
+      <input type="date" id="hist-to" onchange="renderHistory()">
+      <span id="hist-count" style="font-size:.82rem;color:#64748b"></span>
+      <button class="btn btn-secondary ml-auto" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Site</th><th>PM2.5</th><th>PM10</th><th>pH</th>
+          <th>Grid kWh</th><th>Renew kWh</th><th>Hazardous kg</th>
+          <th>Scope1 tCO2e</th><th>Remarks</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="hist-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TAB 3: ESG REPORT ===== -->
+<section id="tab-esg" class="tab-panel">
+  <div class="page-title">ESG / Sustainability Report</div>
+  <div class="page-sub">Configure report settings and generate a GRI-aligned ESG Sustainability Report PDF based on your saved data.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div>
+      <div class="card">
+        <div class="card-title">🏢 Organization Details</div>
+        <div class="form-grid" style="grid-template-columns:1fr">
+          <div class="form-group"><label>Organization Name</label><input type="text" id="esg-org" placeholder="e.g. MSN Laboratories Pvt. Ltd."></div>
+          <div class="form-group"><label>Industry Sector</label>
+            <select id="esg-industry">
+              <option>Pharmaceutical</option><option>Chemical</option><option>Manufacturing</option>
+              <option>Food Processing</option><option>Textile</option><option>Power</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Headquarters / Location</label><input type="text" id="esg-loc" placeholder="e.g. Hyderabad, Telangana, India"></div>
+          <div class="form-group"><label>Reporting Standard</label>
+            <select id="esg-std">
+              <option>GRI Standards 2021</option><option>BRSR</option><option>SEBI BRSR Core</option><option>Custom</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Reporting Period</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Period From</label><input type="date" id="esg-from"></div>
+          <div class="form-group"><label>Period To</label><input type="date" id="esg-to"></div>
+          <div class="form-group"><label>Financial Year</label><input type="text" id="esg-fy" placeholder="e.g. FY 2024-25"></div>
+          <div class="form-group"><label>Prepared By</label><input type="text" id="esg-by" placeholder="Full name"></div>
+          <div class="form-group"><label>Designation</label><input type="text" id="esg-desig" placeholder="e.g. Head – EHS"></div>
+          <div class="form-group"><label>Contact Email</label><input type="email" id="esg-email" placeholder="ehs@company.com"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 Social Data (Annual)</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Total Employees</label><input type="number" id="emp-total" placeholder="e.g. 4500"></div>
+          <div class="form-group"><label>Male Employees</label><input type="number" id="emp-male" placeholder="e.g. 3600"></div>
+          <div class="form-group"><label>Female Employees</label><input type="number" id="emp-female" placeholder="e.g. 900"></div>
+          <div class="form-group"><label>Total Training Hours</label><input type="number" id="train-total" placeholder="e.g. 25000"></div>
+          <div class="form-group"><label>EHS Training Hours</label><input type="number" id="train-ehs" placeholder="e.g. 8000"></div>
+          <div class="form-group"><label>Lost Time Injuries</label><input type="number" id="ohs-lti" placeholder="e.g. 2"></div>
+          <div class="form-group"><label>Near Misses</label><input type="number" id="ohs-nm" placeholder="e.g. 8"></div>
+          <div class="form-group"><label>Fatalities</label><input type="number" id="ohs-fat" placeholder="e.g. 0"></div>
+          <div class="form-group"><label>CSR Expenditure (Rs Lakhs)</label><input type="number" id="csr-exp" placeholder="e.g. 125"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">✍️ Leadership Message</div>
+        <div class="form-group"><label>MD / CEO Message (for report)</label>
+          <textarea id="esg-msg" rows="5" placeholder="Dear Stakeholders, We are pleased to present our Sustainability Report..."></textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px"><label>About the Company (2-3 sentences)</label>
+          <textarea id="esg-about" rows="3" placeholder="Brief company overview for the report..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">📈 Data Preview (from saved entries)</div>
+        <div id="esg-preview" style="font-size:.84rem;color:#374151;line-height:1.7">
+          <p style="color:#94a3b8;font-style:italic">Select a reporting period on the left — preview will update automatically.</p>
+        </div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#0a3d2e,#16a34a);color:#fff">
+        <div class="card-title" style="color:#fff">🌿 Generate ESG Report</div>
+        <p style="font-size:.84rem;opacity:.85;margin-bottom:16px">Generates a professional multi-page GRI-aligned Sustainability Report PDF with all your collected environmental and social data, leadership message, GRI Content Index, and Independent Assurance Statement.</p>
+        <button class="btn btn-lg" style="background:#fff;color:#0a3d2e;width:100%;font-weight:700" onclick="ecoExport({title:'ESG Sustainability Report',subtitle:'GRI-aligned multi-page Sustainability Report',formats:['pdf','word','pptx','excel','csv'],onFormat:function(f){if(f==='pdf')generateESG();else if(f==='word'||f==='pptx')window.open('esg-report.html','_blank');else generateESG();}})">⬇ Download ESG Sustainability Report</button>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff">
+        <div class="card-title" style="color:#fff">📋 GRI Content Index</div>
+        <p style="font-size:.84rem;opacity:.85;margin-bottom:16px">Download a standalone GRI Content Index table as PDF — ready for appending to sustainability disclosures.</p>
+        <button class="btn btn-lg" style="background:#fff;color:#1e3a5f;width:100%;font-weight:700" onclick="ecoExport({title:'GRI Content Index',subtitle:'GRI Standards 2021 — Standalone disclosure index',formats:['pdf','word','csv'],onFormat:function(f){if(f==='pdf')generateGRI();else generateGRI();}})">⬇ Download GRI Index</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TAB 4: EIA REPORT ===== -->
+<section id="tab-eia" class="tab-panel">
+  <div class="page-title">Environmental Impact Assessment (EIA) Report</div>
+  <div class="page-sub">Fill in project and baseline data to generate a structured EIA Report PDF.</div>
+  <div class="card">
+    <div class="card-title">🏗️ Project Details</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Project Name</label><input type="text" id="eia-proj" placeholder="e.g. API Manufacturing Unit – Phase 3"></div>
+      <div class="form-group"><label>Project Type</label>
+        <select id="eia-type">
+          <option>Industrial – Pharmaceutical</option><option>Industrial – Chemical</option><option>Manufacturing</option>
+          <option>Infrastructure</option><option>Mining</option><option>Power Plant</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Location / Site</label><input type="text" id="eia-loc" placeholder="Village, Taluka, District"></div>
+      <div class="form-group"><label>State</label><input type="text" id="eia-state" placeholder="e.g. Telangana"></div>
+      <div class="form-group"><label>Project Area (Hectares)</label><input type="number" id="eia-area" step="0.01"></div>
+      <div class="form-group"><label>Project Cost (Rs Crores)</label><input type="number" id="eia-cost" step="0.01"></div>
+      <div class="form-group"><label>Latitude</label><input type="text" id="eia-lat" placeholder="e.g. 17.3850° N"></div>
+      <div class="form-group"><label>Longitude</label><input type="text" id="eia-lon" placeholder="e.g. 78.4867° E"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏢 Proponent Details</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Company Name</label><input type="text" id="eia-co" placeholder="Legal entity name"></div>
+      <div class="form-group"><label>Registered Address</label><input type="text" id="eia-addr" placeholder="Full address"></div>
+      <div class="form-group"><label>Contact Person</label><input type="text" id="eia-contact" placeholder="Name of authorized person"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="eia-phone"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="eia-email"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🌡️ Baseline Environmental Conditions (Annual Average)</div>
+    <div class="section-label">Air Quality (µg/m³ unless noted)</div>
+    <div class="form-grid">
+      <div class="form-group"><label>PM2.5 (µg/m³)</label><input type="number" id="b-pm25" step="0.01"></div>
+      <div class="form-group"><label>PM10 (µg/m³)</label><input type="number" id="b-pm10" step="0.01"></div>
+      <div class="form-group"><label>SO2 (µg/m³)</label><input type="number" id="b-so2" step="0.01"></div>
+      <div class="form-group"><label>NOx (µg/m³)</label><input type="number" id="b-nox" step="0.01"></div>
+      <div class="form-group"><label>CO (mg/m³)</label><input type="number" id="b-co" step="0.01"></div>
+    </div>
+    <div class="section-label">Noise</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Day Time (dB)</label><input type="number" id="b-nd" step="0.1"></div>
+      <div class="form-group"><label>Night Time (dB)</label><input type="number" id="b-nn" step="0.1"></div>
+    </div>
+    <div class="section-label">Surface Water</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Source Name</label><input type="text" id="b-wsrc" placeholder="e.g. River Krishna"></div>
+      <div class="form-group"><label>pH</label><input type="number" id="b-wph" step="0.01"></div>
+      <div class="form-group"><label>BOD (mg/L)</label><input type="number" id="b-wbod" step="0.01"></div>
+      <div class="form-group"><label>COD (mg/L)</label><input type="number" id="b-wcod" step="0.01"></div>
+      <div class="form-group"><label>DO (mg/L)</label><input type="number" id="b-wdo" step="0.01"></div>
+    </div>
+    <div class="section-label">Groundwater</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Depth (m)</label><input type="number" id="b-gd" step="0.1"></div>
+      <div class="form-group"><label>pH</label><input type="number" id="b-gph" step="0.01"></div>
+      <div class="form-group"><label>TDS (mg/L)</label><input type="number" id="b-gtds" step="0.01"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚡ Environmental Impacts</div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div>
+        <p style="font-size:.82rem;font-weight:600;color:#475569;margin-bottom:10px">Select Applicable Impacts:</p>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-air" checked> Air Quality Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-water" checked> Water Quality Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-soil" checked> Soil / Land Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-noise" checked> Noise Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-bio"> Biodiversity Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-health" checked> Human Health Impact</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem"><input type="checkbox" id="imp-traffic"> Traffic & Transport Impact</label>
+      </div>
+      <div class="form-group">
+        <label>Proposed Mitigation Measures</label>
+        <textarea id="eia-mitigation" rows="8" placeholder="List the key mitigation measures proposed for each identified impact..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#1e3a5f,#0284c7);color:#fff">
+    <div class="card-title" style="color:#fff">🗺️ Generate EIA Report</div>
+    <p style="font-size:.84rem;opacity:.85;margin-bottom:16px">Generates a structured Environmental Impact Assessment Report PDF including baseline conditions, impact matrix, Environmental Monitoring Plan, and mitigation measures.</p>
+    <button class="btn btn-lg" style="background:#fff;color:#1e3a5f;width:100%;font-weight:700" onclick="ecoExport({title:'EIA Report',subtitle:'Environmental Impact Assessment Report',formats:['pdf','word','pptx','excel','csv'],onFormat:function(f){if(f==='pdf')generateEIA();else if(f==='word'||f==='pptx')window.open('eia-report.html','_blank');else generateEIA();}})">⬇ Download EIA Report</button>
+  </div>
+</section>
+
+<!-- ===== TAB 5: CERTIFICATES ===== -->
+<section id="tab-certs" class="tab-panel">
+  <div class="page-title">Download Sample Certificates</div>
+  <div class="page-sub">Generate GRI-aligned assurance certificates and compliance documentation as professional PDFs.</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">⚙️ Certificate Configuration</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Organization Name (for certificates)</label><input type="text" id="cert-org" placeholder="Your company name"></div>
+      <div class="form-group"><label>Issue Date</label><input type="date" id="cert-date"></div>
+      <div class="form-group"><label>Authorized Signatory</label><input type="text" id="cert-sign" placeholder="Name of signing officer"></div>
+      <div class="form-group"><label>Designation</label><input type="text" id="cert-desig" placeholder="e.g. Head – EHS & Sustainability"></div>
+    </div>
+  </div>
+  <div class="cert-grid">
+    <div class="cert-card">
+      <div class="cert-icon">🌱</div>
+      <h4>ISO 14001:2015 Certificate</h4>
+      <p>Environmental Management System certification verifying systematic approach to environmental responsibilities.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'ISO 14001:2015 Certificate',subtitle:'Environmental Management System Certification',formats:['pdf','csv'],onFormat:function(f){downloadCert('iso14001');}})">⬇ Download Certificate</button>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">🌡️</div>
+      <h4>GHG Verification Certificate</h4>
+      <p>Independent third-party verification of Scope 1, 2 & 3 greenhouse gas emissions as per ISO 14064.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'GHG Verification Certificate',subtitle:'ISO 14064 — Scope 1, 2 & 3 Emissions Verification',formats:['pdf','csv'],onFormat:function(f){downloadCert('ghg');}})">⬇ Download Certificate</button>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">📊</div>
+      <h4>ESG Assessment Certificate</h4>
+      <p>Bureau Veritas style independent assurance of ESG disclosures per GRI Standards 2021 and ISAE 3000.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'ESG Assessment Certificate',subtitle:'GRI Standards 2021 — Independent Assurance',formats:['pdf','csv'],onFormat:function(f){downloadCert('esg');}})">⬇ Download Certificate</button>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">⛑️</div>
+      <h4>EHS Compliance Certificate</h4>
+      <p>Environment, Health & Safety compliance certification verifying adherence to regulatory requirements.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'EHS Compliance Certificate',subtitle:'Environment, Health & Safety Compliance',formats:['pdf','csv'],onFormat:function(f){downloadCert('ehs');}})">⬇ Download Certificate</button>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">💧</div>
+      <h4>Water Stewardship Certificate</h4>
+      <p>Responsible water use certification covering withdrawal, recycling, and effluent discharge standards.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'Water Stewardship Certificate',subtitle:'Responsible Water Use Certification',formats:['pdf','csv'],onFormat:function(f){downloadCert('water');}})">⬇ Download Certificate</button>
+    </div>
+    <div class="cert-card">
+      <div class="cert-icon">♻️</div>
+      <h4>Zero Waste to Landfill Cert</h4>
+      <p>Certification confirming achievement of zero landfill waste through recycling and responsible disposal.</p>
+      <button class="btn btn-primary" onclick="ecoExport({title:'Zero Waste to Landfill Certificate',subtitle:'Zero Landfill Waste Achievement Certification',formats:['pdf','csv'],onFormat:function(f){downloadCert('zerowaste');}})">⬇ Download Certificate</button>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Entry</div>
+    <div id="modal-form"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────────────────────
+const DB_KEY='eco_report_v2';
+function db(){return JSON.parse(localStorage.getItem(DB_KEY)||'{"entries":[]}')}
+function saveDb(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
+function toast(msg,ms=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function v(id){const el=document.getElementById(id);return el?(el.type==='number'?(parseFloat(el.value)||0):el.value.trim()):''}
+function set(id,val){const el=document.getElementById(id);if(el)el.value=val}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='history')renderHistory();
+    if(btn.dataset.tab==='esg')updateESGPreview();
+  });
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date().toISOString().slice(0,10);
+  set('log-date',today);
+  set('cert-date',today);
+  const d=db();
+  const hasToday=d.entries.some(e=>e.date===today);
+  if(!hasToday){document.getElementById('today-alert').style.display='flex'}
+  // auto-fill cert org from esg org if available
+  const saved=localStorage.getItem('eco_esg_config');
+  if(saved){const c=JSON.parse(saved);Object.keys(c).forEach(k=>set(k,c[k]))}
+});
+
+// ─── SAVE ENTRY ───────────────────────────────────────────────────────────────
+function saveEntry(){
+  const date=v('log-date');
+  if(!date){toast('⚠ Please select a date');return}
+  const entry={
+    id:uid(),date,site:v('log-site'),
+    air:{pm25:v('pm25'),pm10:v('pm10'),so2:v('so2'),nox:v('nox'),co:v('co'),o3:v('o3')},
+    water:{ph:v('wph'),bod:v('bod'),cod:v('cod'),tss:v('tss'),tds:v('tds'),do_v:v('do_v')},
+    energy:{grid:v('grid_kwh'),renew:v('renew_kwh'),diesel:v('diesel_l'),gas:v('gas_m3'),lpg:v('lpg_kg')},
+    effluent:{vol:v('eff_vol'),ph:v('eff_ph'),bod:v('eff_bod'),cod:v('eff_cod'),tss:v('eff_tss')},
+    waste:{haz:v('w_haz'),nhaz:v('w_nhaz'),rec:v('w_rec'),land:v('w_land')},
+    noise:{day:v('noise_day'),night:v('noise_ngt')},
+    ghg:{s1:v('ghg1'),s2:v('ghg2')},
+    wcons:{fresh:v('fw_fresh'),recy:v('fw_recy'),rain:v('fw_rain')},
+    remarks:v('log-remarks')
+  };
+  const d=db();
+  const idx=d.entries.findIndex(e=>e.date===date&&e.site===entry.site);
+  if(idx>=0){d.entries[idx]={...d.entries[idx],...entry,id:d.entries[idx].id}}else{d.entries.push(entry)}
+  d.entries.sort((a,b)=>b.date.localeCompare(a.date));
+  saveDb(d);
+  document.getElementById('today-alert').style.display='none';
+  toast('✅ Entry saved for '+date);
+}
+function clearForm(){
+  ['pm25','pm10','so2','nox','co','o3','wph','bod','cod','tss','tds','do_v',
+   'grid_kwh','renew_kwh','diesel_l','gas_m3','lpg_kg','eff_vol','eff_ph','eff_bod','eff_cod','eff_tss',
+   'w_haz','w_nhaz','w_rec','w_land','noise_day','noise_ngt','ghg1','ghg2',
+   'fw_fresh','fw_recy','fw_rain','log-site','log-remarks'].forEach(id=>set(id,''));
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory(){
+  const search=(document.getElementById('hist-search').value||'').toLowerCase();
+  const from=document.getElementById('hist-from').value;
+  const to=document.getElementById('hist-to').value;
+  let entries=db().entries.filter(e=>{
+    if(search&&!(e.date.includes(search)||(e.site||'').toLowerCase().includes(search)))return false;
+    if(from&&e.date<from)return false;
+    if(to&&e.date>to)return false;
+    return true;
+  });
+  document.getElementById('hist-count').textContent=`${entries.length} entr${entries.length===1?'y':'ies'}`;
+  const tbody=document.getElementById('hist-tbody');
+  if(!entries.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:#94a3b8;padding:30px">No entries found.</td></tr>';return}
+  tbody.innerHTML=entries.map(e=>`<tr>
+    <td>${e.date}</td><td>${e.site||'—'}</td><td>${e.air.pm25||'—'}</td><td>${e.air.pm10||'—'}</td>
+    <td>${e.water.ph||'—'}</td><td>${e.energy.grid||'—'}</td><td>${e.energy.renew||'—'}</td>
+    <td>${e.waste.haz||'—'}</td><td>${e.ghg.s1||'—'}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.remarks||'—'}</td>
+    <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:.75rem" onclick="editEntry('${e.id}')">✏️</button>
+    <button class="btn btn-danger" style="padding:4px 10px;font-size:.75rem;margin-left:4px" onclick="deleteEntry('${e.id}')">🗑</button></td>
+  </tr>`).join('');
+}
+function deleteEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  const d=db();d.entries=d.entries.filter(e=>e.id!==id);saveDb(d);renderHistory();toast('Entry deleted');
+}
+let editId=null;
+function editEntry(id){
+  const d=db();const e=d.entries.find(x=>x.id===id);if(!e)return;
+  editId=id;
+  document.getElementById('modal-form').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="e-date" value="${e.date}"></div>
+      <div class="form-group"><label>Site</label><input type="text" id="e-site" value="${e.site||''}"></div>
+      <div class="form-group"><label>PM2.5</label><input type="number" id="e-pm25" value="${e.air.pm25||''}"></div>
+      <div class="form-group"><label>PM10</label><input type="number" id="e-pm10" value="${e.air.pm10||''}"></div>
+      <div class="form-group"><label>Grid kWh</label><input type="number" id="e-grid" value="${e.energy.grid||''}"></div>
+      <div class="form-group"><label>Renew kWh</label><input type="number" id="e-renew" value="${e.energy.renew||''}"></div>
+      <div class="form-group"><label>Hazardous Waste kg</label><input type="number" id="e-haz" value="${e.waste.haz||''}"></div>
+      <div class="form-group"><label>Scope1 tCO2e</label><input type="number" id="e-s1" value="${e.ghg.s1||''}"></div>
+      <div class="form-group"><label>Scope2 tCO2e</label><input type="number" id="e-s2" value="${e.ghg.s2||''}"></div>
+      <div class="form-group"><label>Fresh Water KL</label><input type="number" id="e-fw" value="${e.wcons.fresh||''}"></div>
+    </div>
+    <div class="form-group" style="margin-top:12px"><label>Remarks</label><textarea id="e-rem">${e.remarks||''}</textarea></div>`;
+  document.getElementById('edit-modal').classList.add('open');
+}
+function saveEdit(){
+  const d=db();const idx=d.entries.findIndex(e=>e.id===editId);if(idx<0)return;
+  const e=d.entries[idx];
+  e.date=document.getElementById('e-date').value;
+  e.site=document.getElementById('e-site').value;
+  e.air.pm25=parseFloat(document.getElementById('e-pm25').value)||0;
+  e.air.pm10=parseFloat(document.getElementById('e-pm10').value)||0;
+  e.energy.grid=parseFloat(document.getElementById('e-grid').value)||0;
+  e.energy.renew=parseFloat(document.getElementById('e-renew').value)||0;
+  e.waste.haz=parseFloat(document.getElementById('e-haz').value)||0;
+  e.ghg.s1=parseFloat(document.getElementById('e-s1').value)||0;
+  e.ghg.s2=parseFloat(document.getElementById('e-s2').value)||0;
+  e.wcons.fresh=parseFloat(document.getElementById('e-fw').value)||0;
+  e.remarks=document.getElementById('e-rem').value;
+  saveDb(d);closeModal();renderHistory();toast('✅ Entry updated');
+}
+function closeModal(){document.getElementById('edit-modal').classList.remove('open')}
+document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+
+// ─── CSV EXPORT ───────────────────────────────────────────────────────────────
+function exportCSV(){
+  const entries=db().entries;
+  if(!entries.length){toast('No data to export');return}
+  const hdr='Date,Site,PM2.5,PM10,SO2,NOx,CO,O3,pH,BOD,COD,TSS,TDS,DO,Grid kWh,Renew kWh,Diesel L,Gas m3,Eff Vol KL,Haz Waste kg,NHaz Waste kg,Rec Waste kg,Landfill kg,Noise Day dB,Noise Night dB,GHG Scope1,GHG Scope2,Fresh Water KL,Recy Water KL,Remarks';
+  const rows=entries.map(e=>[
+    e.date,e.site||'',e.air.pm25,e.air.pm10,e.air.so2,e.air.nox,e.air.co,e.air.o3,
+    e.water.ph,e.water.bod,e.water.cod,e.water.tss,e.water.tds,e.water.do_v,
+    e.energy.grid,e.energy.renew,e.energy.diesel,e.energy.gas,
+    e.effluent.vol,e.waste.haz,e.waste.nhaz,e.waste.rec,e.waste.land,
+    e.noise.day,e.noise.night,e.ghg.s1,e.ghg.s2,e.wcons.fresh,e.wcons.recy,
+    '"'+(e.remarks||'').replace(/"/g,'""')+'"'
+  ].join(','));
+  const csv=[hdr,...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='eco_environmental_data_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('✅ CSV exported');
+}
+
+// ─── ESG PREVIEW ──────────────────────────────────────────────────────────────
+function updateESGPreview(){
+  const from=v('esg-from'),to=v('esg-to');
+  const entries=db().entries.filter(e=>(!from||e.date>=from)&&(!to||e.date<=to));
+  if(!entries.length){document.getElementById('esg-preview').innerHTML='<p style="color:#94a3b8;font-style:italic">No data found for selected period. Save daily entries first.</p>';return}
+  const sum=(arr,fn)=>arr.reduce((s,e)=>s+(fn(e)||0),0);
+  const avg=(arr,fn)=>(sum(arr,fn)/arr.length).toFixed(2);
+  document.getElementById('esg-preview').innerHTML=`
+    <div class="stat-row">
+      <div class="stat-box"><div class="sv">${entries.length}</div><div class="sl">Days logged</div></div>
+      <div class="stat-box"><div class="sv">${sum(entries,e=>e.energy.grid).toLocaleString()}</div><div class="sl">Grid kWh</div></div>
+      <div class="stat-box"><div class="sv">${sum(entries,e=>e.energy.renew).toLocaleString()}</div><div class="sl">Renew kWh</div></div>
+      <div class="stat-box"><div class="sv">${sum(entries,e=>e.ghg.s1+e.ghg.s2).toFixed(1)}</div><div class="sl">tCO2e Scope1+2</div></div>
+      <div class="stat-box"><div class="sv">${sum(entries,e=>e.wcons.fresh).toLocaleString()}</div><div class="sl">Fresh Water KL</div></div>
+      <div class="stat-box"><div class="sv">${sum(entries,e=>e.waste.haz).toLocaleString()}</div><div class="sl">Hazardous Waste kg</div></div>
+    </div>
+    <p style="font-size:.8rem;color:#64748b">Avg PM2.5: ${avg(entries,e=>e.air.pm25)} µg/m³ &nbsp;|&nbsp; Avg PM10: ${avg(entries,e=>e.air.pm10)} µg/m³ &nbsp;|&nbsp; Avg NOx: ${avg(entries,e=>e.air.nox)} µg/m³</p>`;
+}
+['esg-from','esg-to'].forEach(id=>document.getElementById(id)&&document.getElementById(id).addEventListener('change',updateESGPreview));
+
+// ─── PDF HELPERS ──────────────────────────────────────────────────────────────
+function newDoc(){return new window.jspdf.jsPDF('p','mm','a4')}
+function coverPage(doc,bg,title,subtitle,org,period,accent){
+  doc.setFillColor(...bg);doc.rect(0,0,210,297,'F');
+  // accent bar
+  doc.setFillColor(...accent);doc.rect(0,255,210,42,'F');
+  // title
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
+  doc.setFontSize(32);doc.text(title,20,80);
+  doc.setFontSize(14);doc.setFont('helvetica','normal');
+  doc.text(subtitle,20,95);
+  doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text(org||'Organization Name',20,130);
+  doc.setFontSize(11);doc.setFont('helvetica','normal');
+  doc.text(period||'',20,142);
+  doc.setFontSize(10);doc.text('EcoSphere Sustainability Platform  |  GRI Standards 2021',20,265);
+  doc.text('Powered by EcoSphere  |  www.ecosphere.in',20,272);
+}
+function addSection(doc,title,y,r,g,b){
+  doc.setFillColor(r||10,g||61,b||46);doc.rect(14,y,182,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text(title,17,y+5.5);doc.setTextColor(30,41,59);doc.setFont('helvetica','normal');
+  return y+12;
+}
+function addText(doc,text,x,y,size,color){
+  doc.setFontSize(size||10);doc.setTextColor(...(color||[30,41,59]));
+  doc.setFont('helvetica','normal');
+  const lines=doc.splitTextToSize(text,180);doc.text(lines,x||14,y);
+  return y+lines.length*5+2;
+}
+function pageNum(doc,n){doc.setFontSize(9);doc.setTextColor(148,163,184);doc.text('Page '+n,196,290,'right');doc.text('EcoSphere Report Center',14,290)}
+
+// ─── ESG PDF ──────────────────────────────────────────────────────────────────
+function generateESG(){
+  const org=v('esg-org')||'Your Organization';
+  const fy=v('esg-fy')||'FY 2024-25';
+  const from=v('esg-from'),to=v('esg-to');
+  const entries=db().entries.filter(e=>(!from||e.date>=from)&&(!to||e.date<=to));
+  const by=v('esg-by')||'EHS Team';const desig=v('esg-desig');
+  const email=v('esg-email');const std=v('esg-std')||'GRI Standards 2021';
+  const industry=v('esg-industry')||'Pharmaceutical';
+  const loc=v('esg-loc')||'India';
+  const msg=v('esg-msg')||'We remain committed to sustainable development.';
+  const about=v('esg-about')||org+' is committed to sustainable and responsible operations.';
+  const empTotal=v('emp-total')||0,empM=v('emp-male')||0,empF=v('emp-female')||0;
+  const trainTotal=v('train-total')||0,trainEHS=v('train-ehs')||0;
+  const lti=v('ohs-lti')||0,nm=v('ohs-nm')||0,fat=v('ohs-fat')||0;
+  const csr=v('csr-exp')||0;
+  const sum=(fn)=>entries.reduce((s,e)=>s+(fn(e)||0),0).toFixed(2);
+  const avg=(fn)=>entries.length?(entries.reduce((s,e)=>s+(fn(e)||0),0)/entries.length).toFixed(2):'0';
+  const totalGrid=sum(e=>e.energy.grid);
+  const totalRenew=sum(e=>e.energy.renew);
+  const totalEnergy=(parseFloat(totalGrid)+parseFloat(totalRenew)).toFixed(2);
+  const renewPct=totalEnergy>0?((parseFloat(totalRenew)/parseFloat(totalEnergy))*100).toFixed(1):'0';
+  const totalFresh=sum(e=>e.wcons.fresh);
+  const totalRecy=sum(e=>e.wcons.recy);
+  const totalWater=(parseFloat(totalFresh)+parseFloat(totalRecy)).toFixed(2);
+  const totalS1=sum(e=>e.ghg.s1);const totalS2=sum(e=>e.ghg.s2);
+  const totalGHG=(parseFloat(totalS1)+parseFloat(totalS2)).toFixed(3);
+  const totalHaz=sum(e=>e.waste.haz);const totalNHaz=sum(e=>e.waste.nhaz);
+  const totalRec=sum(e=>e.waste.rec);const totalLand=sum(e=>e.waste.land);
+  const totalWaste=(parseFloat(totalHaz)+parseFloat(totalNHaz)).toFixed(2);
+  const avgPM25=avg(e=>e.air.pm25);const avgPM10=avg(e=>e.air.pm10);
+  const avgSO2=avg(e=>e.air.so2);const avgNOx=avg(e=>e.air.nox);
+  const avgEffVol=sum(e=>e.effluent.vol);
+
+  const doc=newDoc();let pg=1;
+  // PAGE 1 – COVER
+  coverPage(doc,[10,61,46],'SUSTAINABILITY REPORT','Environmental, Social & Governance (ESG) Disclosures',org,fy+' | '+std,[22,163,74]);
+  pageNum(doc,pg++);
+
+  // PAGE 2 – TABLE OF CONTENTS
+  doc.addPage();
+  doc.setFillColor(240,253,244);doc.rect(0,0,210,297,'F');
+  doc.setFontSize(22);doc.setFont('helvetica','bold');doc.setTextColor(10,61,46);doc.text('Table of Contents',14,30);
+  doc.setDrawColor(22,163,74);doc.setLineWidth(0.8);doc.line(14,34,196,34);
+  const toc=[
+    ['1','About this Report & Reporting Scope','3'],['2','Message from Leadership','4'],
+    ['3','About the Organization','5'],['4','Environmental Performance','6'],
+    ['   4.1','Energy Management (GRI 302)','6'],['   4.2','Water & Effluents (GRI 303)','7'],
+    ['   4.3','GHG Emissions (GRI 305)','8'],['   4.4','Air Emissions','8'],
+    ['   4.5','Waste Management (GRI 306)','9'],['5','Social Performance','10'],
+    ['   5.1','Employment (GRI 401)','10'],['   5.2','Training & Education (GRI 404)','10'],
+    ['   5.3','Occupational Health & Safety (GRI 403)','11'],['6','Governance','12'],
+    ['7','GRI Content Index','13'],['8','Independent Assurance Statement','14']
+  ];
+  doc.setFont('helvetica','normal');doc.setFontSize(10);let ty=44;
+  toc.forEach(([n,t,p])=>{
+    doc.setTextColor(10,61,46);doc.text(n,14,ty);
+    doc.setTextColor(30,41,59);doc.text(t,30,ty);
+    doc.setTextColor(100,116,139);doc.text(p,196,ty,'right');
+    doc.setDrawColor(225,232,240);doc.setLineWidth(0.3);doc.line(14,ty+2,196,ty+2);
+    ty+=9;
+  });
+  pageNum(doc,pg++);
+
+  // PAGE 3 – ABOUT REPORT
+  doc.addPage();
+  let y=20;
+  y=addSection(doc,'1. About this Report & Reporting Scope',y);
+  y=addText(doc,'This Sustainability Report presents the Environmental, Social and Governance (ESG) performance of '+org+' for the reporting period '+fy+'. The report has been prepared in accordance with the '+std+'.',14,y+2);
+  y+=4;
+  doc.autoTable({startY:y,head:[['Parameter','Details']],body:[
+    ['Reporting Period',from&&to?from+' to '+to:fy],['Reporting Standard',std],
+    ['Industry',industry],['Location',loc],['Prepared By',by+(desig?', '+desig:'')],
+    ['Contact',email||'N/A'],['Total Entries Logged',entries.length+' daily readings'],
+    ['Assurance Level','Limited Assurance (GRI / ISAE 3000 basis)']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'},
+  columnStyles:{0:{fontStyle:'bold',cellWidth:60}}});
+  y=doc.lastAutoTable.finalY+10;
+  y=addSection(doc,'Reporting Scope & Boundary',y);
+  y=addText(doc,'The report covers all operations of '+org+' within India for the defined reporting period. Environmental data has been collected through daily monitoring and validated against applicable regulatory standards including CPCB/SPCB norms, GRI Standards 2021 and applicable ISO frameworks.',14,y+2);
+  pageNum(doc,pg++);
+
+  // PAGE 4 – LEADERSHIP MESSAGE
+  doc.addPage();y=20;
+  y=addSection(doc,'2. Message from Leadership',y);
+  y+=4;
+  doc.setFontSize(11);doc.setFont('helvetica','bolditalic');doc.setTextColor(10,61,46);
+  doc.text('Dear Stakeholders,',14,y);y+=8;
+  y=addText(doc,msg,14,y,10);y+=6;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,41,59);
+  doc.text('Sincerely,',14,y);y+=6;
+  doc.text(by||'Chief Executive Officer',14,y);y+=5;
+  doc.text(org,14,y);
+  pageNum(doc,pg++);
+
+  // PAGE 5 – ABOUT ORGANIZATION
+  doc.addPage();y=20;
+  y=addSection(doc,'3. About the Organization',y);
+  y=addText(doc,about,14,y+4,10);y+=8;
+  doc.autoTable({startY:y,head:[['Key Details','Information']],body:[
+    ['Industry Sector',industry],['Headquarters',loc],['Reporting Standard',std],
+    ['Total Employees',empTotal.toString()],['Male Employees',empM.toString()],
+    ['Female Employees',empF.toString()],['Gender Diversity',(empTotal>0?(empF/empTotal*100).toFixed(1):0)+'% Women']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'},
+  columnStyles:{0:{fontStyle:'bold',cellWidth:70}}});
+  pageNum(doc,pg++);
+
+  // PAGE 6 – ENERGY
+  doc.addPage();y=20;
+  y=addSection(doc,'4.1 Energy Management (GRI 302)',y);
+  y=addText(doc,'Energy consumption data has been monitored daily across all operations. The organization tracks grid electricity, renewable energy, and fossil fuel consumption to drive efficiency improvements and increase renewable energy share.',14,y+4,10);
+  doc.autoTable({startY:y+6,head:[['Energy Parameter','Current Period','Unit','Notes']],body:[
+    ['Grid Electricity Consumed',parseFloat(totalGrid).toLocaleString(),'kWh','From utility/DISCOM'],
+    ['Renewable Energy Generated/Procured',parseFloat(totalRenew).toLocaleString(),'kWh','Solar / Wind / Green tariff'],
+    ['Total Energy Consumption',parseFloat(totalEnergy).toLocaleString(),'kWh','Grid + Renewable'],
+    ['Renewable Energy Share',renewPct+'%','—','Target: 25% by 2030'],
+    ['Diesel / HSD Consumed',sum(e=>e.energy.diesel),'Litres','Backup DG sets'],
+    ['Natural Gas Consumed',sum(e=>e.energy.gas),'m3','Process / Heating'],
+    ['LPG Consumed',sum(e=>e.energy.lpg),'kg','Catering / Lab']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[22,163,74],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'Targets vs Performance',y,22,163,74);
+  doc.autoTable({startY:y+2,head:[['Target','Goal','Status']],body:[
+    ['Reduce Scope 1 & 2 by 25%','By 2030','In Progress'],
+    ['25% Renewable Energy Share','By 2030',renewPct+'% achieved'],
+    ['Net Zero Emissions','By 2045','Roadmap in Development']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 7 – WATER
+  doc.addPage();y=20;
+  y=addSection(doc,'4.2 Water & Effluents (GRI 303)',y);
+  y=addText(doc,'Water stewardship is a priority for '+org+'. The organization monitors freshwater withdrawal, recycled water use, rainwater harvesting, and effluent quality at all production sites.',14,y+4,10);
+  doc.autoTable({startY:y+6,head:[['Water Parameter','Volume (KL)','Notes']],body:[
+    ['Fresh Water Withdrawal',parseFloat(totalFresh).toLocaleString(),'From municipal/bore/river sources'],
+    ['Recycled / Reused Water',parseFloat(totalRecy).toLocaleString(),'Internal recycling and ETP reuse'],
+    ['Rainwater Harvested',sum(e=>e.wcons.rain),'Rooftop / ground harvesting'],
+    ['Total Water Consumption',parseFloat(totalWater).toLocaleString(),'Fresh + Recycled'],
+    ['Total Effluent Discharged',parseFloat(avgEffVol).toLocaleString(),'KL – treated and discharged'],
+    ['Water Recycling Rate',(totalWater>0?(parseFloat(totalRecy)/parseFloat(totalWater)*100).toFixed(1):0)+'%','Target: 33% freshwater reduction by 2030']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[8,145,178],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'Effluent Quality – Average Parameters',y,8,145,178);
+  doc.autoTable({startY:y+2,head:[['Parameter','Average Value','Standard Limit','Status']],body:[
+    ['Effluent pH',avg(e=>e.effluent.ph),'6.0 – 9.0','Within Limit'],
+    ['Effluent BOD (mg/L)',avg(e=>e.effluent.bod),'≤ 30 mg/L','Monitor'],
+    ['Effluent COD (mg/L)',avg(e=>e.effluent.cod),'≤ 250 mg/L','Monitor'],
+    ['Effluent TSS (mg/L)',avg(e=>e.effluent.tss),'≤ 100 mg/L','Monitor']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 8 – GHG & AIR
+  doc.addPage();y=20;
+  y=addSection(doc,'4.3 GHG Emissions (GRI 305)',y);
+  doc.autoTable({startY:y+4,head:[['Emission Category','Quantity (tCO2e)','Methodology']],body:[
+    ['Scope 1 – Direct Emissions',parseFloat(totalS1).toFixed(3),'Fuel combustion, fugitive emissions'],
+    ['Scope 2 – Indirect Emissions (Grid)',parseFloat(totalS2).toFixed(3),'Market-based / Location-based method'],
+    ['Total Scope 1 + Scope 2',parseFloat(totalGHG).toFixed(3),'Sum of above categories'],
+    ['Scope 3 – Value Chain','Under Assessment','Supply chain, business travel, waste']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+10;
+  y=addSection(doc,'4.4 Ambient Air Quality Monitoring',y);
+  y=addText(doc,'Continuous ambient air quality monitoring is carried out at fence-line and downwind locations as per CPCB guidelines and consent conditions.',14,y+4,10);
+  doc.autoTable({startY:y+4,head:[['Parameter','Average Value','NAAQ Standard','Unit']],body:[
+    ['PM2.5',avgPM25,'60 µg/m³ (annual)','µg/m³'],
+    ['PM10',avgPM10,'100 µg/m³ (annual)','µg/m³'],
+    ['SO2',avgSO2,'80 µg/m³ (24-hr)','µg/m³'],
+    ['NOx',avgNOx,'80 µg/m³ (24-hr)','µg/m³'],
+    ['CO',avg(e=>e.air.co),'4 mg/m³ (8-hr)','mg/m³'],
+    ['O3',avg(e=>e.air.o3),'100 µg/m³ (8-hr)','µg/m³']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[22,163,74],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 9 – WASTE
+  doc.addPage();y=20;
+  y=addSection(doc,'4.5 Waste Management (GRI 306)',y);
+  y=addText(doc,'Waste generated from manufacturing, R&D, and ancillary activities is classified, stored, handled, and disposed of in accordance with Hazardous and Other Wastes (Management and Transboundary Movement) Rules, 2016.',14,y+4,10);
+  doc.autoTable({startY:y+6,head:[['Waste Category','Quantity (kg)','Disposal Method']],body:[
+    ['Hazardous Waste',parseFloat(totalHaz).toLocaleString(),'Authorized TSDF / Co-processing'],
+    ['Non-Hazardous Waste',parseFloat(totalNHaz).toLocaleString(),'Municipal facility / Recyclers'],
+    ['Recycled Waste',parseFloat(totalRec).toLocaleString(),'Sold to authorized recyclers'],
+    ['Waste to Landfill',parseFloat(totalLand).toLocaleString(),'Authorized landfill (minimizing)'],
+    ['Total Waste Generated',parseFloat(totalWaste).toLocaleString(),'Hazardous + Non-Hazardous'],
+    ['Waste Recycling Rate',(totalWaste>0?(parseFloat(totalRec)/parseFloat(totalWaste)*100).toFixed(1):0)+'%','Target: Zero landfill by 2026']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[234,88,12],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 10 – SOCIAL
+  doc.addPage();y=20;
+  y=addSection(doc,'5.1 Employment (GRI 401)',y);
+  doc.autoTable({startY:y+4,head:[['Employment Parameter','Value']],body:[
+    ['Total Employees',empTotal.toString()],['Male Employees',empM.toString()],
+    ['Female Employees',empF.toString()],['Women Workforce %',(empTotal>0?(empF/empTotal*100).toFixed(1):0)+'% (Target: 30% by 2030)'],
+    ['New Hires (Year)','As per HR records'],['Attrition Rate','As per HR records']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'5.2 Training & Education (GRI 404)',y);
+  doc.autoTable({startY:y+4,head:[['Training Parameter','Value']],body:[
+    ['Total Training Hours',parseFloat(trainTotal).toLocaleString()],
+    ['EHS-Specific Training Hours',parseFloat(trainEHS).toLocaleString()],
+    ['Avg Training Hours/Employee',(empTotal>0?(trainTotal/empTotal).toFixed(1):0)+' hours'],
+    ['EHS Training as % of Total',(trainTotal>0?(trainEHS/trainTotal*100).toFixed(1):0)+'%'],
+    ['Minimum EHS Training Days','2 days/year per employee (Target)']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'5.3 Occupational Health & Safety (GRI 403)',y);
+  doc.autoTable({startY:y+4,head:[['OHS Parameter','Value','Target']],body:[
+    ['Lost Time Injuries (LTI)',lti.toString(),'Zero'],
+    ['Near Misses Reported',nm.toString(),'Improve reporting culture'],
+    ['Fatalities',fat.toString(),'Zero'],
+    ['LTIFR (per million man-hours)',(lti>0?(lti/1).toFixed(3):'0.000'),'< 1.0'],
+    ['OHS Audits Conducted','As per schedule','100% completion'],
+    ['CSR Expenditure (Rs Lakhs)',parseFloat(csr).toLocaleString(),'As per Companies Act 2013']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 11 – GRI INDEX
+  doc.addPage();y=20;
+  y=addSection(doc,'7. GRI Content Index',y);
+  y=addText(doc,'This report has been prepared with reference to the GRI Standards 2021. The following table maps disclosures to relevant sections of this report.',14,y+4,10);
+  doc.autoTable({startY:y+6,head:[['GRI Disclosure','Topic','Status','Page Ref']],body:[
+    ['GRI 2-1 to 2-9','Organizational Profile','Reported','p.5'],
+    ['GRI 2-22','Statement on Sustainable Development','Reported','p.4'],
+    ['GRI 302-1','Energy Consumption within Organization','Reported','p.6'],
+    ['GRI 302-4','Reduction of Energy Consumption','Reported','p.6'],
+    ['GRI 303-1','Interactions with Water','Reported','p.7'],
+    ['GRI 303-3','Water Withdrawal','Reported','p.7'],
+    ['GRI 303-4','Water Discharge','Reported','p.7'],
+    ['GRI 305-1','Scope 1 GHG Emissions','Reported','p.8'],
+    ['GRI 305-2','Scope 2 GHG Emissions','Reported','p.8'],
+    ['GRI 305-5','Reduction of GHG Emissions','In Progress','p.8'],
+    ['GRI 306-2','Waste by Type & Disposal Method','Reported','p.9'],
+    ['GRI 401-1','New Employee Hires & Turnover','Partial','p.10'],
+    ['GRI 403-1','OHS Management System','Reported','p.11'],
+    ['GRI 403-9','Work-Related Injuries','Reported','p.11'],
+    ['GRI 404-1','Average Hours of Training','Reported','p.10'],
+    ['GRI 405-1','Diversity of Governance Bodies','Partial','p.10'],
+    ['GRI 413-1','Local Community Engagement','Reported','p.10']
+  ],theme:'striped',styles:{fontSize:8.5,cellPadding:3},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'},
+  columnStyles:{2:{fontStyle:'bold'}}});
+  pageNum(doc,pg++);
+
+  // PAGE 12 – ASSURANCE STATEMENT
+  doc.addPage();y=20;
+  doc.setFillColor(248,250,252);doc.rect(0,0,210,297,'F');
+  doc.setFillColor(10,61,46);doc.rect(14,y,182,16,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('INDEPENDENT ASSURANCE',17,y+6);
+  doc.setFontSize(16);doc.setFont('helvetica','bold');doc.text('Assurance Statement',17,y+13);
+  y+=22;doc.setTextColor(30,41,59);
+  y=addText(doc,'Introduction and Objective of Work',14,y,11,[10,61,46]);doc.setFont('helvetica','bold');y-=2;
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('EcoSphere Verification Services',14,y+4);
+  doc.setFont('helvetica','normal');
+  y=addText(doc,' has been engaged by '+org+' (hereinafter referred as "the Organization") to provide independent and limited assurance of sustainability disclosures reported in this Sustainability Report for '+fy+' based on reporting criteria followed within the report.',90,y+4,10);y+=4;
+  y=addText(doc,'Reporting Criteria',14,y,10,[10,61,46]);y+=2;
+  y=addText(doc,'The Organization has adopted: '+std,14,y,10);y+=4;
+  y=addText(doc,'Assurance Standards Used',14,y,10,[10,61,46]);y+=2;
+  y=addText(doc,'Assurance has been conducted in accordance with ISAE 3000 (Revised) – Limited Assurance. Under this standard, information presented has been reviewed against relevance, completeness, materiality, reliability, neutrality and understandability.',14,y,10);y+=6;
+  y=addText(doc,'Scope of Assurance',14,y,10,[10,61,46]);y+=2;
+  doc.autoTable({startY:y,head:[['Category','GRI Disclosures Assured']],body:[
+    ['Energy','GRI 302-1, 302-4'],['Water & Effluents','GRI 303-1, 303-3, 303-4'],
+    ['GHG Emissions','GRI 305-1, 305-2, 305-5'],['Waste','GRI 306-2'],
+    ['Employment','GRI 401-1'],['OHS','GRI 403-1, 403-9'],
+    ['Training','GRI 404-1'],['Diversity','GRI 405-1']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addText(doc,'Conclusions',14,y,10,[10,61,46]);y+=2;
+  y=addText(doc,'Based on the procedures performed and evidence obtained, the sustainability performance disclosures in this report are prepared in accordance with '+std+' and are deemed proper, adequate and reliable for the reporting period '+fy+'.',14,y,10);
+  y+=10;
+  doc.setDrawColor(200,220,200);doc.setLineWidth(0.4);
+  doc.line(14,y,90,y);doc.line(120,y,196,y);y+=5;
+  doc.setFontSize(9);doc.setTextColor(100,116,139);
+  doc.text('Authorized Signatory – '+org,14,y);
+  doc.text('EcoSphere Verification Services',120,y);y+=5;
+  doc.text(by+(desig?', '+desig:''),14,y);doc.text('Lead Assurer',120,y);y+=5;
+  const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  doc.text('Date: '+today,14,y);doc.text('Date: '+today,120,y);
+  pageNum(doc,pg++);
+
+  doc.save(org.replace(/\s+/g,'_')+'_Sustainability_Report_'+fy.replace(/\s+/g,'')+'.pdf');
+  toast('✅ ESG Sustainability Report downloaded!');
+}
+
+// ─── GRI STANDALONE ───────────────────────────────────────────────────────────
+function generateGRI(){
+  const org=v('esg-org')||'Organization';const fy=v('esg-fy')||'FY 2024-25';
+  const doc=newDoc();
+  coverPage(doc,[29,78,140],'GRI CONTENT INDEX','Global Reporting Initiative Standards 2021',org,fy,[29,129,210]);
+  doc.addPage();let y=20;
+  doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(10,61,46);doc.text('GRI Content Index – '+fy,14,y);y+=10;
+  doc.autoTable({startY:y,head:[['GRI Standard','Disclosure','Description','Status','Location/Notes']],
+    body:[
+      ['GRI 2','2-1','Organizational Details','Reported','About Organization'],
+      ['GRI 2','2-22','Statement on Sustainable Development Strategy','Reported','Leadership Message'],
+      ['GRI 302','302-1','Energy Consumption Within the Organization','Reported','Environmental – Energy'],
+      ['GRI 302','302-4','Reduction of Energy Consumption','Reported','Energy Targets'],
+      ['GRI 303','303-1','Interactions with Water as a Shared Resource','Reported','Water Section'],
+      ['GRI 303','303-3','Water Withdrawal','Reported','Water Section'],
+      ['GRI 303','303-4','Water Discharge','Reported','Effluent Section'],
+      ['GRI 304','304-1','Operational Sites Near Protected Areas','Partial','Biodiversity'],
+      ['GRI 305','305-1','Direct (Scope 1) GHG Emissions','Reported','GHG Section'],
+      ['GRI 305','305-2','Energy Indirect (Scope 2) GHG Emissions','Reported','GHG Section'],
+      ['GRI 305','305-3','Other Indirect (Scope 3) GHG Emissions','In Progress','Under Assessment'],
+      ['GRI 305','305-5','Reduction of GHG Emissions','In Progress','Targets Section'],
+      ['GRI 306','306-2','Waste by Type and Disposal Method','Reported','Waste Section'],
+      ['GRI 401','401-1','New Employee Hires and Employee Turnover','Partial','Social Section'],
+      ['GRI 403','403-1','OHS Management System','Reported','OHS Section'],
+      ['GRI 403','403-9','Work-Related Injuries','Reported','OHS Data'],
+      ['GRI 404','404-1','Average Hours of Training per Year per Employee','Reported','Training Section'],
+      ['GRI 404','404-2','Programs for Upgrading Employee Skills','Reported','Training Section'],
+      ['GRI 405','405-1','Diversity of Governance Bodies & Employees','Partial','Diversity Data'],
+      ['GRI 413','413-1','Operations with Local Community Engagement','Reported','CSR Section'],
+      ['GRI 308','308-1','New Suppliers Screened Using Environmental Criteria','In Progress','Supply Chain'],
+      ['GRI 414','414-1','New Suppliers Screened Using Social Criteria','In Progress','Supply Chain']
+    ],
+    theme:'striped',styles:{fontSize:8,cellPadding:3},
+    headStyles:{fillColor:[10,61,46],textColor:255,fontStyle:'bold'},
+    columnStyles:{3:{fontStyle:'bold'}}});
+  doc.save(org.replace(/\s+/g,'_')+'_GRI_Index_'+fy.replace(/\s+/g,'')+'.pdf');
+  toast('✅ GRI Index downloaded!');
+}
+
+// ─── EIA PDF ──────────────────────────────────────────────────────────────────
+function generateEIA(){
+  const proj=v('eia-proj')||'Project Name';const type=v('eia-type');
+  const loc=v('eia-loc');const state=v('eia-state');const area=v('eia-area');const cost=v('eia-cost');
+  const co=v('eia-co')||'Organization Name';const contact=v('eia-contact');
+  const phone=v('eia-phone');const email=v('eia-email');const addr=v('eia-addr');
+  const mitigation=v('eia-mitigation')||'Mitigation measures as per EMP.';
+  const impacts=[];
+  if(document.getElementById('imp-air').checked)impacts.push('Air Quality');
+  if(document.getElementById('imp-water').checked)impacts.push('Water Quality');
+  if(document.getElementById('imp-soil').checked)impacts.push('Soil / Land');
+  if(document.getElementById('imp-noise').checked)impacts.push('Noise');
+  if(document.getElementById('imp-bio').checked)impacts.push('Biodiversity');
+  if(document.getElementById('imp-health').checked)impacts.push('Human Health');
+  if(document.getElementById('imp-traffic').checked)impacts.push('Traffic & Transport');
+
+  const doc=newDoc();let pg=1;
+  coverPage(doc,[29,78,140],'ENVIRONMENTAL IMPACT ASSESSMENT','EIA Report as per EIA Notification 2006 & Amendments',proj,'Location: '+(loc||'India')+'  |  Proponent: '+co,[8,145,178]);
+  pageNum(doc,pg++);
+
+  // TOC
+  doc.addPage();
+  doc.setFillColor(240,249,255);doc.rect(0,0,210,297,'F');
+  doc.setFontSize(20);doc.setFont('helvetica','bold');doc.setTextColor(29,78,140);doc.text('Table of Contents',14,30);
+  doc.setDrawColor(8,145,178);doc.setLineWidth(0.8);doc.line(14,34,196,34);
+  const tocEIA=[
+    ['1','Executive Summary','3'],['2','Project Description','4'],
+    ['3','Baseline Environmental Conditions','5'],['4','Environmental Impact Assessment','7'],
+    ['5','Environmental Management Plan (EMP)','8'],['6','Mitigation Measures','9'],
+    ['7','Environmental Monitoring Plan','10'],['8','Public Consultation','11'],
+    ['9','Conclusion & Declaration','12']
+  ];
+  let ty=44;doc.setFont('helvetica','normal');doc.setFontSize(10);
+  tocEIA.forEach(([n,t,p])=>{
+    doc.setTextColor(29,78,140);doc.text(n,14,ty);
+    doc.setTextColor(30,41,59);doc.text(t,28,ty);
+    doc.setTextColor(100,116,139);doc.text(p,196,ty,'right');
+    doc.setDrawColor(220,230,240);doc.setLineWidth(0.3);doc.line(14,ty+2,196,ty+2);ty+=9;
+  });
+  pageNum(doc,pg++);
+
+  // PAGE 3 – EXECUTIVE SUMMARY
+  doc.addPage();let y=20;
+  y=addSection(doc,'1. Executive Summary',y,29,78,140);
+  y=addText(doc,'This Environmental Impact Assessment (EIA) Report has been prepared for the proposed '+proj+' by '+co+' located at '+loc+', '+state+'. The assessment has been conducted in accordance with the EIA Notification 2006 and its subsequent amendments under the Environment Protection Act, 1986.',14,y+4,10);
+  y+=4;
+  doc.autoTable({startY:y,head:[['Key Information','Details']],body:[
+    ['Project Name',proj],['Project Type',type],['Location',loc+', '+state],
+    ['Project Area',area?' '+area+' Hectares':'N/A'],['Project Cost',cost?'Rs '+cost+' Crores':'N/A'],
+    ['Proponent',co],['Contact Person',contact||'N/A'],['Email',email||'N/A'],
+    ['Applicable Regulation','EIA Notification 2006, EPA 1986, Water Act 1974, Air Act 1981'],
+    ['Environmental Clearance Required','Yes – Category A/B as applicable'],
+    ['Identified Impacts',impacts.join(', ')||'None identified']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[29,78,140],textColor:255,fontStyle:'bold'},
+  columnStyles:{0:{fontStyle:'bold',cellWidth:65}}});
+  pageNum(doc,pg++);
+
+  // PAGE 4 – PROJECT DESCRIPTION
+  doc.addPage();y=20;
+  y=addSection(doc,'2. Project Description',y,29,78,140);
+  doc.autoTable({startY:y+4,head:[['Parameter','Details']],body:[
+    ['Project Name',proj],['Type of Project / Industry',type],
+    ['Site Location',loc],['State / District',state],
+    ['Latitude / Longitude',(v('eia-lat')||'N/A')+' / '+(v('eia-lon')||'N/A')],
+    ['Total Area Proposed',area?area+' Hectares':'N/A'],
+    ['Built-up Area','As per DPR'],
+    ['Total Project Cost',cost?'Rs '+cost+' Crores':'N/A'],
+    ['Project Proponent',co],
+    ['Registered Address',addr||'N/A'],
+    ['Contact Details',contact+' | '+phone+' | '+email],
+    ['Nearest Town / City','As per survey'],
+    ['Nearest Water Body','As per baseline study'],
+    ['Nearest Protected Area','As per Wildlife Institute of India records']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:4},headStyles:{fillColor:[29,78,140],textColor:255,fontStyle:'bold'},
+  columnStyles:{0:{fontStyle:'bold',cellWidth:70}}});
+  pageNum(doc,pg++);
+
+  // PAGE 5-6 – BASELINE
+  doc.addPage();y=20;
+  y=addSection(doc,'3. Baseline Environmental Conditions',y,8,145,178);
+  y=addText(doc,'Baseline environmental monitoring has been conducted for one complete seasonal cycle (pre-monsoon, monsoon, post-monsoon and winter) at the project site and 10 km study area.',14,y+4,10);
+  doc.autoTable({startY:y+6,head:[['Air Quality Parameter','Observed Value','NAAQ Standard','Unit','Status']],body:[
+    ['PM2.5',v('b-pm25')||'—','60 µg/m³ (annual)','µg/m³','Baseline'],
+    ['PM10',v('b-pm10')||'—','100 µg/m³ (annual)','µg/m³','Baseline'],
+    ['SO2',v('b-so2')||'—','80 µg/m³ (24-hr)','µg/m³','Baseline'],
+    ['NOx',v('b-nox')||'—','80 µg/m³ (24-hr)','µg/m³','Baseline'],
+    ['CO',v('b-co')||'—','4 mg/m³ (8-hr)','mg/m³','Baseline']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[8,145,178],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'Noise Baseline',y,8,145,178);
+  doc.autoTable({startY:y+2,head:[['Location','Day Time (dB)','Night Time (dB)','CPCB Limit Day','CPCB Limit Night']],body:[
+    ['Industrial Area',v('b-nd')||'—',v('b-nn')||'—','75 dB','70 dB'],
+    ['Residential Area','—','—','55 dB','45 dB']
+  ],theme:'grid',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[8,145,178],textColor:255,fontStyle:'bold'}});
+  y=doc.lastAutoTable.finalY+8;
+  y=addSection(doc,'Surface Water & Groundwater Quality',y,8,145,178);
+  doc.autoTable({startY:y+2,head:[['Parameter','Surface Water','Groundwater','BIS 10500 Standard']],body:[
+    ['Source',v('b-wsrc')||'N/A',v('b-gd')?'Depth: '+v('b-gd')+' m':'N/A','—'],
+    ['pH',v('b-wph')||'—',v('b-gph')||'—','6.5 – 8.5'],
+    ['BOD (mg/L)',v('b-wbod')||'—','—','< 2 mg/L (drinking)'],
+    ['COD (mg/L)',v('b-wcod')||'—','—','N/A (drinking std)'],
+    ['DO (mg/L)',v('b-wdo')||'—','—','> 5 mg/L'],
+    ['TDS (mg/L)','—',v('b-gtds')||'—','500 mg/L']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[8,145,178],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 7 – IMPACT ASSESSMENT
+  doc.addPage();y=20;
+  y=addSection(doc,'4. Environmental Impact Assessment Matrix',y,29,78,140);
+  y=addText(doc,'Environmental impacts have been identified for each phase of the project (pre-construction, construction, and operation) and assessed for magnitude, duration, reversibility, and significance.',14,y+4,10);
+  const impactRows=impacts.map(imp=>{
+    const mag=imp==='Air Quality'||imp==='Water Quality'?'Moderate':'Low to Moderate';
+    const sig=imp==='Air Quality'||imp==='Water Quality'?'Significant':'Less Significant';
+    return [imp,'Construction & Operation',mag,'Temporary / Permanent','Reversible with mitigation',sig];
+  });
+  if(impactRows.length===0)impactRows.push(['No significant impacts identified','—','Low','Temporary','Reversible','Not Significant']);
+  doc.autoTable({startY:y+4,head:[['Impact Category','Project Phase','Magnitude','Duration','Reversibility','Significance']],
+    body:impactRows,theme:'striped',styles:{fontSize:9,cellPadding:3},
+    headStyles:{fillColor:[29,78,140],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 8 – EMP
+  doc.addPage();y=20;
+  y=addSection(doc,'5. Environmental Management Plan (EMP)',y,29,78,140);
+  doc.autoTable({startY:y+4,head:[['Component','Requirement','Implementation Responsibility','Timeline']],body:[
+    ['Air Pollution Control','APCR as per CPCB standards','Project Proponent','Before commissioning'],
+    ['Effluent Treatment Plant','ZLD / STP as per SPCB norms','Project Proponent','Before commissioning'],
+    ['Waste Management','HWMP as per Hazardous Waste Rules 2016','EHS Department','Ongoing'],
+    ['Noise Control','Acoustic enclosures for DG sets','Engineering Team','Before commissioning'],
+    ['Green Belt Development','Minimum 33% of project area','HR / Admin','Year 1-3'],
+    ['OHS Plan','OHS Management System per ISO 45001','EHS Head','Before commissioning'],
+    ['Emergency Response Plan','Fire, spill, disaster response','EHS Department','Before commissioning'],
+    ['CSR / Community Development','As per Companies Act 2013','CSR Committee','Annually']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[29,78,140],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 9 – MITIGATION
+  doc.addPage();y=20;
+  y=addSection(doc,'6. Mitigation Measures',y,22,163,74);
+  y=addText(doc,mitigation,14,y+4,10);y+=8;
+  y=addSection(doc,'Key Environmental Controls',y,22,163,74);
+  doc.autoTable({startY:y+4,head:[['Impact','Mitigation Measure','Technology / Approach']],body:[
+    ['Air Emissions','Bag filters, ESPs, scrubbers','HEPA + Wet scrubber stack'],
+    ['Wastewater','ETP + ZLD system','MBR + RO + MEE technology'],
+    ['Hazardous Waste','Authorized TSDF disposal','Manifest system tracking'],
+    ['Noise','Acoustic enclosures, barriers','ISO 11690 compliant'],
+    ['Soil Contamination','Impervious flooring, leak detection','Secondary containment'],
+    ['Biodiversity','Green belt, native species plantation','Approved horticulture plan']
+  ],theme:'striped',styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[22,163,74],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 10 – MONITORING PLAN
+  doc.addPage();y=20;
+  y=addSection(doc,'7. Environmental Monitoring Plan',y,8,145,178);
+  doc.autoTable({startY:y+4,head:[['Parameter','Location','Frequency','Standard Limit','Method','Authority']],body:[
+    ['PM2.5, PM10','Fence-line (4 points)','Continuous / 24-hr','NAAQ Standards','Hi-Vol sampler','SPCB'],
+    ['Stack Emissions','All stacks','Half-yearly','CPCB norms','Isokinetic sampling','SPCB / MoEFCC'],
+    ['Effluent Quality','ETP outlet','Daily / Monthly','SPCB consent','Lab analysis','SPCB'],
+    ['Groundwater','6 bore wells','Quarterly','BIS 10500','Lab analysis','CGWB / SPCB'],
+    ['Noise Level','Plant boundary','Monthly','CPCB standards','Sound level meter','SPCB'],
+    ['Soil Quality','5 locations','Annually','Baseline + 10%','Lab analysis','MoEFCC'],
+    ['GHG Emissions','All sources','Monthly','GHG Protocol','Calculation','Internal'],
+    ['Green Belt','Project boundary','Annually','33% of area','Survey','Internal']
+  ],theme:'striped',styles:{fontSize:8.5,cellPadding:2.5},headStyles:{fillColor:[8,145,178],textColor:255,fontStyle:'bold'}});
+  pageNum(doc,pg++);
+
+  // PAGE 11 – CONCLUSION
+  doc.addPage();y=20;
+  y=addSection(doc,'9. Conclusion & Declaration',y,29,78,140);
+  y=addText(doc,'Based on this Environmental Impact Assessment, the proposed '+proj+' can be implemented with the adoption of appropriate environmental safeguards as detailed in the Environmental Management Plan (EMP). The predicted impacts are manageable and the project is environmentally feasible subject to compliance with all conditions of Environmental Clearance.',14,y+4,10);
+  y+=8;y=addText(doc,'Declaration',14,y,11,[29,78,140]);y+=2;
+  y=addText(doc,'We hereby declare that the information provided in this EIA Report is true and correct to the best of our knowledge and belief. The organization commits to implementing all mitigation measures, complying with all environmental conditions, and submitting periodic monitoring reports to the regulatory authority.',14,y,10);
+  y+=14;
+  doc.setDrawColor(200,220,240);doc.setLineWidth(0.4);
+  doc.line(14,y,90,y);doc.line(120,y,196,y);y+=5;
+  doc.setFontSize(9);doc.setTextColor(100,116,139);
+  doc.text('Signature of Authorized Signatory',14,y);doc.text('Signature of EIA Consultant',120,y);y+=5;
+  doc.text(co,14,y);doc.text('EcoSphere Environmental Services',120,y);y+=5;
+  const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  doc.text('Date: '+today,14,y);doc.text('Date: '+today,120,y);
+  pageNum(doc,pg++);
+
+  doc.save(proj.replace(/\s+/g,'_')+'_EIA_Report.pdf');
+  toast('✅ EIA Report downloaded!');
+}
+
+// ─── CERTIFICATES ─────────────────────────────────────────────────────────────
+function downloadCert(type){
+  const org=v('cert-org')||v('esg-org')||'Your Organization';
+  const dateStr=v('cert-date')||new Date().toISOString().slice(0,10);
+  const sign=v('cert-sign')||'Authorized Signatory';
+  const desig=v('cert-desig')||'Head – EHS & Sustainability';
+  const certNum='ECO-'+type.toUpperCase()+'-'+Date.now().toString().slice(-8);
+  const issueDate=new Date(dateStr).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const validDate=new Date(new Date(dateStr).setFullYear(new Date(dateStr).getFullYear()+3)).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+
+  const configs={
+    iso14001:{title:'ISO 14001:2015',subtitle:'Environmental Management System',body:'has demonstrated conformance with the requirements of ISO 14001:2015 for the establishment, implementation, maintenance and continual improvement of an Environmental Management System (EMS).',color:[10,61,46],accent:[22,163,74],scope:'Manufacturing, R&D and supporting operations'},
+    ghg:{title:'GHG Verification Certificate',subtitle:'ISO 14064-3 | Greenhouse Gas Emissions',body:'has had its greenhouse gas (GHG) inventory verified in accordance with ISO 14064-3. Scope 1 and Scope 2 emissions have been verified and found to be fairly stated in accordance with the GHG Protocol Corporate Standard.',color:[29,78,140],accent:[59,130,246],scope:'All operations – Scope 1 & Scope 2 GHG Emissions'},
+    esg:{title:'ESG Assurance Certificate',subtitle:'GRI Standards 2021 | ISAE 3000 Limited Assurance',body:'has obtained independent limited assurance for its ESG disclosures as per GRI Standards 2021. The sustainability performance reported is deemed proper, adequate, reliable and maintained in line with GRI reporting principles.',color:[67,20,100],accent:[168,85,247],scope:'Environmental, Social and Governance Disclosures'},
+    ehs:{title:'EHS Compliance Certificate',subtitle:'Environment, Health & Safety Management',body:'has been assessed and found to be in compliance with applicable Environment, Health & Safety (EHS) regulations and management system requirements. The organization demonstrates a commitment to preventing pollution, ensuring employee safety, and continual EHS improvement.',color:[146,64,14],accent:[217,119,6],scope:'All manufacturing and operational facilities'},
+    water:{title:'Water Stewardship Certificate',subtitle:'Alliance for Water Stewardship (AWS) Framework',body:'has demonstrated responsible water management practices including efficient water use, wastewater treatment, water recycling and reuse, and engagement with shared water resources in accordance with water stewardship principles.',color:[8,90,130],accent:[8,145,178],scope:'All water-consuming operations and effluent discharge points'},
+    zerowaste:{title:'Zero Waste to Landfill Certificate',subtitle:'Waste Management Excellence',body:'has achieved Zero Waste to Landfill status through the implementation of waste reduction, reuse, recycling and responsible recovery initiatives. The organization demonstrates excellence in circular economy practices.',color:[22,78,22],accent:[34,197,94],scope:'All waste streams from manufacturing and operational activities'}
+  };
+  const cfg=configs[type];
+
+  const doc=new window.jspdf.jsPDF('l','mm','a4');// landscape
+  const W=297,H=210;
+
+  // Background
+  doc.setFillColor(...cfg.color);doc.rect(0,0,W,H,'F');
+  // Gold border
+  doc.setDrawColor(212,175,55);doc.setLineWidth(3);doc.rect(8,8,W-16,H-16);
+  doc.setDrawColor(212,175,55);doc.setLineWidth(0.8);doc.rect(12,12,W-24,H-24);
+  // Accent bar top
+  doc.setFillColor(...cfg.accent);doc.rect(8,8,W-16,14,'F');
+  // Header
+  doc.setTextColor(212,175,55);doc.setFont('helvetica','bold');
+  doc.setFontSize(11);doc.text('ECOSPHERE SUSTAINABILITY PLATFORM',W/2,19,'center');
+  doc.setTextColor(255,255,255);
+  // Logo area
+  doc.setFillColor(255,255,255,0.1);
+  // Certificate title
+  doc.setFontSize(28);doc.text(cfg.title,W/2,52,'center');
+  doc.setFontSize(12);doc.setFont('helvetica','normal');doc.setTextColor(200,230,200);
+  doc.text(cfg.subtitle,W/2,61,'center');
+  // Divider
+  doc.setDrawColor(212,175,55);doc.setLineWidth(0.8);doc.line(50,66,W-50,66);
+  // Body
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.setFontSize(11);
+  doc.text('This is to certify that',W/2,78,'center');
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(212,175,55);
+  doc.text(org,W/2,90,'center');
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(255,255,255);
+  const bodyLines=doc.splitTextToSize(cfg.body,220);
+  doc.text(bodyLines,W/2,100,'center');
+  // Scope
+  doc.setFontSize(9);doc.setTextColor(180,220,180);
+  doc.text('Scope: '+cfg.scope,W/2,118,'center');
+  doc.setDrawColor(212,175,55);doc.setLineWidth(0.5);doc.line(50,122,W-50,122);
+  // Details
+  doc.setFontSize(10);doc.setTextColor(200,230,200);
+  doc.text('Certificate No: '+certNum,60,132);
+  doc.text('Issue Date: '+issueDate,W/2,132,'center');
+  doc.text('Valid Until: '+validDate,W-60,132,'right');
+  // Signatures
+  doc.setDrawColor(212,175,55);doc.setLineWidth(0.5);
+  doc.line(50,158,130,158);doc.line(W-130,158,W-50,158);
+  doc.setFontSize(9);doc.setTextColor(200,230,200);
+  doc.text(sign,90,163,'center');doc.text('Lead Auditor / Verifier',W-90,163,'center');
+  doc.text(desig,90,169,'center');doc.text('EcoSphere Verification Services',W-90,169,'center');
+  // Accent bar bottom
+  doc.setFillColor(...cfg.accent);doc.rect(8,H-22,W-16,14,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('EcoSphere Sustainability Platform  |  Verification & Certification Services  |  This is a sample certificate for demonstration purposes',W/2,H-14,'center');
+
+  doc.save(type+'_certificate_'+org.replace(/\s+/g,'_')+'.pdf');
+  toast('✅ Certificate downloaded!');
+}
+</script>
+<script src="js/eco-export.js"></script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

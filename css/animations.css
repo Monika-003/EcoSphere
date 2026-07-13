@@ -1,0 +1,139 @@
+/* ═══════════════════════════════════════════════════════════════
+   EcoSphere — Greenery Animations v3
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Core ── */
+@keyframes splashLogoPop{
+  0%  {transform:scale(0) rotate(-15deg);opacity:0;filter:blur(6px)}
+  60% {transform:scale(1.18) rotate(4deg);opacity:1}
+  80% {transform:scale(.96) rotate(-1deg)}
+  100%{transform:scale(1) rotate(0);opacity:1;filter:drop-shadow(0 0 24px rgba(46,204,113,.9))}
+}
+@keyframes heroLogoPop{
+  0%  {transform:scale(0) translateY(20px);opacity:0}
+  70% {transform:scale(1.1) translateY(-4px);opacity:1}
+  100%{transform:scale(1) translateY(0);opacity:1}
+}
+@keyframes fadeUp{
+  0%  {opacity:0;transform:translateY(18px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes fabPulse{
+  0%  {transform:scale(1);opacity:.6}
+  70% {transform:scale(1.6);opacity:0}
+  100%{transform:scale(1.6);opacity:0}
+}
+@keyframes counterPop{
+  0%  {transform:scale(.6);color:var(--green4)}
+  70% {transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+
+/* ── Entry animations ── */
+.entry-left  {animation:entryReveal .7s .1s ease both}
+.entry-right {animation:loginReveal .7s .25s ease both}
+@keyframes entryReveal{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes loginReveal{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+.eh-line1{animation:fadeUp .6s .3s ease both}
+.eh-line2{animation:fadeUp .6s .5s ease both}
+.eh-line3{animation:fadeUp .6s .7s ease both}
+.entry-sub      {animation:fadeUp .6s .8s  ease both}
+.entry-stats    {animation:fadeUp .6s .9s  ease both}
+.entry-live-bar {animation:fadeUp .6s 1s   ease both}
+.entry-contact  {animation:fadeUp .6s 1.1s ease both}
+
+/* ── Leaf fall ── */
+@keyframes leafFall{
+  0%  {transform:translateY(-40px) rotate(0deg) translateX(0);opacity:0}
+  10% {opacity:.9}
+  90% {opacity:.7}
+  100%{transform:translateY(110vh) rotate(720deg) translateX(60px);opacity:0}
+}
+@keyframes leafDrift{
+  0%  {transform:translateY(-40px) rotate(0deg) translateX(0);opacity:0}
+  10% {opacity:.8}
+  50% {transform:translateY(50vh) rotate(360deg) translateX(-40px);opacity:.7}
+  90% {opacity:.5}
+  100%{transform:translateY(108vh) rotate(700deg) translateX(30px);opacity:0}
+}
+
+/* ── Section reveal ── */
+.reveal{
+  opacity:0;transform:translateY(28px);
+  transition:opacity .75s cubic-bezier(.4,0,.2,1),transform .75s cubic-bezier(.4,0,.2,1);
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* section wipe leaves */
+@keyframes leafBurst{
+  0%  {transform:scale(0) rotate(0deg);opacity:1}
+  60% {opacity:.8}
+  100%{transform:scale(2.5) rotate(var(--rot,120deg)) translateX(var(--tx,30px)) translateY(var(--ty,-50px));opacity:0}
+}
+.burst-leaf{
+  position:absolute;font-size:1.2rem;
+  animation:leafBurst .7s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+/* ── Navbar link underline ── */
+.nav-link::after{content:'';position:absolute;bottom:4px;left:13px;right:13px;height:2px;background:var(--green3);border-radius:1px;transform:scaleX(0);transition:transform .3s ease;transform-origin:left}
+.nav-link:hover::after,.nav-link.active::after{transform:scaleX(1)}
+
+/* ── Card green edge glow on hover ── */
+.param-card:hover,.kpi-card:hover,.report-card:hover,.policy-card:hover{
+  box-shadow:0 8px 40px rgba(0,0,0,.55), 0 0 0 1px rgba(46,204,113,.3), 0 0 28px rgba(46,204,113,.2);
+}
+
+/* ── KPI counter pop ── */
+.kpi-info strong{display:block;animation:none}
+.kpi-info strong.popped{animation:counterPop .4s ease}
+
+/* ── Gauge grow ── */
+.gauge-fill,.pbar-fill,.scope-fill,.score-bar div{
+  transition:width 2.2s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Param card entrance stagger ── */
+.param-card{animation:cardIn .5s ease both}
+.param-card:nth-child(1){animation-delay:.05s}
+.param-card:nth-child(2){animation-delay:.10s}
+.param-card:nth-child(3){animation-delay:.15s}
+.param-card:nth-child(4){animation-delay:.20s}
+.param-card:nth-child(5){animation-delay:.25s}
+.param-card:nth-child(6){animation-delay:.30s}
+.param-card:nth-child(7){animation-delay:.35s}
+@keyframes cardIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+/* ── Card shine sweep ── */
+.param-card,.kpi-card,.report-card{position:relative;overflow:hidden}
+.param-card::after,.kpi-card::after,.report-card::after{
+  content:'';position:absolute;
+  top:-100%;left:-100%;width:50%;height:200%;
+  background:linear-gradient(105deg,transparent 40%,rgba(46,204,113,.06) 50%,transparent 60%);
+  transform:rotate(25deg);transition:all .55s ease;pointer-events:none;
+}
+.param-card:hover::after,.kpi-card:hover::after,.report-card:hover::after{
+  top:-100%;left:160%;
+}
+
+/* ── Loader tree glow pulse ── */
+@keyframes treeGlowPulse{
+  0%,100%{filter:drop-shadow(0 0 8px rgba(46,204,113,.4))}
+  50%     {filter:drop-shadow(0 0 22px rgba(46,204,113,.8))}
+}
+.loader-tree-wrap svg{animation:treeGlowPulse 3s 3s ease infinite}
+
+/* ── Star twinkle ── */
+@keyframes twinkle{
+  0%,100%{opacity:.2;transform:scale(1)}
+  50%    {opacity:.9;transform:scale(1.4)}
+}
+
+/* ── Ground grass sway ── */
+@keyframes grassSway{
+  0%,100%{transform:rotate(-3deg)}
+  50%    {transform:rotate(3deg)}
+}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}.reveal.visible{opacity:1;transform:translateY(0)}

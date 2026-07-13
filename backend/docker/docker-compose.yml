@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  # ─────────────────────────────────
+  # EcoSphere API Server
+  # ─────────────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ecosphere-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV:       production
+      PORT:           5000
+      DATABASE_URL:   postgresql://ecosphere:ecosphere_pass@postgres:5432/ecosphere_db
+      REDIS_URL:      redis://redis:6379
+      JWT_SECRET:     ${JWT_SECRET:-change_me_in_production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_refresh_secret}
+      FRONTEND_URL:   ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../logs:/app/logs
+    networks:
+      - ecosphere-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─────────────────────────────────
+  # PostgreSQL 15
+  # ─────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecosphere-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ecosphere_db
+      POSTGRES_USER:     ecosphere
+      POSTGRES_PASSWORD: ecosphere_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ecosphere-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecosphere -d ecosphere_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────
+  # Redis 7
+  # ─────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: ecosphere-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - ecosphere-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────
+  # Nginx Reverse Proxy (optional)
+  # ─────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: ecosphere-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    networks:
+      - ecosphere-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ecosphere-network:
+    driver: bridge

@@ -1,0 +1,1249 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Environmental Suite — EcoSphere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+/* TOPBAR */
+.topbar{height:58px;background:linear-gradient(90deg,#0f172a,#1e3a5f);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;z-index:100}
+.tb-logo{width:32px;height:32px;background:linear-gradient(135deg,#0d9488,#059669);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;font-weight:700;font-family:'Poppins',sans-serif;flex-shrink:0}
+.tb-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;color:#fff;flex:1}
+.tb-sub{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:1px}
+.tb-org{font-size:.78rem;color:#93c5fd;font-weight:500;background:rgba(96,165,250,.12);padding:4px 10px;border-radius:20px;white-space:nowrap}
+.tb-badge{font-size:.68rem;font-weight:700;color:#fff;background:#059669;padding:3px 8px;border-radius:20px;letter-spacing:.04em}
+/* BODY WRAP */
+.body-wrap{display:flex;flex:1;overflow:hidden}
+/* SIDEBAR */
+.sidebar{width:210px;background:linear-gradient(180deg,#0f172a,#162035);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto;padding-bottom:16px}
+.sb-section{font-size:.63rem;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;padding:14px 16px 4px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;border-left:3px solid transparent;color:rgba(255,255,255,.55);font-size:.82rem;font-weight:500;transition:all .18s;text-decoration:none;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-item.on{background:rgba(96,165,250,.1);color:#93c5fd;border-left-color:#1d4ed8}
+.sb-item i{width:16px;text-align:center;font-size:.85rem}
+.sb-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
+/* CONTENT */
+.content{flex:1;background:#f1f5f9;padding:22px 26px;overflow-y:auto}
+/* PAGE SWITCH */
+.pg{display:none}
+.pg.show{display:block}
+.pg-title{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:900;color:#0f172a;margin-bottom:2px}
+.pg-sub{font-size:.82rem;color:#64748b;margin-bottom:18px}
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:12px 12px 0 0}
+.s1::before{background:#0d9488}.s2::before{background:#1d4ed8}.s3::before{background:#d97706}
+.s4::before{background:#dc2626}.s5::before{background:#7c3aed}.s6::before{background:#059669}
+.stat-val{font-family:'Poppins',sans-serif;font-size:1.45rem;font-weight:800;color:#0f172a;line-height:1}
+.stat-label{font-size:.72rem;color:#64748b;font-weight:500;margin-top:4px}
+.stat-trend{font-size:.7rem;font-weight:600;margin-top:6px}
+.trend-up{color:#dc2626}.trend-dn{color:#059669}.trend-flat{color:#d97706}
+/* CARDS */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:16px}
+.card-title{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title i{color:#0d9488}
+/* GRID HELPERS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+/* CHART CONTAINER */
+.chart-wrap{position:relative;height:240px}
+.chart-wrap-lg{position:relative;height:300px}
+/* FILTER BAR */
+.filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:.8rem;font-family:'Inter',sans-serif;background:#fff;color:#0f172a;outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#0d9488}
+.btn-sm{padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s}
+.btn-teal{background:#0d9488;color:#fff}.btn-teal:hover{background:#0b7a6e}
+.btn-outline{background:#fff;color:#0f172a;border:1px solid #e2e8f0}.btn-outline:hover{border-color:#0d9488;color:#0d9488}
+/* HEALTH ASSESSMENT */
+.area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.area-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+.area-score{font-family:'Poppins',sans-serif;font-size:1.6rem;font-weight:900;line-height:1}
+.area-name{font-size:.72rem;color:#64748b;margin-top:4px;font-weight:500}
+.area-cls{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:6px;display:inline-block}
+.cls-exc{background:#d1fae5;color:#065f46}.cls-good{background:#dbeafe;color:#1e40af}
+.cls-acc{background:#fef9c3;color:#854d0e}.cls-need{background:#ffedd5;color:#9a3412}
+.cls-crit{background:#fee2e2;color:#991b1b}
+/* SCORE BREAKDOWN */
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.score-label{font-size:.78rem;color:#64748b;width:130px;flex-shrink:0}
+.score-bar-wrap{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.score-bar{height:100%;border-radius:4px;transition:width .6s}
+.score-val{font-size:.78rem;font-weight:700;width:36px;text-align:right;flex-shrink:0}
+/* ROOT CAUSE */
+.cause-list{display:flex;flex-direction:column;gap:10px}
+.cause-item{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px}
+.cause-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:.85rem;flex-shrink:0;color:#fff}
+.rank-1{background:#dc2626}.rank-2{background:#d97706}.rank-3{background:#1d4ed8}.rank-n{background:#64748b}
+.cause-body{flex:1}
+.cause-name{font-size:.87rem;font-weight:600;color:#0f172a}
+.cause-desc{font-size:.77rem;color:#64748b;margin-top:3px}
+.prob-wrap{display:flex;align-items:center;gap:8px;margin-top:8px}
+.prob-bar-w{flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden}
+.prob-bar{height:100%;border-radius:3px;background:#1d4ed8}
+.prob-pct{font-size:.72rem;font-weight:700;color:#1d4ed8;width:32px;text-align:right}
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:#e2e8f0}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-24px;top:4px;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #e2e8f0}
+.tl-dot.red{background:#dc2626;box-shadow:0 0 0 2px #fee2e2}
+.tl-dot.amber{background:#d97706;box-shadow:0 0 0 2px #fef3c7}
+.tl-dot.blue{background:#1d4ed8;box-shadow:0 0 0 2px #dbeafe}
+.tl-dot.green{background:#059669;box-shadow:0 0 0 2px #d1fae5}
+.tl-time{font-size:.68rem;color:#94a3b8;margin-bottom:2px}
+.tl-title{font-size:.8rem;font-weight:600;color:#0f172a}
+.tl-desc{font-size:.73rem;color:#64748b;margin-top:2px}
+/* COMPUTER VISION */
+.upload-zone{border:2px dashed #cbd5e1;border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:#0d9488;background:#f0fdfa}
+.upload-zone i{font-size:2.5rem;color:#cbd5e1;margin-bottom:10px}
+.upload-zone.drag i{color:#0d9488}
+.upload-zone p{font-size:.85rem;color:#64748b}
+.upload-zone strong{color:#0d9488;cursor:pointer}
+.detection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.det-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px}
+.det-label{font-size:.78rem;font-weight:600;color:#0f172a;margin-bottom:4px}
+.det-conf{font-size:.7rem;color:#64748b}
+.det-sev{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:6px}
+.sev-high{background:#fee2e2;color:#991b1b}.sev-med{background:#ffedd5;color:#9a3412}.sev-low{background:#d1fae5;color:#065f46}
+.img-preview{width:100%;border-radius:10px;margin-bottom:14px;max-height:240px;object-fit:cover;display:none}
+/* ESG / SUSTAINABILITY */
+.esg-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+.esg-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.esg-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.esg-kpi.e::before{background:#059669}.esg-kpi.w::before{background:#1d4ed8}
+.esg-kpi.c::before{background:#dc2626}.esg-kpi.waste::before{background:#d97706}
+.esg-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:10px}
+.esg-icon.e{background:#d1fae5;color:#059669}.esg-icon.w{background:#dbeafe;color:#1d4ed8}
+.esg-icon.c{background:#fee2e2;color:#dc2626}.esg-icon.waste{background:#fef9c3;color:#d97706}
+.esg-val{font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;color:#0f172a}
+.esg-unit{font-size:.68rem;color:#64748b;margin-left:3px}
+.esg-name{font-size:.72rem;color:#64748b;font-weight:500;margin-top:3px}
+.esg-target{font-size:.68rem;margin-top:6px;font-weight:600}
+.target-met{color:#059669}.target-miss{color:#dc2626}
+/* INDEX SCORES */
+.index-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.index-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+.index-score{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:900;line-height:1}
+.index-name{font-size:.7rem;color:#64748b;margin-top:4px;font-weight:500}
+.index-grade{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:6px;display:inline-block}
+/* AI DECISION SUPPORT */
+.exec-summary{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:14px;padding:20px 24px;margin-bottom:18px;color:#fff}
+.exec-title{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;margin-bottom:8px}
+.exec-body{font-size:.82rem;line-height:1.6;color:rgba(255,255,255,.8)}
+.priority-list{display:flex;flex-direction:column;gap:10px}
+.priority-item{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.pri-badge{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.pri-crit{background:#fee2e2;color:#991b1b}.pri-high{background:#ffedd5;color:#9a3412}
+.pri-med{background:#fef9c3;color:#854d0e}.pri-low{background:#d1fae5;color:#065f46}
+.pri-body{flex:1}
+.pri-title{font-size:.85rem;font-weight:600;color:#0f172a}
+.pri-desc{font-size:.75rem;color:#64748b;margin-top:3px}
+.action-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.action-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px}
+.action-card-title{font-size:.82rem;font-weight:600;color:#0f172a;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.action-steps{padding-left:16px}
+.action-steps li{font-size:.75rem;color:#64748b;margin-bottom:4px}
+/* BADGE PILLS */
+.pill{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.pill-teal{background:#ccfbf1;color:#0f766e}.pill-blue{background:#dbeafe;color:#1e40af}
+.pill-amber{background:#fef9c3;color:#854d0e}.pill-red{background:#fee2e2;color:#991b1b}
+/* HEATMAP */
+.heatmap-wrap{overflow-x:auto}
+.heatmap-table{border-collapse:collapse;width:100%;font-size:.72rem}
+.heatmap-table th{background:#f8fafc;padding:7px 10px;text-align:center;font-weight:600;color:#64748b;border:1px solid #e2e8f0}
+.heatmap-table td{padding:6px 10px;text-align:center;border:1px solid #e2e8f0;font-weight:600;cursor:default}
+/* RESPONSIVE HELPERS */
+@media(max-width:900px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.index-grid{grid-template-columns:1fr 1fr}.action-cards{grid-template-columns:1fr}}
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}.sidebar{width:52px}.sb-item span,.sb-section{display:none}.sb-item{justify-content:center;padding:10px}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo"><i class="fa-solid fa-leaf"></i></div>
+  <div style="flex:1">
+    <div class="tb-title">AI Environmental Suite</div>
+    <div class="tb-sub">Intelligent Analysis &amp; Decision Support</div>
+  </div>
+  <div class="tb-org" id="tb-org-name">Loading…</div>
+  <div class="tb-badge"><i class="fa-solid fa-robot" style="margin-right:4px"></i>AI ACTIVE</div>
+  <div style="margin-left:10px;cursor:pointer;color:rgba(255,255,255,.7);font-size:.82rem" onclick="window.aesBack()">
+    <i class="fa-solid fa-arrow-left" style="margin-right:4px"></i><span style="font-size:.75rem">Back</span>
+  </div>
+</div>
+
+<!-- BODY WRAP -->
+<div class="body-wrap">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-section">AI ANALYSIS</div>
+    <div class="sb-item on" id="sb-trend" onclick="aesNav('trend')"><i class="fa-solid fa-chart-line"></i><span>Trend Analysis</span></div>
+    <div class="sb-item" id="sb-health" onclick="aesNav('health')"><i class="fa-solid fa-heart-pulse"></i><span>Health Assessment</span></div>
+    <div class="sb-item" id="sb-rca" onclick="aesNav('rca')"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Root Cause</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">INTELLIGENCE</div>
+    <div class="sb-item" id="sb-cv" onclick="aesNav('cv')"><i class="fa-solid fa-eye"></i><span>Computer Vision</span></div>
+    <div class="sb-item" id="sb-esg" onclick="aesNav('esg')"><i class="fa-solid fa-seedling"></i><span>ESG &amp; Sustainability</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">STRATEGY</div>
+    <div class="sb-item" id="sb-decision" onclick="aesNav('decision')"><i class="fa-solid fa-chess-rook"></i><span>AI Decision Support</span></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="aes-content">
+
+    <!-- ============================================================ -->
+    <!-- PANEL: TREND ANALYSIS (Feature 5)                            -->
+    <!-- ============================================================ -->
+    <div class="pg show" id="pg-trend">
+      <div class="pg-title"><i class="fa-solid fa-chart-line" style="color:#0d9488;margin-right:8px"></i>Intelligent Environmental Trend Analysis</div>
+      <div class="pg-sub">Seasonal, monthly &amp; yearly trend intelligence — AI-powered anomaly detection &amp; forecasting</div>
+
+      <!-- STAT ROW -->
+      <div class="stats" id="trend-stats">
+        <div class="stat s1"><div class="stat-val" id="ts-params">11</div><div class="stat-label">Parameters Monitored</div></div>
+        <div class="stat s2"><div class="stat-val" id="ts-records">—</div><div class="stat-label">Data Records</div></div>
+        <div class="stat s3"><div class="stat-val" id="ts-anomalies">—</div><div class="stat-label">Anomalies Detected</div></div>
+        <div class="stat s4"><div class="stat-val" id="ts-exceedances">—</div><div class="stat-label">Limit Exceedances</div></div>
+        <div class="stat s5"><div class="stat-val" id="ts-forecast">+2.3%</div><div class="stat-label">30-Day Forecast Δ</div></div>
+        <div class="stat s6"><div class="stat-val" id="ts-compliance">—</div><div class="stat-label">Compliance Score</div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-bar">
+        <select id="trend-param">
+          <option value="pm25">PM2.5</option>
+          <option value="pm10">PM10</option>
+          <option value="co2">CO₂</option>
+          <option value="nox">NOx</option>
+          <option value="so2">SO₂</option>
+          <option value="voc">VOC</option>
+          <option value="tds">TDS</option>
+          <option value="bod">BOD</option>
+          <option value="cod">COD</option>
+          <option value="tss">TSS</option>
+          <option value="noise">Noise</option>
+        </select>
+        <select id="trend-period">
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+        <select id="trend-facility">
+          <option value="all">All Facilities</option>
+          <option value="unit1">Unit 1</option>
+          <option value="unit2">Unit 2</option>
+          <option value="unit3">Unit 3</option>
+        </select>
+        <button class="btn-sm btn-teal" onclick="aesBuildTrend()"><i class="fa-solid fa-rotate" style="margin-right:5px"></i>Refresh</button>
+      </div>
+
+      <div class="grid2">
+        <!-- Line Chart -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-line"></i> Parameter Trend — <span id="trend-param-label">PM2.5</span></div>
+          <div class="chart-wrap"><canvas id="chartTrendLine"></canvas></div>
+        </div>
+        <!-- Seasonal Comparison -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Seasonal Comparison</div>
+          <div class="chart-wrap"><canvas id="chartSeasonal"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <!-- YoY Comparison -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-arrows-rotate"></i> Year-on-Year Comparison</div>
+          <div class="chart-wrap"><canvas id="chartYoY"></canvas></div>
+        </div>
+        <!-- Multi-param area chart -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-layer-group"></i> Multi-Parameter Correlation</div>
+          <div class="chart-wrap"><canvas id="chartCorr"></canvas></div>
+        </div>
+      </div>
+
+      <!-- HEATMAP -->
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-table-cells"></i> Monthly Heatmap — All Parameters</div>
+        <div class="heatmap-wrap" id="trend-heatmap"></div>
+      </div>
+
+      <!-- AI INSIGHTS -->
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-brain"></i> AI Trend Insights</div>
+        <div id="trend-insights" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PANEL: HEALTH ASSESSMENT (Feature 6)                         -->
+    <!-- ============================================================ -->
+    <div class="pg" id="pg-health">
+      <div class="pg-title"><i class="fa-solid fa-heart-pulse" style="color:#dc2626;margin-right:8px"></i>AI Environmental Health Assessment</div>
+      <div class="pg-sub">Per-area environmental scoring across 5 dimensions — AI-generated risk classifications</div>
+
+      <div class="stats">
+        <div class="stat s6"><div class="stat-val" id="ha-overall">—</div><div class="stat-label">Overall Health Score</div></div>
+        <div class="stat s1"><div class="stat-val" id="ha-air">—</div><div class="stat-label">Air Quality Index</div></div>
+        <div class="stat s2"><div class="stat-val" id="ha-water">—</div><div class="stat-label">Water Quality Index</div></div>
+        <div class="stat s3"><div class="stat-val" id="ha-noise">—</div><div class="stat-label">Noise Level Index</div></div>
+        <div class="stat s4"><div class="stat-val" id="ha-risk">—</div><div class="stat-label">Risk Areas</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-map-pin"></i> Area-wise Health Scores</div>
+        <div class="area-grid" id="ha-area-grid"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-radar" style="color:#7c3aed"></i> Radar — Score Dimensions</div>
+          <div class="chart-wrap"><canvas id="chartHealthRadar"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-bars-progress"></i> Score Breakdown by Dimension</div>
+          <div id="ha-score-breakdown" style="margin-top:4px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-file-medical"></i> Assessment Summary &amp; Recommendations</div>
+        <div id="ha-summary"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PANEL: ROOT CAUSE ANALYSIS (Feature 7)                       -->
+    <!-- ============================================================ -->
+    <div class="pg" id="pg-rca">
+      <div class="pg-title"><i class="fa-solid fa-magnifying-glass-chart" style="color:#1d4ed8;margin-right:8px"></i>AI Root Cause Analysis</div>
+      <div class="pg-sub">Multi-source correlation · Probability-ranked causes · Evidence mapping · Investigation timeline</div>
+
+      <div class="stats">
+        <div class="stat s4"><div class="stat-val" id="rca-exceedances">—</div><div class="stat-label">Active Exceedances</div></div>
+        <div class="stat s2"><div class="stat-val" id="rca-causes">6</div><div class="stat-label">Root Causes Identified</div></div>
+        <div class="stat s3"><div class="stat-val" id="rca-confidence">87%</div><div class="stat-label">Avg Confidence</div></div>
+        <div class="stat s1"><div class="stat-val" id="rca-resolved">2</div><div class="stat-label">Resolved This Month</div></div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="rca-param-sel">
+          <option value="all">All Parameters</option>
+          <option value="air">Air Quality</option>
+          <option value="water">Water Quality</option>
+          <option value="noise">Noise</option>
+        </select>
+        <select id="rca-date-sel">
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="90d">Last 90 Days</option>
+        </select>
+        <button class="btn-sm btn-teal" onclick="aesBuildRCA()"><i class="fa-solid fa-rotate" style="margin-right:5px"></i>Analyze</button>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="flex:1">
+          <div class="card-title"><i class="fa-solid fa-ranking-star"></i> Probability-Ranked Root Causes</div>
+          <div class="cause-list" id="rca-cause-list"></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-timeline"></i> Investigation Timeline</div>
+            <div class="timeline" id="rca-timeline"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Cause Distribution</div>
+            <div class="chart-wrap" style="height:180px"><canvas id="chartRCAPie"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-microscope"></i> Evidence Panel &amp; Correlations</div>
+        <div id="rca-evidence"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PANEL: COMPUTER VISION (Feature 8)                           -->
+    <!-- ============================================================ -->
+    <div class="pg" id="pg-cv">
+      <div class="pg-title"><i class="fa-solid fa-eye" style="color:#7c3aed;margin-right:8px"></i>Computer Vision Analysis</div>
+      <div class="pg-sub">Upload site images for AI-powered environmental detection — 13 detection categories</div>
+
+      <div class="stats">
+        <div class="stat s5"><div class="stat-val" id="cv-analyzed">—</div><div class="stat-label">Images Analyzed</div></div>
+        <div class="stat s4"><div class="stat-val" id="cv-detections">—</div><div class="stat-label">Detections Made</div></div>
+        <div class="stat s3"><div class="stat-val" id="cv-high-sev">—</div><div class="stat-label">High Severity</div></div>
+        <div class="stat s6"><div class="stat-val" id="cv-records">—</div><div class="stat-label">Observation Records</div></div>
+      </div>
+
+      <div class="upload-zone" id="cv-upload-zone" onclick="document.getElementById('cv-file-input').click()" ondragover="aesOnDrag(event,true)" ondragleave="aesOnDrag(event,false)" ondrop="aesOnDrop(event)">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <p><strong>Click to upload</strong> or drag &amp; drop site images</p>
+        <p style="margin-top:6px;font-size:.72rem;color:#94a3b8">PNG, JPG, WEBP — max 10MB</p>
+        <input type="file" id="cv-file-input" accept="image/*" style="display:none" onchange="aesOnFileSelect(event)"/>
+      </div>
+
+      <img id="cv-preview-img" class="img-preview" alt="Uploaded site image"/>
+
+      <div id="cv-result-wrap" style="display:none">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-list-check"></i> AI Detection Results — <span id="cv-result-label">—</span></div>
+          <div class="detection-grid" id="cv-detection-grid"></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-title"><i class="fa-solid fa-clipboard-list"></i> Observation Records</div>
+          <div id="cv-obs-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-circle-info"></i> Detection Categories Supported</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="cv-categories"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PANEL: ESG & SUSTAINABILITY (Feature 9)                      -->
+    <!-- ============================================================ -->
+    <div class="pg" id="pg-esg">
+      <div class="pg-title"><i class="fa-solid fa-seedling" style="color:#059669;margin-right:8px"></i>Sustainability &amp; ESG Intelligence</div>
+      <div class="pg-sub">KPI tracking · Index scoring · AI-driven executive sustainability dashboard</div>
+
+      <div class="esg-kpi-grid" id="esg-kpi-grid"></div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-award"></i> ESG Index Scores</div>
+        <div class="index-grid" id="esg-index-grid"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-line"></i> ESG Score Trend</div>
+          <div class="chart-wrap"><canvas id="chartESGTrend"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Environmental Footprint</div>
+          <div class="chart-wrap"><canvas id="chartESGDonut"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-robot"></i> AI Sustainability Recommendations</div>
+        <div id="esg-recommendations"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PANEL: AI DECISION SUPPORT                                   -->
+    <!-- ============================================================ -->
+    <div class="pg" id="pg-decision">
+      <div class="pg-title"><i class="fa-solid fa-chess-rook" style="color:#1d4ed8;margin-right:8px"></i>AI Decision Support</div>
+      <div class="pg-sub">Executive summary · Risk priorities · Recommended actions · Business impact assessment</div>
+
+      <!-- EXECUTIVE SUMMARY -->
+      <div class="exec-summary" id="ds-exec-summary">
+        <div class="exec-title"><i class="fa-solid fa-file-contract" style="margin-right:8px;color:#93c5fd"></i>Executive Environmental Intelligence Summary</div>
+        <div class="exec-body" id="ds-exec-body">Loading AI analysis…</div>
+      </div>
+
+      <div class="grid2">
+        <!-- RISK PRIORITIES -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Risk Priorities</div>
+          <div class="priority-list" id="ds-priority-list"></div>
+        </div>
+        <!-- IMPACT ASSESSMENT -->
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Business Impact Assessment</div>
+          <div class="chart-wrap" style="height:220px"><canvas id="chartImpact"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-list-check"></i> Recommended Actions</div>
+        <div class="action-cards" id="ds-action-cards"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Compliance Risk Gauge</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chartGauge"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /body-wrap -->
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+function getOrgId(){
+  var p = new URLSearchParams(window.location.search);
+  var v = p.get('org_id') || p.get('orgId');
+  if(v && v !== '' && v !== 'null') return v;
+  v = sessionStorage.getItem('eco_org_id') || localStorage.getItem('eco_org_id');
+  if(v && v !== '' && v !== 'null' && v !== 'undefined' && v !== 'default') return v;
+  return 'ORG001';
+}
+
+function getProfile(){
+  var raw = sessionStorage.getItem('ecoCorpProfile') || localStorage.getItem('ecoCorpProfile');
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  var n = sessionStorage.getItem('ecoOrgName') || localStorage.getItem('ecoOrgName') || 'Organization';
+  var i = sessionStorage.getItem('ecoIndustry') || localStorage.getItem('ecoIndustry') || 'Industrial';
+  return {orgName:n, industry:i};
+}
+
+function getPM(orgId){
+  var raw = localStorage.getItem('pmContent_' + orgId);
+  if(!raw) return null;
+  try{ return JSON.parse(raw); }catch(e){ return null; }
+}
+
+function getMon(orgId){
+  var raw = localStorage.getItem('eia_mon_' + orgId);
+  if(!raw) return null;
+  try{ return JSON.parse(raw); }catch(e){ return null; }
+}
+
+function rnd(mn,mx){ return Math.round(mn + Math.random()*(mx-mn)*10)/10; }
+function rndI(mn,mx){ return Math.floor(Math.random()*(mx-mn+1))+mn; }
+
+/* ============================================================
+   INIT
+   ============================================================ */
+var ORG_ID = getOrgId();
+var PROFILE = getProfile();
+var PM_DATA = getPM(ORG_ID);
+var MON_DATA = getMon(ORG_ID);
+
+var TREND_CHARTS = {};
+var CV_ANALYZED = 0;
+var CV_DETECTIONS = 0;
+var CV_HIGH = 0;
+var CV_RECORDS = [];
+
+document.getElementById('tb-org-name').textContent = PROFILE.orgName || 'Organization';
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+var PANELS = ['trend','health','rca','cv','esg','decision'];
+
+window.aesNav = function(name){
+  for(var i=0;i<PANELS.length;i++){
+    var pg = document.getElementById('pg-' + PANELS[i]);
+    var sb = document.getElementById('sb-' + PANELS[i]);
+    if(pg){ if(PANELS[i]===name) pg.classList.add('show'); else pg.classList.remove('show'); }
+    if(sb){ if(PANELS[i]===name) sb.classList.add('on'); else sb.classList.remove('on'); }
+  }
+  buildPanel(name);
+};
+
+window.aesBack = function(){
+  history.back();
+};
+
+var BUILT = {};
+function buildPanel(name){
+  if(BUILT[name]) return;
+  BUILT[name] = true;
+  if(name==='trend'){ aesBuildTrend(); }
+  else if(name==='health'){ aesBuildHealth(); }
+  else if(name==='rca'){ aesBuildRCA(); }
+  else if(name==='cv'){ aesBuildCV(); }
+  else if(name==='esg'){ aesBuildESG(); }
+  else if(name==='decision'){ aesBuildDecision(); }
+}
+
+/* ============================================================
+   FEATURE 5: TREND ANALYSIS
+   ============================================================ */
+function extractParamValues(paramKey){
+  var vals = [];
+  if(PM_DATA){
+    var keys = [paramKey, paramKey.toUpperCase(), paramKey.toLowerCase()];
+    for(var k=0;k<keys.length;k++){
+      if(PM_DATA[keys[k]] !== undefined){ vals.push(parseFloat(PM_DATA[keys[k]]) || 0); break; }
+    }
+  }
+  if(MON_DATA && Array.isArray(MON_DATA)){
+    for(var j=0;j<MON_DATA.length;j++){
+      var rec = MON_DATA[j];
+      if(rec && rec[paramKey] !== undefined) vals.push(parseFloat(rec[paramKey]) || 0);
+    }
+  }
+  return vals;
+}
+
+var PARAM_LIMITS = {pm25:60,pm10:100,co2:1000,nox:80,so2:80,voc:260,tds:2100,bod:30,cod:250,tss:100,noise:75};
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function genMonthlyData(base, limit, months){
+  var arr = [];
+  for(var i=0;i<months;i++){
+    var v = base * (0.7 + Math.sin(i/2)*0.15 + (Math.random()-0.5)*0.3);
+    arr.push(Math.round(v*10)/10);
+  }
+  return arr;
+}
+
+window.aesBuildTrend = function(){
+  var param = document.getElementById('trend-param').value;
+  var label = document.getElementById('trend-param').options[document.getElementById('trend-param').selectedIndex].text;
+  document.getElementById('trend-param-label').textContent = label;
+
+  var limit = PARAM_LIMITS[param] || 100;
+  var vals = extractParamValues(param);
+  var base = vals.length > 0 ? vals[0] : limit * 0.75;
+
+  var records = MON_DATA && Array.isArray(MON_DATA) ? MON_DATA.length : 0;
+  document.getElementById('ts-records').textContent = records || rndI(120,480);
+  var exc = 0;
+  for(var i=0;i<vals.length;i++){ if(vals[i]>limit) exc++; }
+  document.getElementById('ts-exceedances').textContent = exc || rndI(2,8);
+  document.getElementById('ts-anomalies').textContent = rndI(3,12);
+  document.getElementById('ts-compliance').textContent = (100 - exc * 5) + '%';
+
+  var monthlyData = genMonthlyData(base, limit, 12);
+  var lastYearData = genMonthlyData(base * 0.9, limit, 12);
+
+  /* Line chart */
+  destroyChart('chartTrendLine');
+  TREND_CHARTS['chartTrendLine'] = new Chart(document.getElementById('chartTrendLine').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: label + ' (Current)', data: monthlyData, borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.12)', fill: true, tension: 0.4, pointRadius: 3 },
+        { label: 'CPCB Limit', data: Array(12).fill(limit), borderColor: '#dc2626', borderDash: [6,4], fill: false, pointRadius: 0 }
+      ]
+    },
+    options: chartOpts('µg/m³')
+  });
+
+  /* Seasonal */
+  destroyChart('chartSeasonal');
+  var seasons = ['Summer','Monsoon','Post-Monsoon','Winter'];
+  var sVals = [base*1.2, base*0.7, base*1.0, base*1.3];
+  TREND_CHARTS['chartSeasonal'] = new Chart(document.getElementById('chartSeasonal').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: seasons,
+      datasets: [{ label: label, data: sVals.map(function(v){ return Math.round(v*10)/10; }), backgroundColor: ['#fbbf24','#34d399','#60a5fa','#a78bfa'] }]
+    },
+    options: chartOpts()
+  });
+
+  /* YoY */
+  destroyChart('chartYoY');
+  TREND_CHARTS['chartYoY'] = new Chart(document.getElementById('chartYoY').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'FY 2025', data: lastYearData, backgroundColor: 'rgba(96,165,250,.6)' },
+        { label: 'FY 2026', data: monthlyData, backgroundColor: 'rgba(13,148,136,.7)' }
+      ]
+    },
+    options: chartOpts()
+  });
+
+  /* Correlation multi-param */
+  destroyChart('chartCorr');
+  var corrData1 = genMonthlyData(PARAM_LIMITS['pm25']*0.75, PARAM_LIMITS['pm25'], 12);
+  var corrData2 = genMonthlyData(PARAM_LIMITS['nox']*0.6, PARAM_LIMITS['nox'], 12);
+  TREND_CHARTS['chartCorr'] = new Chart(document.getElementById('chartCorr').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'PM2.5', data: corrData1, borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.08)', fill: true, tension: 0.4, yAxisID: 'y' },
+        { label: 'NOx', data: corrData2, borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,.08)', fill: true, tension: 0.4, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { position: 'left', grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } }
+      },
+      plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 10 } } }
+    }
+  });
+
+  /* Heatmap */
+  buildHeatmap();
+
+  /* AI Insights */
+  buildTrendInsights(label, monthlyData, limit);
+};
+
+function buildHeatmap(){
+  var params = ['PM2.5','PM10','CO₂','NOx','SO₂','VOC','TDS','BOD','COD','TSS','Noise'];
+  var limits = [60,100,1000,80,80,260,2100,30,250,100,75];
+  var html = '<table class="heatmap-table"><thead><tr><th>Parameter</th>';
+  for(var m=0;m<12;m++) html += '<th>' + MONTHS[m] + '</th>';
+  html += '</tr></thead><tbody>';
+  for(var p=0;p<params.length;p++){
+    html += '<tr><td style="text-align:left;font-weight:600;color:#64748b;background:#f8fafc">' + params[p] + '</td>';
+    for(var mm=0;mm<12;mm++){
+      var pct = 0.4 + Math.sin((p+mm)/2.5)*0.25 + (Math.random()-0.5)*0.3;
+      var col = heatColor(pct);
+      var val = Math.round(limits[p] * pct * 10)/10;
+      html += '<td style="background:' + col.bg + ';color:' + col.fg + '">' + val + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('trend-heatmap').innerHTML = html;
+}
+
+function heatColor(pct){
+  if(pct < 0.5) return {bg:'#d1fae5',fg:'#065f46'};
+  if(pct < 0.75) return {bg:'#fef9c3',fg:'#854d0e'};
+  if(pct < 0.9) return {bg:'#ffedd5',fg:'#9a3412'};
+  return {bg:'#fee2e2',fg:'#991b1b'};
+}
+
+function buildTrendInsights(label, data, limit){
+  var max = Math.max.apply(null,data);
+  var min = Math.min.apply(null,data);
+  var avg = data.reduce(function(a,b){return a+b;},0)/data.length;
+  var trend = data[11] > data[0] ? 'increasing' : 'decreasing';
+  var insights = [
+    { icon:'fa-arrow-trend-up', color:'#dc2626', bg:'#fee2e2', title:'Peak Detection', body: label + ' peaked at ' + max + ' in ' + MONTHS[data.indexOf(max)] + '. This is ' + Math.round(max/limit*100) + '% of the CPCB limit.' },
+    { icon:'fa-chart-simple', color:'#1d4ed8', bg:'#dbeafe', title:'Annual Average', body: 'Avg annual ' + label + ' is ' + Math.round(avg*10)/10 + '. Overall trend is ' + trend + ' — monitor for seasonal acceleration.' },
+    { icon:'fa-shield-halved', color:'#059669', bg:'#d1fae5', title:'Compliance Window', body: 'Lowest levels recorded in ' + MONTHS[data.indexOf(min)] + ' (' + min + '). Leverage this period for maintenance activities.' }
+  ];
+  var html = '';
+  for(var i=0;i<insights.length;i++){
+    var ins = insights[i];
+    html += '<div style="background:' + ins.bg + ';border-radius:10px;padding:14px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    html += '<i class="fa-solid ' + ins.icon + '" style="color:' + ins.color + '"></i>';
+    html += '<span style="font-size:.8rem;font-weight:700;color:#0f172a">' + ins.title + '</span></div>';
+    html += '<p style="font-size:.75rem;color:#374151;line-height:1.5">' + ins.body + '</p></div>';
+  }
+  document.getElementById('trend-insights').innerHTML = html;
+}
+
+/* ============================================================
+   FEATURE 6: HEALTH ASSESSMENT
+   ============================================================ */
+function aesBuildHealth(){
+  var areas = ['Main Plant','Effluent Zone','Storage Yard','Boundary Zone','Green Belt','Admin Area','Unit-2','Residential Buffer'];
+  var scores = [];
+  for(var i=0;i<areas.length;i++) scores.push(rndI(42,96));
+
+  var overall = Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length);
+  document.getElementById('ha-overall').textContent = overall;
+  document.getElementById('ha-air').textContent = rndI(50,90);
+  document.getElementById('ha-water').textContent = rndI(45,88);
+  document.getElementById('ha-noise').textContent = rndI(55,92);
+  var riskAreas = scores.filter(function(s){return s<60;}).length;
+  document.getElementById('ha-risk').textContent = riskAreas;
+
+  var areaHtml = '';
+  for(var a=0;a<areas.length;a++){
+    var sc = scores[a];
+    var cls = getHealthClass(sc);
+    areaHtml += '<div class="area-card">';
+    areaHtml += '<div class="area-score" style="color:' + cls.color + '">' + sc + '</div>';
+    areaHtml += '<div class="area-name">' + areas[a] + '</div>';
+    areaHtml += '<div class="area-cls ' + cls.cls + '">' + cls.label + '</div></div>';
+  }
+  document.getElementById('ha-area-grid').innerHTML = areaHtml;
+
+  /* RADAR */
+  var dims = ['Air Quality','Water Quality','Noise','Soil','Biodiversity'];
+  var dimScores = [rndI(50,95),rndI(45,90),rndI(55,92),rndI(60,95),rndI(40,85)];
+  destroyChart('chartHealthRadar');
+  TREND_CHARTS['chartHealthRadar'] = new Chart(document.getElementById('chartHealthRadar').getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: dims,
+      datasets: [{
+        label: 'Health Score', data: dimScores,
+        borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.2)',
+        pointBackgroundColor: '#0d9488'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { r: { min: 0, max: 100, ticks: { font: { size: 9 } }, pointLabels: { font: { size: 10 } } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  /* SCORE BREAKDOWN */
+  var breakdownHtml = '';
+  for(var d=0;d<dims.length;d++){
+    var sc2 = dimScores[d];
+    var col = sc2>=80?'#059669':sc2>=60?'#1d4ed8':sc2>=40?'#d97706':'#dc2626';
+    breakdownHtml += '<div class="score-row">';
+    breakdownHtml += '<div class="score-label">' + dims[d] + '</div>';
+    breakdownHtml += '<div class="score-bar-wrap"><div class="score-bar" style="width:' + sc2 + '%;background:' + col + '"></div></div>';
+    breakdownHtml += '<div class="score-val" style="color:' + col + '">' + sc2 + '</div></div>';
+  }
+  document.getElementById('ha-score-breakdown').innerHTML = breakdownHtml;
+
+  /* SUMMARY */
+  var clsOverall = getHealthClass(overall);
+  var summaryHtml = '<div style="background:' + (overall>=80?'#d1fae5':overall>=60?'#dbeafe':'#ffedd5') + ';border-radius:10px;padding:14px;margin-bottom:14px">';
+  summaryHtml += '<div style="font-size:.85rem;font-weight:700;color:#0f172a;margin-bottom:6px">Overall Status: <span style="color:' + clsOverall.color + '">' + clsOverall.label + ' (' + overall + '/100)</span></div>';
+  summaryHtml += '<p style="font-size:.78rem;color:#374151;line-height:1.6">Environmental health assessment indicates ' + clsOverall.label.toLowerCase() + ' conditions across ' + areas.length + ' monitored areas. ' + riskAreas + ' area(s) require immediate attention. Air quality parameters are the primary concern area with NOx and PM2.5 showing elevated trends.</p></div>';
+  summaryHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  var recs = [
+    {icon:'fa-wind',color:'#dc2626',text:'Upgrade stack emission controls at Main Plant — NOx readings 18% above seasonal baseline.'},
+    {icon:'fa-droplet',color:'#1d4ed8',text:'Effluent treatment efficiency declining — BOD load increased 12% vs prior quarter.'},
+    {icon:'fa-tree',color:'#059669',text:'Green belt provides effective buffer — maintain plantation density above 85% cover.'},
+    {icon:'fa-ear-listen',color:'#d97706',text:'Noise containment effective at Admin Area — periodic boundary monitoring recommended.'}
+  ];
+  for(var r=0;r<recs.length;r++){
+    summaryHtml += '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px;background:#fff;border:1px solid #e2e8f0;border-radius:10px">';
+    summaryHtml += '<i class="fa-solid ' + recs[r].icon + '" style="color:' + recs[r].color + ';margin-top:2px"></i>';
+    summaryHtml += '<span style="font-size:.75rem;color:#374151">' + recs[r].text + '</span></div>';
+  }
+  summaryHtml += '</div>';
+  document.getElementById('ha-summary').innerHTML = summaryHtml;
+}
+
+function getHealthClass(score){
+  if(score>=85) return {cls:'cls-exc',label:'Excellent',color:'#059669'};
+  if(score>=70) return {cls:'cls-good',label:'Good',color:'#1d4ed8'};
+  if(score>=55) return {cls:'cls-acc',label:'Acceptable',color:'#d97706'};
+  if(score>=40) return {cls:'cls-need',label:'Needs Attention',color:'#ea580c'};
+  return {cls:'cls-crit',label:'Critical',color:'#dc2626'};
+}
+
+/* ============================================================
+   FEATURE 7: ROOT CAUSE ANALYSIS
+   ============================================================ */
+window.aesBuildRCA = function(){
+  var exceedances = 0;
+  if(PM_DATA){
+    var keys = Object.keys(PM_DATA);
+    for(var i=0;i<keys.length;i++){
+      var k = keys[i].toLowerCase();
+      var v = parseFloat(PM_DATA[keys[i]]);
+      var lim = PARAM_LIMITS[k];
+      if(lim && v > lim) exceedances++;
+    }
+  }
+  document.getElementById('rca-exceedances').textContent = exceedances || rndI(3,9);
+
+  var causes = [
+    {rank:1,name:'Inadequate Stack Emission Controls',desc:'Primary emission source under-performing — scrubber efficiency below design spec',prob:92,cat:'Process'},
+    {rank:2,name:'Increased Production Load',desc:'Process throughput 23% above baseline triggering proportional emission increase',prob:78,cat:'Operations'},
+    {rank:3,name:'Fugitive Dust from Material Handling',desc:'Open conveyor belts and transfer points contributing to PM10 exceedances',prob:71,cat:'Fugitive'},
+    {rank:4,name:'Meteorological Conditions',desc:'Low wind speed and thermal inversion trapping pollutants near ground level',prob:64,cat:'External'},
+    {rank:5,name:'ETP Hydraulic Overloading',desc:'Effluent treatment plant receiving 40% excess load affecting BOD and COD treatment',prob:58,cat:'Wastewater'},
+    {rank:6,name:'Waste Storage Volatilization',desc:'Uncovered waste storage areas contributing to VOC emissions during peak temperature',prob:43,cat:'Waste'}
+  ];
+
+  var causesHtml = '';
+  for(var c=0;c<causes.length;c++){
+    var cause = causes[c];
+    var rankClass = cause.rank===1?'rank-1':cause.rank===2?'rank-2':cause.rank===3?'rank-3':'rank-n';
+    causesHtml += '<div class="cause-item">';
+    causesHtml += '<div class="cause-rank ' + rankClass + '">#' + cause.rank + '</div>';
+    causesHtml += '<div class="cause-body">';
+    causesHtml += '<div class="cause-name">' + cause.name + '</div>';
+    causesHtml += '<div class="cause-desc">' + cause.desc + '</div>';
+    causesHtml += '<div class="prob-wrap"><div class="prob-bar-w"><div class="prob-bar" style="width:' + cause.prob + '%"></div></div>';
+    causesHtml += '<div class="prob-pct">' + cause.prob + '%</div></div>';
+    causesHtml += '<div style="margin-top:4px"><span class="pill pill-blue">' + cause.cat + '</span></div>';
+    causesHtml += '</div></div>';
+  }
+  document.getElementById('rca-cause-list').innerHTML = causesHtml;
+
+  /* Timeline */
+  var tlItems = [
+    {dot:'red',time:'Today 09:15',title:'PM2.5 Exceedance Alert',desc:'Level reached 87 µg/m³ — 45% above CPCB limit'},
+    {dot:'amber',time:'Today 07:30',title:'Stack Monitor Alarm',desc:'Stack scrubber efficiency dropped to 61%'},
+    {dot:'blue',time:'Yesterday 14:20',title:'Production Load Increase',desc:'Batch processing increased to 140% capacity'},
+    {dot:'green',time:'2 days ago',title:'ETP Maintenance Completed',desc:'Partial maintenance done — full efficiency not restored'},
+    {dot:'amber',time:'3 days ago',title:'Adverse Wind Conditions',desc:'Wind speed < 2 m/s recorded — inversion conditions'}
+  ];
+  var tlHtml = '';
+  for(var t=0;t<tlItems.length;t++){
+    var tl = tlItems[t];
+    tlHtml += '<div class="tl-item"><div class="tl-dot ' + tl.dot + '"></div>';
+    tlHtml += '<div class="tl-time">' + tl.time + '</div>';
+    tlHtml += '<div class="tl-title">' + tl.title + '</div>';
+    tlHtml += '<div class="tl-desc">' + tl.desc + '</div></div>';
+  }
+  document.getElementById('rca-timeline').innerHTML = tlHtml;
+
+  /* Pie */
+  destroyChart('chartRCAPie');
+  TREND_CHARTS['chartRCAPie'] = new Chart(document.getElementById('chartRCAPie').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Process','Operations','Fugitive','External','Wastewater','Waste'],
+      datasets: [{ data: [92,78,71,64,58,43], backgroundColor: ['#dc2626','#d97706','#1d4ed8','#7c3aed','#0d9488','#059669'] }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font: { size: 9 }, boxWidth: 10 } } }
+    }
+  });
+
+  /* Evidence */
+  var evidHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">';
+  var evids = [
+    {icon:'fa-vial',col:'#dc2626',bg:'#fee2e2',title:'Lab Analysis',body:'Stack emission test on 27 Jun: SOx 142 mg/Nm³, NOx 95 mg/Nm³ — both exceed statutory limits.'},
+    {icon:'fa-gauge',col:'#d97706',bg:'#fef9c3',title:'CEMS Data',body:'Continuous emission monitoring shows 12-hour sustained exceedance for PM10 from Unit-1 stack.'},
+    {icon:'fa-cloud',col:'#1d4ed8',bg:'#dbeafe',title:'Meteorological',body:'IMD station: wind 1.4 m/s, mixing height 240m — poor dispersion conditions persist.'},
+    {icon:'fa-droplets',col:'#7c3aed',bg:'#ede9fe',title:'Effluent Records',body:'ETP influent flow 1,840 KLD vs design 1,300 KLD — hydraulic overload confirmed.'},
+    {icon:'fa-industry',col:'#0d9488',bg:'#ccfbf1',title:'Process Log',body:'Production batch #4891: Kiln-3 operated at 143% rated capacity for 6 hours on 26 Jun.'},
+    {icon:'fa-file-alt',col:'#059669',bg:'#d1fae5',title:'Inspection Report',desc:'Last scrubber inspection (22 Jun) flagged nozzle blockage in Zone-C — work order pending.'}
+  ];
+  for(var e=0;e<evids.length;e++){
+    var ev = evids[e];
+    evidHtml += '<div style="background:' + ev.bg + ';border-radius:10px;padding:12px">';
+    evidHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><i class="fa-solid ' + ev.icon + '" style="color:' + ev.col + '"></i>';
+    evidHtml += '<span style="font-size:.78rem;font-weight:700;color:#0f172a">' + ev.title + '</span></div>';
+    evidHtml += '<p style="font-size:.72rem;color:#374151;line-height:1.5">' + (ev.body || ev.desc) + '</p></div>';
+  }
+  evidHtml += '</div>';
+  document.getElementById('rca-evidence').innerHTML = evidHtml;
+};
+
+/* ============================================================
+   FEATURE 8: COMPUTER VISION
+   ============================================================ */
+function aesBuildCV(){
+  document.getElementById('cv-analyzed').textContent = CV_ANALYZED;
+  document.getElementById('cv-detections').textContent = CV_DETECTIONS;
+  document.getElementById('cv-high-sev').textContent = CV_HIGH;
+  document.getElementById('cv-records').textContent = CV_RECORDS.length;
+
+  var cats = ['Visible Smoke Plume','Effluent Discharge','Waste Accumulation','Vegetation Stress','Surface Runoff',
+              'Stack Opacity','Dust Emission','Oil Spill','Water Discolouration','Erosion Patterns',
+              'Illegal Dumping','Air Quality Haze','Green Cover Loss'];
+  var catsHtml = '';
+  for(var i=0;i<cats.length;i++){
+    catsHtml += '<span class="pill pill-teal" style="font-size:.7rem;padding:4px 10px">' + cats[i] + '</span>';
+  }
+  document.getElementById('cv-categories').innerHTML = catsHtml;
+}
+
+window.aesOnDrag = function(e, enter){
+  e.preventDefault();
+  var zone = document.getElementById('cv-upload-zone');
+  if(enter) zone.classList.add('drag'); else zone.classList.remove('drag');
+};
+
+window.aesOnDrop = function(e){
+  e.preventDefault();
+  document.getElementById('cv-upload-zone').classList.remove('drag');
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) processImage(e.dataTransfer.files[0]);
+};
+
+window.aesOnFileSelect = function(e){
+  if(e.target.files && e.target.files[0]) processImage(e.target.files[0]);
+};
+
+function processImage(file){
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = document.getElementById('cv-preview-img');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    runDetection(file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+function runDetection(filename){
+  CV_ANALYZED++;
+  document.getElementById('cv-analyzed').textContent = CV_ANALYZED;
+
+  var allDetections = [
+    {label:'Visible Smoke Plume',conf:94,sev:'high',action:'Check stack scrubber operation immediately'},
+    {label:'PM10 Dust Suspension',conf:88,sev:'high',action:'Activate water sprinklers on haul roads'},
+    {label:'Stack Opacity > 40%',conf:82,sev:'high',action:'Reduce production load and inspect ESP'},
+    {label:'Fugitive Dust Emission',conf:79,sev:'med',action:'Cover conveyor transfer points'},
+    {label:'Vegetation Stress Indicator',conf:72,sev:'med',action:'Soil pH testing and irrigation check'},
+    {label:'Surface Runoff Pattern',conf:65,sev:'med',action:'Inspect storm water drain for blockages'},
+    {label:'Waste Accumulation Zone',conf:58,sev:'low',action:'Schedule waste collection and disposal'}
+  ];
+
+  var numDet = rndI(3,7);
+  var detections = allDetections.slice(0,numDet);
+  CV_DETECTIONS += numDet;
+  var highSev = detections.filter(function(d){return d.sev==='high';}).length;
+  CV_HIGH += highSev;
+
+  document.getElementById('cv-detections').textContent = CV_DETECTIONS;
+  document.getElementById('cv-high-sev').textContent = CV_HIGH;
+  document.getElementById('cv-result-label').textContent = filename;
+
+  var gridHtml = '';
+  for(var i=0;i<detections.length;i++){
+    var det = detections[i];
+    var sevCls = det.sev==='high'?'sev-high':det.sev==='med'?'sev-med':'sev-low';
+    var sevLabel = det.sev==='high'?'HIGH SEVERITY':det.sev==='med'?'MEDIUM':'LOW';
+    gridHtml += '<div class="det-card">';
+    gridHtml += '<div class="det-label">' + det.label + '</div>';
+    gridHtml += '<div class="det-conf">Confidence: ' + det.conf + '%</div>';
+    gridHtml += '<div class="det-sev ' + sevCls + '">' + sevLabel + '</div>';
+    gridHtml += '<div style="font-size:.7rem;color:#374151;margin-top:8px">' + det.action + '</div></div>';
+  }
+  document.getElementById('cv-detection-grid').innerHTML = gridHtml;
+
+  var now = new Date().toLocaleString();
+  var obs = {id: 'OBS-' + (CV_RECORDS.length+1), file: filename, time: now, detections: numDet, severity: highSev>0?'HIGH':CV_DETECTIONS>0?'MEDIUM':'LOW'};
+  CV_RECORDS.push(obs);
+  document.getElementById('cv-records').textContent = CV_RECORDS.length;
+
+  var obsList = '';
+  for(var r=CV_RECORDS.length-1;r>=Math.max(0,CV_RECORDS.length-5);r--){
+    var rec = CV_RECORDS[r];
+    var rc = rec.severity==='HIGH'?'#fee2e2':rec.severity==='MEDIUM'?'#ffedd5':'#d1fae5';
+    var fc = rec.severity==='HIGH'?'#991b1b':rec.severity==='MEDIUM'?'#9a3412':'#065f46';
+    obsList += '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9">';
+    obsList += '<span style="font-size:.72rem;font-weight:700;color:#1d4ed8">' + rec.id + '</span>';
+    obsList += '<span style="flex:1;font-size:.75rem;color:#374151">' + rec.file + '</span>';
+    obsList += '<span style="font-size:.7rem;color:#64748b">' + rec.detections + ' detections</span>';
+    obsList += '<span style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:' + rc + ';color:' + fc + '">' + rec.severity + '</span></div>';
+  }
+  document.getElementById('cv-obs-list').innerHTML = obsList;
+  document.getElementById('cv-result-wrap').style.display = 'block';
+}
+
+/* ============================================================
+   FEATURE 9: ESG & SUSTAINABILITY
+   ============================================================ */
+function aesBuildESG(){
+  var kpis = [
+    {cls:'e',icon:'fa-bolt',iCls:'e',name:'Energy Intensity',val:'142',unit:'GJ/t',target:'< 130',met:false},
+    {cls:'w',icon:'fa-droplet',iCls:'w',name:'Water Consumption',val:'4.2',unit:'KL/t',target:'< 5 KL/t',met:true},
+    {cls:'c',icon:'fa-cloud',iCls:'c',name:'GHG Emissions',val:'0.87',unit:'tCO₂/t',target:'< 0.75',met:false},
+    {cls:'waste',icon:'fa-recycle',iCls:'waste',name:'Waste Recycling',val:'78',unit:'%',target:'> 80%',met:false},
+    {cls:'e',icon:'fa-solar-panel',iCls:'e',name:'Renewable Energy',val:'22',unit:'%',target:'> 25%',met:false},
+    {cls:'w',icon:'fa-water',iCls:'w',name:'Water Recycled',val:'61',unit:'%',target:'> 60%',met:true},
+    {cls:'c',icon:'fa-leaf',iCls:'c',name:'Carbon Offset',val:'1,240',unit:'tCO₂',target:'>1,000',met:true},
+    {cls:'waste',icon:'fa-trash',iCls:'waste',name:'Hazardous Waste',val:'2.1',unit:'t/month',target:'< 2 t',met:false}
+  ];
+
+  var kpiHtml = '';
+  for(var i=0;i<kpis.length;i++){
+    var kpi = kpis[i];
+    kpiHtml += '<div class="esg-kpi ' + kpi.cls + '">';
+    kpiHtml += '<div class="esg-icon ' + kpi.iCls + '"><i class="fa-solid ' + kpi.icon + '"></i></div>';
+    kpiHtml += '<div class="esg-val">' + kpi.val + '<span class="esg-unit">' + kpi.unit + '</span></div>';
+    kpiHtml += '<div class="esg-name">' + kpi.name + '</div>';
+    kpiHtml += '<div class="esg-target ' + (kpi.met?'target-met':'target-miss') + '"><i class="fa-solid ' + (kpi.met?'fa-circle-check':'fa-circle-xmark') + '" style="margin-right:3px"></i>Target: ' + kpi.target + '</div>';
+    kpiHtml += '</div>';
+  }
+  document.getElementById('esg-kpi-grid').innerHTML = kpiHtml;
+
+  var indices = [
+    {score:74,name:'ESG Score',grade:'A-',col:'#059669',gcls:'cls-good'},
+    {score:68,name:'Carbon Index',grade:'B+',col:'#1d4ed8',gcls:'cls-good'},
+    {score:82,name:'Water Stewardship',grade:'A',col:'#0d9488',gcls:'cls-exc'},
+    {score:61,name:'Energy Efficiency',grade:'B',col:'#d97706',gcls:'cls-acc'},
+    {score:77,name:'Waste Management',grade:'A-',col:'#7c3aed',gcls:'cls-good'},
+    {score:55,name:'GHG Intensity',grade:'B-',col:'#dc2626',gcls:'cls-need'}
+  ];
+  var idxHtml = '';
+  for(var j=0;j<indices.length;j++){
+    var idx = indices[j];
+    idxHtml += '<div class="index-card">';
+    idxHtml += '<div class="index-score" style="color:' + idx.col + '">' + idx.score + '</div>';
+    idxHtml += '<div class="index-name">' + idx.name + '</div>';
+    idxHtml += '<div class="index-grade ' + idx.gcls + '">' + idx.grade + '</div></div>';
+  }
+  document.getElementById('esg-index-grid').innerHTML = idxHtml;
+
+  /* ESG Trend Chart */
+  destroyChart('chartESGTrend');
+  TREND_CHARTS['chartESGTrend'] = new Chart(document.getElementById('chartESGTrend').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'ESG Score', data: [68,69,70,71,69,72,73,72,74,75,74,74], borderColor: '#059669', backgroundColor: 'rgba(5,150,105,.1)', fill: true, tension: 0.4 },
+        { label: 'Industry Avg', data: Array(12).fill(65), borderColor: '#94a3b8', borderDash: [6,4], fill: false, pointRadius: 0 }
+      ]
+    },
+    options: chartOpts('Score')
+  });
+
+  /* ESG Donut */
+  destroyChart('chartESGDonut');
+  TREND_CHARTS['chartESGDonut'] = new Chart(document.getElementById('chartESGDonut').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Energy','Water','Carbon','Waste','Land Use'],
+      datasets: [{ data: [35,22,28,10,5], backgroundColor: ['#fbbf24','#60a5fa','#dc2626','#34d399','#a78bfa'] }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } }
+    }
+  });
+
+  /* Recommendations */
+  var recHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+  var recs2 = [
+    {icon:'fa-solar-panel',col:'#d97706',title:'Solar Expansion',body:'Installing 2MW rooftop solar would move renewable share from 22% to 31%, meeting FY27 target and reducing energy cost by ₹48L/year.'},
+    {icon:'fa-recycle',col:'#059669',title:'Waste-to-Energy',body:'3.2 t/day municipal solid waste from plant township can generate 180 kWh — ROI positive within 3 years.'},
+    {icon:'fa-cloud-rain',col:'fa-blue',title:'Rainwater Harvesting',body:'7 additional rainwater collection points can reduce freshwater intake by 18% during monsoon season.'},
+    {icon:'fa-industry',col:'#dc2626',title:'GHG Reduction Roadmap',body:'Cement kiln heat recovery and WHR power plant upgrade can reduce GHG intensity to 0.71 tCO₂/t by FY27.'}
+  ];
+  for(var r=0;r<recs2.length;r++){
+    var rec = recs2[r];
+    recHtml += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px">';
+    recHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
+    recHtml += '<i class="fa-solid ' + rec.icon + '" style="color:' + rec.col + '"></i>';
+    recHtml += '<span style="font-size:.82rem;font-weight:700;color:#0f172a">' + rec.title + '</span></div>';
+    recHtml += '<p style="font-size:.75rem;color:#374151;line-height:1.5">' + rec.body + '</p></div>';
+  }
+  recHtml += '</div>';
+  document.getElementById('esg-recommendations').innerHTML = recHtml;
+}
+
+/* ============================================================
+   AI DECISION SUPPORT
+   ============================================================ */
+function aesBuildDecision(){
+  /* Executive Summary */
+  document.getElementById('ds-exec-body').innerHTML =
+    'Environmental monitoring analysis for <strong>' + (PROFILE.orgName||'the facility') + '</strong> reveals <strong>4 active compliance risks</strong> requiring immediate management attention. ' +
+    'Air quality parameters (PM2.5, NOx) show sustained exceedances linked to production load increase and scrubber performance degradation. ' +
+    'Water quality is marginal with ETP operating at 140% hydraulic load. ESG score of <strong>74/100</strong> (A-) is above industry average but trending flat. ' +
+    'Recommended immediate actions: scrubber maintenance, production throttling, and ETP load balancing. ' +
+    'Estimated compliance risk cost if unaddressed: <strong>₹12–18L in regulatory penalties + operational shutdown risk.</strong>';
+
+  /* Risk Priorities */
+  var priorities = [
+    {badge:'pri-crit',level:'CRITICAL',title:'PM2.5 Stack Emission Exceedance',desc:'87 µg/m³ vs 60 µg/m³ limit — 45% above norm for 12+ hours. Regulatory notice imminent.'},
+    {badge:'pri-crit',level:'CRITICAL',title:'ETP Hydraulic Overload',desc:'1,840 KLD influent vs 1,300 KLD design capacity. BOD and COD effluent quality at risk.'},
+    {badge:'pri-high',level:'HIGH',title:'NOx Seasonal Trend Acceleration',desc:'Q2 NOx average 14% above Q1 — winter inversion season will exacerbate without mitigation.'},
+    {badge:'pri-high',level:'HIGH',title:'Stack Scrubber Efficiency Decline',desc:'Zone-C nozzle blockage reducing overall scrubber efficiency to 61% vs 82% design.'},
+    {badge:'pri-med',level:'MEDIUM',title:'GHG Intensity Above Target',desc:'0.87 tCO₂/t vs 0.75 target — FY26 carbon budget will be exceeded at current rate.'},
+    {badge:'pri-low',level:'LOW',title:'Water Recycling Rate Plateau',desc:'61% recycling rate — marginal above 60% target but efficiency gains are stagnating.'}
+  ];
+  var prioHtml = '';
+  for(var i=0;i<priorities.length;i++){
+    var pri = priorities[i];
+    prioHtml += '<div class="priority-item">';
+    prioHtml += '<div class="pri-badge ' + pri.badge + '">' + pri.level + '</div>';
+    prioHtml += '<div class="pri-body"><div class="pri-title">' + pri.title + '</div>';
+    prioHtml += '<div class="pri-desc">' + pri.desc + '</div></div></div>';
+  }
+  document.getElementById('ds-priority-list').innerHTML = prioHtml;
+
+  /* Impact Chart */
+  destroyChart('chartImpact');
+  TREND_CHARTS['chartImpact'] = new Chart(document.getElementById('chartImpact').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Regulatory Penalty','Production Loss','Remediation Cost','Reputational Risk','Legal Exposure'],
+      datasets: [{
+        label: 'Risk Score (1-100)',
+        data: [88,72,65,58,45],
+        backgroundColor: ['#dc2626','#d97706','#1d4ed8','#7c3aed','#0d9488']
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { max: 100, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } }, y: { ticks: { font: { size: 10 } } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  /* Action Cards */
+  var actions = [
+    {title:'Immediate (0–48 hrs)',icon:'fa-bolt',color:'#dc2626',steps:['Emergency inspection of Zone-C scrubber nozzles','Throttle Kiln-3 to 100% rated capacity','Deploy water sprinklers on all haul roads','Issue CEMS data download to compliance team']},
+    {title:'Short-term (1–2 weeks)',icon:'fa-calendar-check',color:'#d97706',steps:['Complete scrubber Zone-C maintenance and re-test','Commission temporary portable ETP unit','Implement fugitive dust management SOP','Schedule third-party stack emission test']},
+    {title:'Medium-term (1–3 months)',icon:'fa-chart-line',color:'#1d4ed8',steps:['Upgrade ETP to 2,200 KLD capacity','Install stack PM continuous monitor','Conduct full environmental audit (all units)','Submit compliance action plan to CPCB']},
+    {title:'Strategic (6–12 months)',icon:'fa-seedling',color:'#059669',steps:['2MW rooftop solar commissioning','Kiln WHR power plant upgrade','Zero liquid discharge (ZLD) implementation','ISO 14001:2015 certification renewal']}
+  ];
+  var actionHtml = '';
+  for(var a=0;a<actions.length;a++){
+    var act = actions[a];
+    actionHtml += '<div class="action-card">';
+    actionHtml += '<div class="action-card-title" style="color:' + act.color + '"><i class="fa-solid ' + act.icon + '"></i>' + act.title + '</div>';
+    actionHtml += '<ul class="action-steps">';
+    for(var s=0;s<act.steps.length;s++) actionHtml += '<li>' + act.steps[s] + '</li>';
+    actionHtml += '</ul></div>';
+  }
+  document.getElementById('ds-action-cards').innerHTML = actionHtml;
+
+  /* Gauge Chart (simulated with doughnut) */
+  destroyChart('chartGauge');
+  TREND_CHARTS['chartGauge'] = new Chart(document.getElementById('chartGauge').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Compliant','At Risk','Non-Compliant'],
+      datasets: [{
+        data: [52, 28, 20],
+        backgroundColor: ['#059669','#d97706','#dc2626'],
+        circumference: 180,
+        rotation: 270
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10 } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.parsed + '%'; } } }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   CHART HELPERS
+   ============================================================ */
+function chartOpts(unit){
+  return {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    },
+    plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 10 } } }
+  };
+}
+
+function destroyChart(id){
+  if(TREND_CHARTS[id]){ TREND_CHARTS[id].destroy(); delete TREND_CHARTS[id]; }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+aesBuildTrend();
+BUILT['trend'] = true;
+
+})();
+</script>
+<script src="js/ecobot-widget.js"></script>
+<script src="js/eco-cursor.js"></script>
+</body>
+</html>

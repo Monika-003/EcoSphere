@@ -1,0 +1,18 @@
+var TOTAL_STEPS = 12;
+var currentStep = 1;
+var autoSaveTimer = null;
+
+var STEPS = [
+  {num:1,  title:'Organization Information',   icon:'fa-building',            desc:'Enter your organization details, facility information and contact person.'},
+  {num:2,  title:'Project Information',        icon:'fa-project-diagram',     desc:'Provide EIA project details — type, location, timeline, EC category.'},
+  {num:3,  title:'Environmental Baseline',     icon:'fa-leaf',                desc:'Record ambient air, water, noise, soil and biodiversity baseline data.'},
+  {num:4,  title:'Resource Consumption',       icon:'fa-bolt',                desc:'Enter water, energy, fuel and renewable energy usage figures.'},
+  {num:5,  title:'Emissions & Waste',          icon:'fa-smog',                desc:'Document GHG emissions, stack parameters, wastewater and solid waste.'},
+  {num:6,  title:'Branding & Leadership',      icon:'fa-users',               desc:'Upload logo, cover photo, enter vision/mission and add the leadership team.'},
+  {num:7,  title:'Daily Monitoring',           icon:'fa-calendar-check',      desc:'Log daily environmental & social metrics — compiled automatically into the PDF appendix.'},
+  {num:8,  title:'Sustainability & ESG Goals', icon:'fa-seedling',            desc:'Sustainability initiatives, ESG targets register and stakeholder engagement matrix.'},
+  {num:9,  title:'CSR & Community',            icon:'fa-hands-helping',       desc:'CSR programs, beneficiaries, NGO partners and community investment.'},
+  {num:10, title:'Risk Assessment',            icon:'fa-exclamation-triangle',desc:'Register environmental, compliance and climate risks with likelihood, severity and mitigation.'},
+  {num:11, title:'Certifications & Compliance',icon:'fa-certificate',         desc:'ISO certifications, regulatory approvals, company policies, awards and audit records.'},
+  {num:12, title:'Review & Generate Report',   icon:'fa-magic',               desc:'Review all data and generate your complete ~90-page MSN-style EIA sustainability report.'}
+];

@@ -1,0 +1,28 @@
+function collectFormData(){
+  var d = getData();
+  document.querySelectorAll('[data-field]').forEach(function(el){
+    if(el.type === 'checkbox') d[el.dataset.field] = el.checked ? 'true' : '';
+    else d[el.dataset.field] = el.value || '';
+  });
+  return d;
+}
+function saveDraft(){
+  var d = collectFormData();
+  saveData(d);
+}
+function autoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(function(){ saveDraft(); }, 1500);
+}
+var triggerAutoSave = autoSave;
+function loadIntoForm(){
+  var d = getData();
+  document.querySelectorAll('[data-field]').forEach(function(el){
+    if(d[el.dataset.field] !== undefined){
+      if(el.type === 'checkbox') el.checked = (d[el.dataset.field] === 'true');
+      else el.value = d[el.dataset.field];
+    }
+  });
+  var badge = document.getElementById('draftBadge');
+  if(badge && Object.keys(d).length > 0) badge.style.display = 'flex';
+}
