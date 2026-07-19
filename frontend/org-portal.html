@@ -6161,33 +6161,12 @@ function doOrgLogin() {
   // Persist to shared org registry so lab/reg portals see all registered orgs
   try{var _aoArr=JSON.parse(localStorage.getItem('eco_all_orgs')||'[]');var _aoKey=name.toLowerCase().trim();if(!_aoArr.some(function(o){return(o.orgName||o.name||'').toLowerCase().trim()===_aoKey;}))_aoArr.push({name:name,orgName:name,industry:_selInd||'',labStatus:'pending',regStatus:'pending',registeredAt:new Date().toISOString()});localStorage.setItem('eco_all_orgs',JSON.stringify(_aoArr));}catch(e){}
 
-  setTimeout(function() {
-    // Update dashboard with org data
-    document.getElementById('tbOrgName').textContent = name;
-    document.getElementById('tbIndBadge').textContent = _selInd;
-    var initials = name.split(' ').filter(Boolean).map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
-    document.getElementById('dashAv').textContent = initials;
-    document.getElementById('dashRole').textContent = _selRole;
-    document.getElementById('orgHeaderName').textContent = name;
-    document.getElementById('orgHeaderSub').textContent = _selRole + ' · ' + _selInd;
-    document.getElementById('orgIndChip').textContent = _selInd;
-    // Update report org names
-    ['rpt1name','rpt2name','rpt3name','sub1name'].forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent = 'RPT-'+el.textContent.split('-').slice(-2).join('-');
-    });
-    // Update report types based on industry
-    if (_selInd==='Pharmaceutical'||_selInd==='Chemical') {
-      var t1=document.getElementById('rpt1type'); if(t1) t1.textContent='Effluent Monitoring';
-      var st=document.getElementById('sub1type'); if(st) st.textContent='Effluent Monitoring';
-    }
-
-    // Redirect to main EcoSphere app with org data
-    sessionStorage.setItem('ecoOrgName', name);
-    sessionStorage.setItem('ecoIndustry', _selInd);
-    sessionStorage.setItem('ecoRole', _selRole);
-    sessionStorage.setItem('ecoAutoLogin', '1');
-    window.location.href = 'index.html?autologin=1';
-  }, 1000);
+  // Redirect immediately to main EcoSphere app with org data
+  sessionStorage.setItem('ecoOrgName', name);
+  sessionStorage.setItem('ecoIndustry', _selInd || 'Manufacturing');
+  sessionStorage.setItem('ecoRole', _selRole || 'Environmental Officer');
+  sessionStorage.setItem('ecoAutoLogin', '1');
+  window.location.href = 'index.html?autologin=1';
 }
 
 /* ── Logout ── */
@@ -6837,6 +6816,11 @@ function loadLabStatusPage() {
                       'LAB_CORRECTION_REQUESTED','SUBMITTED_TO_REGULATORY','REG_UNDER_REVIEW',
                       'REG_APPROVED','REG_CORRECTION_REQUESTED','CERTIFIED'];
 
+  if (!window.EcoSphereAPI) {
+    window._labPReports = [];
+    _labPRender(window._labPSection);
+    return;
+  }
   EcoSphereAPI.Reports.getReports({ limit: 100, sortBy: 'updatedAt', sortOrder: 'desc', include: 'reviews' })
     .then(function(res) {
       var all = (res && res.data && res.data.reports) ? res.data.reports
@@ -7493,8 +7477,8 @@ function loadRegPortalPage() {
   var REG_STATUSES = ['SUBMITTED_TO_REGULATORY','REG_UNDER_REVIEW','REG_APPROVED','REG_CORRECTION_REQUESTED','CERTIFIED'];
 
   Promise.all([
-    EcoSphereAPI.Reports.getReports({ limit: 100, sortBy: 'updatedAt', sortOrder: 'desc', include: 'reviews' }).catch(function(){ return null; }),
-    _regFetch('GET', '/monitoring?limit=100').catch(function(){ return null; })
+    window.EcoSphereAPI ? EcoSphereAPI.Reports.getReports({ limit: 100, sortBy: 'updatedAt', sortOrder: 'desc', include: 'reviews' }).catch(function(){ return null; }) : Promise.resolve(null),
+    Promise.resolve(null)
   ]).then(function(results) {
     var rRes = results[0];
     var mRes = results[1];
