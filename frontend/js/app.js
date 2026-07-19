@@ -908,33 +908,7 @@ window.openDataForm=function(type){
 window.submitDataForm=function(t){document.getElementById('dataModal').classList.remove('open');showToast('✓ '+t.charAt(0).toUpperCase()+t.slice(1)+' data saved. AI analysing...');setTimeout(function(){showToast('✅ All parameters within permissible limits.')},2400)};
 window.submitESGForm=function(e){e.preventDefault();showToast('ESG Score recalculated: 76/100 — Grade B+')};
 window.submitCarbonForm=function(e){e.preventDefault();showToast('Carbon footprint: 1,847 tCO₂e this month.')};
-window.generateReport=function(t){
-  var token=localStorage.getItem('eco_access_token');
-  var refreshToken=localStorage.getItem('eco_refresh_token');
-  if(!token && !refreshToken){showToast('Please log in to download reports');return;}
-  var typeMap={ESG:'ESG_REPORT',ISO:'ISO14001_COMPLIANCE','ISO 14001':'ISO14001_COMPLIANCE',EIA:'EIA_REPORT',Sustainability:'SUSTAINABILITY',Carbon:'CARBON_EMISSION',Monitoring:'ENVIRONMENTAL_MONITORING',Annual:'ANNUAL_ENVIRONMENTAL'};
-  var rtype=typeMap[t]||'ENVIRONMENTAL_MONITORING';
-  showToast('⏳ Generating '+t+' PDF…');
-  function doDownload(freshToken){
-    var url='/api/v1/reports/quick-pdf?type='+encodeURIComponent(rtype)+'&label='+encodeURIComponent(t+' Compliance Report')+'&token='+encodeURIComponent(freshToken);
-    /* Open in new tab — PDF viewer appears, user can view/save from there */
-    window.open(url,'_blank');
-    setTimeout(function(){showToast('✅ '+t+' PDF opened — use Ctrl+S to save');},800);
-  }
-  /* Always refresh token first to avoid 401 on expired tokens */
-  if(refreshToken){
-    fetch('/api/v1/auth/refresh-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:refreshToken})})
-    .then(function(r){return r.json();})
-    .then(function(res){
-      if(res.success && res.data && res.data.accessToken){
-        localStorage.setItem('eco_access_token',res.data.accessToken);
-        localStorage.setItem('eco_refresh_token',res.data.refreshToken);
-        doDownload(res.data.accessToken);
-      } else { doDownload(token); }
-    })
-    .catch(function(){doDownload(token);});
-  } else { doDownload(token); }
-};
+window.generateReport=function(t){showToast('📄 '+t+' PDF export — coming soon.');};
 window.generateAnnualReport=function(){window.generateReport('Annual');};
 
 /* ════════════════════════ CHATBOT ════════════════════ */
