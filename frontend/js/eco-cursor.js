@@ -1,12 +1,11 @@
 /*!
  * EcoSphere — Eco Cursor v3
- * Single sharp cursor · leaf trail · click burst · ambient leaves
- * 3-D card tilt · magnetic buttons
+ * Single sharp cursor · leaf trail · click burst · ambient leaves · magnetic buttons
+ * (3-D card tilt removed)
  */
 (function () {
   'use strict';
   if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
-  /* Run only once even if script is loaded multiple times */
   if (window.__ecoCursorInit) return;
   window.__ecoCursorInit = true;
 
@@ -132,7 +131,6 @@
   /* ═══════════════════════════════════════
      2.  DOM — single dot + canvas
   ═══════════════════════════════════════ */
-  /* Remove any previous instance elements */
   ['eco-trail-cv','eco-dot','eco-ring','eco-glow'].forEach(function(id) {
     var old = document.getElementById(id);
     if (old) old.remove();
@@ -147,7 +145,6 @@
   dot.id  = 'eco-dot';
   document.body.appendChild(dot);
 
-  /* Canvas context */
   var ctx;
   function resizeCV() {
     cv.width  = window.innerWidth;
@@ -186,7 +183,7 @@
   });
 
   /* ═══════════════════════════════════════
-     5.  RAF — only the canvas trail
+     5.  RAF — canvas trail
   ═══════════════════════════════════════ */
   function tick() {
     drawTrail();
@@ -205,16 +202,13 @@
     ctx.clearRect(0, 0, cv.width, cv.height);
     if (pts.length < 3) return;
 
-    /* wide soft glow pass */
     ctx.save();
     ctx.filter = 'blur(3px)';
     drawCurve(0.14, 5);
     ctx.restore();
 
-    /* core bright pass */
     drawCurve(0.24, 2);
 
-    /* sharp spine (last 14 pts) */
     var tail = pts.slice(-14);
     if (tail.length >= 3) drawCurve(0.42, 1.2, tail);
   }
@@ -312,37 +306,7 @@
   document.addEventListener('mouseenter', function () { document.body.classList.remove('cur-off'); });
 
   /* ═══════════════════════════════════════
-     10.  3-D CARD TILT
-  ═══════════════════════════════════════ */
-  var TILT_SEL = '.erb-card,.kpi-card,.sc-section,.feature-card,.pm-metric-card,.mod-card,.card,.card-glass,.portal-card,.eco-card';
-  var tiltSet  = new WeakSet();
-
-  function bindTilt(el) {
-    if (tiltSet.has(el)) return;
-    tiltSet.add(el);
-    el.style.transition = 'transform .5s cubic-bezier(.23,1,.32,1),box-shadow .5s';
-    el.addEventListener('mousemove', function (e) {
-      var r  = el.getBoundingClientRect();
-      var px = (e.clientX - r.left) / r.width  - 0.5;
-      var py = (e.clientY - r.top)  / r.height - 0.5;
-      el.style.transition  = 'transform .08s linear';
-      el.style.transform   = 'perspective(700px) rotateX(' + (-py * 9) + 'deg) rotateY(' + (px * 9) + 'deg) scale3d(1.025,1.025,1.025)';
-      el.style.boxShadow   = '0 ' + (12 + py * 8) + 'px ' + (30 + Math.abs(px) * 14) + 'px rgba(34,197,94,.12)';
-    });
-    el.addEventListener('mouseleave', function () {
-      el.style.transition = 'transform .55s cubic-bezier(.23,1,.32,1),box-shadow .55s';
-      el.style.transform  = 'perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
-      el.style.boxShadow  = '';
-    });
-  }
-
-  function scanTilt() { document.querySelectorAll(TILT_SEL).forEach(bindTilt); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scanTilt);
-  else scanTilt();
-  setInterval(scanTilt, 2000);
-
-  /* ═══════════════════════════════════════
-     11.  MAGNETIC BUTTONS
+     10.  MAGNETIC BUTTONS
   ═══════════════════════════════════════ */
   var MAG_SEL = 'button,.btn,.erb-btn,.sc-save-btn,.sc-pdf-btn';
   var magEl   = null;
@@ -363,7 +327,7 @@
   });
 
   /* ═══════════════════════════════════════
-     12.  AMBIENT LEAVES (background drift)
+     11.  AMBIENT LEAVES (background drift)
   ═══════════════════════════════════════ */
   function ambientLeaf() {
     var x   = Math.random() * window.innerWidth;

@@ -308,6 +308,8 @@ exports.generateCertificate = async (req, res) => {
     validityMonths:    req.body.validityMonths || 12
   });
 
+  await notificationService.notifyCertificateIssued(report.organizationId, certificate.id, certificate.certificateNumber);
+
   await createAuditLog({
     userId: req.user.id, action: 'CERTIFICATE_ISSUED', entityType: 'Certificate', entityId: certificate.id,
     description: `Lab certificate issued: ${certificate.certificateNumber}`,

@@ -650,6 +650,7 @@
               '  <div class="cert-actions">',
               '    <button class="cert-dl-btn" onclick="labDownloadPdf(\'' + r.id + '\',\'' + dlFilename + '\')"><i class="fas fa-download"></i> Download Certificate</button>',
               '    <button class="cert-vfy-btn" onclick="toast(\'Certificate ' + certNo + ' — Verified ✓\')"><i class="fas fa-shield-check"></i> Verify</button>',
+              '    <button class="cert-dl-btn" style="background:linear-gradient(135deg,#1d4ed8,#1e40af)" onclick="labForwardToReg(\'' + r.id + '\',this)"><i class="fas fa-paper-plane"></i> Forward to Regulatory</button>',
               '  </div>',
               '</div>'
             ].join('');
@@ -692,6 +693,28 @@
         return;
       }
       window.labReview(id, type);
+    };
+
+    /* ════════════════════════════════════════════════
+       FORWARD TO REGULATORY (from lab)
+    ════════════════════════════════════════════════ */
+    window.labForwardToReg = function (reportId, btn) {
+      var notes = window.prompt('Notes for Regulatory Authority (optional):');
+      if (notes === null) return; /* cancelled */
+
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+      EcoService.toast('⏳ Forwarding to Regulatory…');
+
+      EcoService.Lab.forwardToReg(reportId, notes || '')
+        .then(function () {
+          EcoService.toast('✅ Report forwarded to Regulatory Authority');
+          _loadDashboard();
+          _loadCerts();
+        })
+        .catch(function (err) {
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Forward to Regulatory'; }
+          EcoService.error(err.message || 'Forward failed');
+        });
     };
 
     /* ════════════════════════════════════════════════

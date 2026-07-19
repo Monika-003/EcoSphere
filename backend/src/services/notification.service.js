@@ -137,7 +137,7 @@ exports.sendComplianceAlert = async (orgId, monitoringType, violations) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: { in: ['ORG_ADMIN','ORG_QUALITY_HEAD'] }, isActive: true }, take: 3 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN','QUALITY_HEAD','PRODUCTION_HEAD'] }, isActive: true }, take: 3 } }
     });
     if (!org) return;
 
@@ -166,7 +166,7 @@ exports.notifyLabApproval = async (orgId, reportId, reportNumber) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -186,7 +186,7 @@ exports.notifyLabRejection = async (orgId, reportId, correctionNotes) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -206,7 +206,7 @@ exports.notifyCorrectionRequested = async (orgId, reportId, correctionNotes) => 
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: { in: ['ORG_ADMIN','ORG_ANALYST'] }, isActive: true }, take: 3 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN','ENV_ENGINEER','QUALITY_HEAD'] }, isActive: true }, take: 3 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -226,7 +226,7 @@ exports.notifyForwardedToRegulatory = async (orgId, reportId) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -249,7 +249,7 @@ exports.notifyRegApproval = async (orgId, reportId) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -269,7 +269,7 @@ exports.notifyComplianceNotice = async (orgId, noticeId, noticeNumber, title) =>
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: { in: ['ORG_ADMIN','ORG_QUALITY_HEAD'] }, isActive: true }, take: 3 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN','QUALITY_HEAD','PRODUCTION_HEAD'] }, isActive: true }, take: 3 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -288,7 +288,7 @@ exports.notifyCertificateIssued = async (orgId, certId, certNumber) => {
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -308,7 +308,7 @@ exports.notifyInspectionScheduled = async (orgId, inspectionId, scheduledDate) =
   try {
     const org = await prisma.organization.findUnique({
       where:   { id: orgId },
-      include: { users: { where: { role: 'ORG_ADMIN', isActive: true }, take: 2 } }
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
     });
     for (const user of org?.users || []) {
       await saveInApp({
@@ -320,5 +320,91 @@ exports.notifyInspectionScheduled = async (orgId, inspectionId, scheduledDate) =
     }
   } catch (err) {
     logger.error('[notifyInspectionScheduled]', err.message);
+  }
+};
+
+/* ══════════════════════════════════════
+   MISSING REGULATORY WORKFLOW NOTIFICATIONS
+══════════════════════════════════════ */
+exports.notifyRegRejection = async (orgId, reportId, reason) => {
+  try {
+    const org = await prisma.organization.findUnique({
+      where:   { id: orgId },
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN'] }, isActive: true }, take: 2 } }
+    });
+    for (const user of org?.users || []) {
+      await saveInApp({
+        userId: user.id, orgId,
+        title:   '❌ Regulatory Authority Rejected Report',
+        message: `Your report has been rejected by the Regulatory Authority. Reason: ${reason || 'See report for details.'}`,
+        type:    'ERROR', entityType: 'Report', entityId: reportId,
+        link:    `/reports/${reportId}`
+      });
+    }
+  } catch (err) {
+    logger.error('[notifyRegRejection]', err.message);
+  }
+};
+
+exports.notifyRegCorrectionRequested = async (orgId, reportId, correctionNotes) => {
+  try {
+    const org = await prisma.organization.findUnique({
+      where:   { id: orgId },
+      include: { users: { where: { role: { in: ['ENV_OFFICER','ADMIN','ENV_ENGINEER','QUALITY_HEAD'] }, isActive: true }, take: 3 } }
+    });
+    for (const user of org?.users || []) {
+      await saveInApp({
+        userId: user.id, orgId,
+        title:   '⚠ Regulatory Corrections Required',
+        message: `The Regulatory Authority has requested corrections. Notes: ${correctionNotes || 'See report for details.'}`,
+        type:    'WARNING', entityType: 'Report', entityId: reportId,
+        link:    `/reports/${reportId}`
+      });
+    }
+  } catch (err) {
+    logger.error('[notifyRegCorrectionRequested]', err.message);
+  }
+};
+
+/* ══════════════════════════════════════
+   CROSS-PORTAL SUBMISSION NOTIFICATIONS
+══════════════════════════════════════ */
+exports.notifyNewReportForLab = async (reportId, reportNumber, orgName) => {
+  try {
+    const labUsers = await prisma.user.findMany({
+      where: { role: { in: ['LAB_ADMIN','LAB_SENIOR_REVIEWER','LAB_ANALYST'] }, isActive: true },
+      take: 10
+    });
+    for (const user of labUsers) {
+      await saveInApp({
+        userId: user.id,
+        title:   '📋 New Report Submitted for Review',
+        message: `${orgName || 'An organization'} has submitted report ${reportNumber} for laboratory review.`,
+        type:    'INFO', entityType: 'Report', entityId: reportId,
+        link:    `/lab/reports/${reportId}`
+      });
+    }
+  } catch (err) {
+    logger.error('[notifyNewReportForLab]', err.message);
+  }
+};
+
+exports.notifyNewReportForRegulatory = async (reportId, orgId) => {
+  try {
+    const regUsers = await prisma.user.findMany({
+      where: { role: { in: ['REG_OFFICER','REG_REGIONAL_OFFICER','REG_INSPECTOR'] }, isActive: true },
+      take: 10
+    });
+    for (const user of regUsers) {
+      await saveInApp({
+        userId: user.id,
+        title:   '🏛 New Report Submitted to Regulatory',
+        message: 'A lab-approved environmental compliance report has been submitted for regulatory review.',
+        type:    'INFO', entityType: 'Report', entityId: reportId,
+        link:    `/regulatory/reports/${reportId}`
+      });
+    }
+  } catch (err) {
+    logger.error('[notifyNewReportForRegulatory]', err.message);
   }
 };

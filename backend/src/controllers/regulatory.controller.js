@@ -56,6 +56,106 @@ function assertOrgAccess(req, organizationId) {
 }
 
 /* ══════════════════════════════════════
+   VIEW SINGLE REPORT  (auto-transition to REG_UNDER_REVIEW)
+══════════════════════════════════════ */
+exports.viewReport = async (req, res) => {
+  const report = await prisma.report.findUnique({
+    where: { id: req.params.id },
+    include: {
+      organization:    { select: { name: true, industryType: true, city: true, state: true } },
+      submittedBy:     { select: { firstName: true, lastName: true, role: true } },
+      reviews:         { include: { reviewedBy: { select: { firstName: true, lastName: true } }, laboratory: { select: { name: true } }, authority: { select: { name: true } } }, orderBy: { createdAt: 'asc' } },
+      certificate:     true,
+      workflowHistory: { orderBy: { performedAt: 'asc' }, include: { performedBy: { select: { firstName: true, lastName: true, role: true } } } },
+      monitoringRecords: { include: { monitoringRecord: { select: { monitoringType: true, parameters: true, complianceStatus: true, recordingDate: true } } }, take: 20 }
+    }
+  });
+  if (!report) throw new AppError('Report not found', 404);
+  assertOrgAccess(req, report.organizationId);
+
+  /* Auto-advance to REG_UNDER_REVIEW when a regulator opens the report */
+  if (report.status === 'SUBMITTED_TO_REGULATORY') {
+    await prisma.$transaction(async (tx) => {
+      await tx.report.update({
+        where: { id: report.id },
+        data:  { status: 'REG_UNDER_REVIEW', currentStage: 'REGULATORY' }
+      });
+      await tx.workflowHistory.create({
+        data: {
+          reportId: report.id, organizationId: report.organizationId, performedById: req.user.id,
+          stage: 'REGULATORY', fromStatus: 'SUBMITTED_TO_REGULATORY', toStatus: 'REG_UNDER_REVIEW',
+          action: 'REG_UNDER_REVIEW', comments: 'Report opened for review'
+        }
+      });
+    });
+    report.status = 'REG_UNDER_REVIEW';
+  }
+
+  return success(res, { report });
+};
+
+/* ══════════════════════════════════════
+   REJECT REPORT
+══════════════════════════════════════ */
+exports.rejectReport = async (req, res) => {
+  const { comments } = req.body;
+  if (!comments || !comments.trim()) {
+    throw new AppError('Rejection reason is required', 400);
+  }
+
+  const report = await prisma.report.findUnique({
+    where: { id: req.params.id },
+    include: { organization: true }
+  });
+  if (!report) throw new AppError('Report not found', 404);
+  assertOrgAccess(req, report.organizationId);
+
+  if (!['SUBMITTED_TO_REGULATORY', 'REG_UNDER_REVIEW'].includes(report.status)) {
+    throw new AppError(`Cannot reject in status: ${report.status}`, 400);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.reportReview.create({
+      data: {
+        reportId:    report.id,
+        reviewedById: req.user.id,
+        reviewStage: 'REGULATORY',
+        authorityId: req.user.authorityId || null,
+        status:      'REJECTED',
+        comments,
+        reviewedAt:  new Date()
+      }
+    });
+    await tx.report.update({
+      where: { id: report.id },
+      data:  { status: 'REG_REJECTED', currentStage: 'REGULATORY' }
+    });
+    await tx.workflowHistory.create({
+      data: {
+        reportId: report.id, organizationId: report.organizationId, performedById: req.user.id,
+        stage: 'REGULATORY', fromStatus: report.status, toStatus: 'REG_REJECTED',
+        action: 'REG_REJECTED', comments
+      }
+    });
+  });
+
+  await cacheDel(`dashboard:regulatory:${req.user.id}`);
+
+  const io = getIo();
+  if (io) io.to(`org:${report.organizationId}`).emit('report:reg_rejected', { reportId: report.id });
+
+  await notificationService.notifyRegRejection(report.organizationId, report.id, comments);
+
+  await createAuditLog({
+    userId: req.user.id, action: 'REJECT', entityType: 'Report', entityId: report.id,
+    description: `Regulatory rejected: ${report.reportNumber}`,
+    ipAddress: req.ip, requestId: req.requestId
+  });
+
+  return success(res, {}, 'Report rejected by regulatory authority');
+};
+
+/* ══════════════════════════════════════
    PENDING APPROVALS QUEUE
 ══════════════════════════════════════ */
 exports.getPendingApprovals = async (req, res) => {
@@ -586,6 +686,8 @@ exports.requestCorrection = async (req, res) => {
       }
     });
   });
+
+  await notificationService.notifyRegCorrectionRequested(report.organizationId, report.id, correctionNotes);
 
   await createAuditLog({
     userId: req.user.id, action: 'CORRECTION_REQUESTED', entityType: 'Report', entityId: report.id,

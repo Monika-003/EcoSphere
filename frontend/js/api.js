@@ -12,7 +12,9 @@
      Always relative — works on any host/port because
      Express serves both frontend and API on one server.
   ════════════════════════════════════════════════ */
-  const API_BASE = '/api/v1';
+  const API_BASE = (window.ECOSPHERE_CONFIG && window.ECOSPHERE_CONFIG.apiBase)
+    ? window.ECOSPHERE_CONFIG.apiBase + '/api/v1'
+    : '/api/v1';
 
   /* Remove any stale API URL from previous sessions */
   try { localStorage.removeItem('ecosphere_api_url'); } catch(_) {}
@@ -216,7 +218,8 @@
     getReports:    (params = {}) => http.get('/reports', params),
     getReport:     (id)          => http.get(`/reports/${id}`),
     createReport:  (data)        => http.post('/reports', data),
-    submitToLab:   (id, notes)   => http.post(`/reports/${id}/submit-lab`, { notes }),
+    submitToLab:          (id, notes) => http.post(`/reports/${id}/submit-lab`, { notes }),
+    submitToRegulatory:   (id, notes) => http.post(`/reports/${id}/submit-regulatory`, { notes }),
     generatePdf:   (id)          => {
       /* Returns raw PDF — handle separately */
       const token = TokenStore.getAccess();
@@ -250,7 +253,10 @@
     getAnalytics:       ()       => http.get('/regulatory/analytics'),
     getMonitoring:      (params) => http.get('/regulatory/monitoring', params),
     getAlerts:          (params) => http.get('/regulatory/alerts', params),
+    getReport:          (id)     => http.get(`/regulatory/reports/${id}`),
+    getAllReports:      (params) => http.get('/regulatory/reports', params),
     approveReport:      (id, d)  => http.post(`/regulatory/reports/${id}/approve`, d),
+    rejectReport:       (id, d)  => http.post(`/regulatory/reports/${id}/reject`, d),
     issueCertificate:   (id, d)  => http.post(`/regulatory/reports/${id}/certify`, d),
     issueNotice:        (d)      => http.post('/regulatory/notices', d),
     scheduleInspection: (d)      => http.post('/regulatory/inspections', d)

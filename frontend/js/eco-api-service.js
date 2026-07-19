@@ -340,7 +340,10 @@
   var RegService = {
     getDashboard:        function ()        { return window.EcoSphereAPI.Regulatory.getDashboard(); },
     getPendingApprovals: function (params)  { return window.EcoSphereAPI.Regulatory.getPendingApprovals(params); },
+    getReport:           function (id)      { return window.EcoSphereAPI.Regulatory.getReport(id); },
+    getAllReports:       function (params)  { return window.EcoSphereAPI.Regulatory.getAllReports(params || {}); },
     approve:             function (id, d)   { return window.EcoSphereAPI.Regulatory.approveReport(id, d || {}); },
+    reject:              function (id, notes) { return window.EcoSphereAPI.Regulatory.rejectReport(id, { comments: notes }); },
     issueCertificate:    function (id, d)   { return window.EcoSphereAPI.Regulatory.issueCertificate(id, d || {}); },
     issueNotice:         function (id, notes) { return window.EcoSphereAPI.Regulatory.issueNotice(id, notes ? { notes: notes } : {}); },
     scheduleInspection:  function (id, notes) { return window.EcoSphereAPI.Regulatory.scheduleInspection(id, notes ? { notes: notes } : {}); },

@@ -23,6 +23,7 @@
     "swagger": "node src/utils/swagger.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "@prisma/client": "^5.7.0",
     "aws-sdk": "^2.1490.0",
     "bcryptjs": "^2.4.3",

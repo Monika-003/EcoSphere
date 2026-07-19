@@ -481,31 +481,10 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
           <button style="background:linear-gradient(135deg,#0d9488,#059669);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px" onclick="_regIssueCert('sustainability','Sustainability')"><i class="fas fa-plus"></i> Sustainability Cert</button>
           <button style="background:linear-gradient(135deg,#1d4ed8,#0d9488);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-family:'Poppins',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px" onclick="_regIssueCert('carbon','Carbon Verification')"><i class="fas fa-plus"></i> Carbon Verification Cert</button>
         </div>
-        <div class="cert-card">
-          <div class="cert-top">
-            <img src="assets/logo.png" class="cert-logo" alt="EcoSphere"/>
-            <div class="cert-t">Environmental Compliance Certificate</div>
-            <div class="cert-s">Issued by Telangana State Pollution Control Board (TSPCB) · Government of Telangana</div>
-            <div class="cert-seal">🏛️</div>
-          </div>
-          <div class="cert-body">
-            <div class="cert-stmp"><i class="fas fa-landmark"></i><span>Official Government Certificate · Digitally Signed · QR Verified</span></div>
-            <div class="cert-fields">
-              <div class="cfi"><div class="cfl">Certificate No.</div><div class="cfv">TSPCB/ENV/2025/0584</div></div>
-              <div class="cfi"><div class="cfl">Organization</div><div class="cfv">QMICS Manufacturing Pvt Ltd</div></div>
-              <div class="cfi"><div class="cfl">Issue Date</div><div class="cfv">02 Jun 2025</div></div>
-              <div class="cfi"><div class="cfl">Valid Until</div><div class="cfv" style="color:#16a34a;font-weight:800">01 Jun 2026</div></div>
-              <div class="cfi"><div class="cfl">Issuing Officer</div><div class="cfv">Dr. K. Reddy — TSPCB</div></div>
-              <div class="cfi"><div class="cfl">Certificate Type</div><div class="cfv">Environmental Compliance</div></div>
-            </div>
-            <div class="cert-qr">
-              <div class="qr-box"><svg width="48" height="48" viewBox="0 0 48 48" style="padding:5px"><rect width="48" height="48" fill="#1c1400"/><rect x="7" y="7" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="10" y="10" width="8" height="8" fill="#fbbf24"/><rect x="27" y="7" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="30" y="10" width="8" height="8" fill="#fbbf24"/><rect x="7" y="27" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="1.5"/><rect x="10" y="30" width="8" height="8" fill="#fbbf24"/><rect x="27" y="27" width="4" height="4" fill="#fbbf24"/><rect x="35" y="27" width="4" height="4" fill="#fbbf24"/><rect x="31" y="33" width="4" height="4" fill="#fbbf24"/></svg></div>
-              <div class="qr-info"><h5>QR & Blockchain Verified</h5><p>Scan to verify on EcoSphere Public Portal</p><div class="qr-hash">TX: 0xa3f8c1d2e4b67890</div></div>
-            </div>
-          </div>
-          <div class="cert-actions">
-            <button class="cert-dl" onclick="ecoExport({title:'TSPCB Official Compliance Certificate',subtitle:'Certificate No. TSPCB/ENV/2025/0584 — ISO 14001',formats:['pdf','csv'],onFormat:function(f){ecoDownloadReport('ISO 14001','TSPCB Government Compliance Certificate TSPCB/ENV/2025/0584');}})"><i class="fas fa-download"></i> Download Certificate</button>
-            <button class="cert-vf" onclick="toast('Certificate TSPCB/ENV/2025/0584 — Verified ✓')"><i class="fas fa-shield-check"></i> Verify</button>
+        <div id="regCertList">
+          <div style="text-align:center;padding:40px 20px;color:#94a3b8">
+            <i class="fas fa-spinner fa-spin" style="font-size:1.4rem;display:block;margin-bottom:10px"></i>
+            <div style="font-size:.85rem">Loading issued certificates…</div>
           </div>
         </div>
       </div>
@@ -1016,105 +995,297 @@ function _regUpdateSubmissionStatus(reportId, status, feedback) {
   setTimeout(function(){ _regLoadApprovedRejected(window._regOrg||''); }, 100);
 }
 
-/* ── Cross-portal: populate Approved / Rejected sections from eco_reg_submissions ── */
+/* ── Approved / Rejected sections — API-backed ── */
 function _regLoadApprovedRejected(orgName){
-  var subs=[];
-  try{subs=JSON.parse(localStorage.getItem('eco_reg_submissions')||'[]');}catch(e){}
-  var filtered=subs;
-  if(orgName){
-    var key2=orgName.toLowerCase().split(/\s+/).slice(0,2).join(' ');
-    filtered=subs.filter(function(s){return (s.orgName||'').toLowerCase().split(/\s+/).slice(0,2).join(' ')===key2;});
-  }
+  var svc = window.EcoService && window.EcoService.Regulatory;
+  if (!svc) return;
   function _fmtDate(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return '—';}}
-  function _certNo(s){return 'GOV/ENV/2025/'+(s.reportId||'').replace('RPT-','').replace(/\D/g,'').slice(-4)||Math.floor(1000+Math.random()*9000);}
 
-  /* APPROVED */
-  var appArr=filtered.filter(function(s){return s.status==='APPROVED';});
-  var appTbl=document.querySelector('#sec-approved tbody');
-  if(appTbl){
-    appTbl.querySelectorAll('._dyn-reg').forEach(function(r){r.remove();});
-    appArr.forEach(function(s){
-      var tr=document.createElement('tr');tr.className='_dyn-reg';
-      tr.style.cssText='border-left:3px solid #10b981';
-      var cert=_certNo(s);
-      tr.innerHTML='<td><b>'+(s.reportId||'RPT-REG')+'</b></td>'
-        +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(s.orgName||'—')+'</td>'
-        +'<td>'+(s.reportType||'Compliance Report')+'</td>'
-        +'<td>'+_fmtDate(s.reviewedAt)+'</td>'
-        +'<td><span style="font-size:.75rem;color:#0d9488;font-weight:700">'+cert+'</span></td>'
-        +'<td><button class="btn b-ct" onclick="toast(\'Certificate '+_regEscA(cert)+' is ready for download\')" style="font-size:.72rem"><i class="fas fa-certificate"></i> Cert</button></td>';
-      appTbl.insertBefore(tr,appTbl.firstChild);
-    });
-  }
+  /* ── APPROVED (REG_APPROVED) ── */
+  var appTbl = document.querySelector('#sec-approved tbody');
+  if (appTbl) appTbl.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Loading…</td></tr>';
 
-  /* REJECTED */
-  var rejArr=filtered.filter(function(s){return s.status==='REJECTED';});
-  var rejTbl=document.querySelector('#sec-rejected tbody');
-  if(rejTbl){
-    rejTbl.querySelectorAll('._dyn-reg').forEach(function(r){r.remove();});
-    rejArr.forEach(function(s){
-      var tr=document.createElement('tr');tr.className='_dyn-reg';
-      tr.style.cssText='border-left:3px solid #ef4444';
-      tr.innerHTML='<td><b>'+(s.reportId||'RPT-REG-REJ')+'</b></td>'
-        +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(s.orgName||'—')+'</td>'
-        +'<td>'+_fmtDate(s.reviewedAt)+'</td>'
-        +'<td style="max-width:280px;font-size:.8rem;color:#64748b">'+_regEscH(s.feedback||'—')+'</td>';
-      rejTbl.insertBefore(tr,rejTbl.firstChild);
-    });
-  }
+  svc.getAllReports({ status: 'REG_APPROVED', limit: 50 })
+    .then(function(res){
+      var list = (res && res.data && res.data.reports) ? res.data.reports
+               : (res && res.data && Array.isArray(res.data)) ? res.data : [];
+      if (orgName) {
+        var key = orgName.toLowerCase();
+        list = list.filter(function(r){ return ((r.organization && r.organization.name)||'').toLowerCase().indexOf(key) !== -1; });
+      }
+      if (!appTbl) return;
+      if (!list.length) {
+        appTbl.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-check-double" style="margin-right:6px;opacity:.4"></i>No approved reports yet</td></tr>';
+        return;
+      }
+      appTbl.innerHTML = list.map(function(r){
+        var org  = (r.organization && r.organization.name) || '—';
+        var rnum = r.reportNumber || r.id.substring(0,8).toUpperCase();
+        var type = (r.reportType||'').replace(/_/g,' ') || 'Compliance Report';
+        var date = _fmtDate(r.updatedAt || r.submittedAt);
+        return '<tr style="border-left:3px solid #10b981">'
+          +'<td><b>'+_regEscH(rnum)+'</b></td>'
+          +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(org)+'</td>'
+          +'<td>'+_regEscH(type)+'</td>'
+          +'<td>'+date+'</td>'
+          +'<td><span style="font-size:.75rem;color:#64748b;font-style:italic">Pending issuance</span></td>'
+          +'<td><button class="btn b-cert" onclick="_regDirectIssueCert(\''+r.id+'\',\''+_regEscA(rnum)+'\',\''+_regEscA(org)+'\')" style="font-size:.72rem"><i class="fas fa-certificate"></i> Issue Cert</button></td>'
+          +'</tr>';
+      }).join('');
 
-  /* Update sidebar badges */
-  var sbApp=document.querySelector('.sb-item[onclick*="approved"] .sb-num');
-  if(!sbApp&&appArr.length){var ai=document.querySelector('.sb-item[onclick*="approved"]');if(ai){sbApp=document.createElement('span');sbApp.className='sb-num g';ai.appendChild(sbApp);}}
-  if(sbApp){sbApp.textContent=appArr.length;sbApp.style.display=appArr.length?'':'none';}
-  var sbRej=document.querySelector('.sb-item[onclick*="rejected"] .sb-num');
-  if(!sbRej&&rejArr.length){var ri=document.querySelector('.sb-item[onclick*="rejected"]');if(ri){sbRej=document.createElement('span');sbRej.className='sb-num';sbRej.style.cssText='background:rgba(239,68,68,.22);color:#fca5a5';ri.appendChild(sbRej);}}
-  if(sbRej){sbRej.textContent=rejArr.length;sbRej.style.display=rejArr.length?'':'none';}
+      /* sidebar badge */
+      _regSetBadge('.sb-item[onclick*="approved"]', list.length, 'g');
+    })
+    .catch(function(){ if(appTbl) appTbl.innerHTML='<tr><td colspan="6" style="text-align:center;padding:18px;color:#ef4444;font-size:.82rem">Failed to load approved reports</td></tr>'; });
+
+  /* ── REJECTED (REG_REJECTED) ── */
+  var rejTbl = document.querySelector('#sec-rejected tbody');
+  if (rejTbl) rejTbl.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Loading…</td></tr>';
+
+  svc.getAllReports({ status: 'REG_REJECTED', limit: 50 })
+    .then(function(res){
+      var list = (res && res.data && res.data.reports) ? res.data.reports
+               : (res && res.data && Array.isArray(res.data)) ? res.data : [];
+      if (orgName) {
+        var key = orgName.toLowerCase();
+        list = list.filter(function(r){ return ((r.organization && r.organization.name)||'').toLowerCase().indexOf(key) !== -1; });
+      }
+      if (!rejTbl) return;
+      if (!list.length) {
+        rejTbl.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;font-size:.84rem"><i class="fas fa-times-circle" style="margin-right:6px;opacity:.4"></i>No rejected reports</td></tr>';
+        return;
+      }
+      rejTbl.innerHTML = list.map(function(r){
+        var org  = (r.organization && r.organization.name) || '—';
+        var rnum = r.reportNumber || r.id.substring(0,8).toUpperCase();
+        var date = _fmtDate(r.updatedAt);
+        var reason = '';
+        if (r.reviews) { for (var i=0;i<r.reviews.length;i++) { if (r.reviews[i].reviewStage==='REGULATORY' && r.reviews[i].status==='REJECTED') { reason = r.reviews[i].comments||''; break; }}}
+        return '<tr style="border-left:3px solid #ef4444">'
+          +'<td><b>'+_regEscH(rnum)+'</b></td>'
+          +'<td><span style="background:#7c3aed22;color:#7c3aed;padding:2px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px">ORG</span>'+_regEscH(org)+'</td>'
+          +'<td>'+date+'</td>'
+          +'<td style="max-width:280px;font-size:.8rem;color:#64748b">'+_regEscH(reason||'—')+'</td>'
+          +'</tr>';
+      }).join('');
+
+      _regSetBadge('.sb-item[onclick*="rejected"]', list.length, null);
+    })
+    .catch(function(){ if(rejTbl) rejTbl.innerHTML='<tr><td colspan="4" style="text-align:center;padding:18px;color:#ef4444;font-size:.82rem">Failed to load rejected reports</td></tr>'; });
 }
 
-/* ── Issue government certificate ── */
-function _regIssueCert(type, typeName){
-  var org=window._regOrg||sessionStorage.getItem('ecoOrgName')||'Organization';
-  if(!org||org==='Organization'){toast('⚠️ Log in with an organization selected to issue a certificate');return;}
-  var yr=new Date().getFullYear();
-  var prefix={environmental:'TSPCB/ENV',esg:'TSPCB/ESG',sustainability:'TSPCB/SUS',carbon:'TSPCB/CRB'}[type]||'TSPCB/CERT';
-  var certNo=prefix+'/'+yr+'/'+Math.floor(Math.random()*9000+1000);
-  var date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  var expiry=new Date(Date.now()+365*24*60*60*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  var officer=document.getElementById('rLabel')?document.getElementById('rLabel').textContent:'Regulatory Officer';
-  /* Store for cross-portal access */
-  var certs=[];
-  try{certs=JSON.parse(localStorage.getItem('eco_reg_certs')||'[]');}catch(e){}
-  certs.unshift({certNo:certNo,type:typeName,org:org,issuedAt:new Date().toISOString(),expiry:expiry,issuedBy:officer});
-  localStorage.setItem('eco_reg_certs',JSON.stringify(certs));
-  /* Notify org */
-  var notifs=[];
-  try{notifs=JSON.parse(localStorage.getItem('eco_notifications')||'[]');}catch(e){}
-  notifs.unshift({type:'CERT_ISSUED',certNo:certNo,typeName:typeName,org:org,issuedAt:new Date().toISOString(),message:'Government '+typeName+' Certificate issued: '+certNo});
-  localStorage.setItem('eco_notifications',JSON.stringify(notifs));
-  /* Add to cert section display */
-  var section=document.querySelector('#sec-certs');
-  if(section){
-    var card=document.createElement('div');
-    card.style.cssText='background:#fff;border-radius:12px;padding:20px 22px;margin-bottom:14px;border-left:4px solid #d97706;box-shadow:0 2px 10px rgba(0,0,0,.06)';
-    card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'
-      +'<div><div style="font-size:.68rem;color:#d97706;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px"><i class="fas fa-landmark" style="margin-right:4px"></i>'+typeName+' Certificate — Government</div>'
-      +'<div style="font-size:.95rem;font-weight:900;color:#1c1400;margin-bottom:4px">'+certNo+'</div>'
-      +'<div style="font-size:.78rem;color:#64748b"><i class="fas fa-building" style="margin-right:4px"></i>'+org+'</div>'
-      +'<div style="font-size:.76rem;color:#94a3b8;margin-top:3px">Issued: '+date+' &nbsp;·&nbsp; Valid till: <span style="color:#16a34a;font-weight:700">'+expiry+'</span></div>'
-      +'<div style="font-size:.73rem;color:#78716c;margin-top:2px">Issuing Officer: '+officer+'</div></div>'
-      +'<div style="display:flex;gap:8px;flex-shrink:0">'
-      +'<button class="cert-dl" onclick="ecoDownloadReport(\''+type+'\',\''+typeName+' Certificate '+certNo+'\')"><i class="fas fa-download"></i> Download</button>'
-      +'<button class="cert-vf" onclick="toast(\'✅ '+certNo+' — Verified on EcoSphere Blockchain Ledger\')"><i class="fas fa-shield-check"></i> Verify</button>'
-      +'</div></div>';
-    var existCert=section.querySelector('.cert-card');
-    if(existCert)section.insertBefore(card,existCert);
-    else section.appendChild(card);
-  }
-  /* Update cert count */
-  var cs=document.getElementById('statCerts');
-  if(cs){cs.textContent=parseInt(cs.textContent||'0',10)+1;}
-  toast('🏛️ '+typeName+' Certificate issued: '+certNo);
+function _regSetBadge(sel, count, cls){
+  var item = document.querySelector(sel);
+  if (!item) return;
+  var badge = item.querySelector('.sb-num');
+  if (!badge) { badge = document.createElement('span'); badge.className = 'sb-num' + (cls ? ' '+cls : ''); item.appendChild(badge); }
+  badge.textContent = count;
+  badge.style.display = count ? '' : 'none';
+}
+
+/* ── Direct certificate issuance from Approved Reports row ── */
+function _regDirectIssueCert(reportId, reportNumber, orgName){
+  var svc = window.EcoService && window.EcoService.Regulatory;
+  if (!svc) { toast('⚠️ API service not ready'); return; }
+
+  var old = document.getElementById('regDirectCertModal');
+  if (old) old.remove();
+
+  var CERT_TYPES = [
+    { value:'ENVIRONMENTAL_COMPLIANCE', label:'Environmental Compliance Certificate' },
+    { value:'PCB_CLEARANCE',            label:'PCB Clearance Certificate' },
+    { value:'WATER_QUALITY',            label:'Water Quality Certificate' },
+    { value:'AIR_EMISSION',             label:'Air Emission Certificate' },
+    { value:'ISO_14001',                label:'ISO 14001 Certificate' },
+    { value:'NABL_ACCREDITATION',       label:'NABL Accreditation Certificate' }
+  ];
+  var opts = CERT_TYPES.map(function(c){ return '<option value="'+c.value+'">'+c.label+'</option>'; }).join('');
+
+  var modal = document.createElement('div');
+  modal.id = 'regDirectCertModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(28,20,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML =
+    '<div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)">'
+    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">'
+    +'<div style="width:44px;height:44px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center">'
+    +'<i class="fas fa-certificate" style="color:#d97706;font-size:1.2rem"></i></div>'
+    +'<div><div style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:800;color:#1c1400">Issue Certificate</div>'
+    +'<div style="font-size:.8rem;color:#64748b">'+_regEscH(reportNumber)+' · '+_regEscH(orgName)+'</div></div></div>'
+    +'<label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:6px">Certificate Type</label>'
+    +'<select id="_dcCertType" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.88rem;margin-bottom:14px;font-family:Poppins,sans-serif">'+opts+'</select>'
+    +'<label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:6px">Validity (months)</label>'
+    +'<input id="_dcValidity" type="number" value="12" min="1" max="60" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.88rem;margin-bottom:22px;box-sizing:border-box;font-family:Poppins,sans-serif">'
+    +'<div style="display:flex;gap:10px;justify-content:flex-end">'
+    +'<button onclick="document.getElementById(\'regDirectCertModal\').remove()" style="padding:10px 22px;border-radius:9px;background:#f1f5f9;color:#475569;border:none;cursor:pointer;font-weight:600;font-family:Poppins,sans-serif">Cancel</button>'
+    +'<button id="_dcConfirmBtn" onclick="_regDirectCertConfirm(\''+reportId+'\')" style="padding:10px 22px;border-radius:9px;background:#d97706;color:#fff;border:none;cursor:pointer;font-weight:700;font-family:Poppins,sans-serif"><i class="fas fa-certificate" style="margin-right:6px"></i>Issue Certificate</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+}
+
+function _regDirectCertConfirm(reportId){
+  var svc = window.EcoService && window.EcoService.Regulatory;
+  if (!svc) return;
+  var certType = (document.getElementById('_dcCertType')||{}).value || 'ENVIRONMENTAL_COMPLIANCE';
+  var validity = parseInt((document.getElementById('_dcValidity')||{}).value || '12', 10);
+  var btn = document.getElementById('_dcConfirmBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Issuing…'; }
+
+  svc.issueCertificate(reportId, { certificateType: certType, validityMonths: validity })
+    .then(function(res){
+      var certNum = (res && res.data && res.data.certificate && res.data.certificate.certificateNumber) || 'Certificate';
+      document.getElementById('regDirectCertModal').remove();
+      toast('✅ ' + certNum + ' issued — organization notified');
+      /* Refresh both sections */
+      _regLoadApprovedRejected(window._regOrg || '');
+      if (typeof window._loadRegCertsFromAPI === 'function') window._loadRegCertsFromAPI();
+      /* Update cert counter */
+      var sc = document.getElementById('statCerts');
+      if (sc) sc.textContent = (parseInt(sc.textContent, 10)||0) + 1;
+    })
+    .catch(function(err){
+      var msg = (err && err.message) || 'Failed to issue certificate';
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-certificate" style="margin-right:6px"></i>Issue Certificate'; }
+      toast('❌ ' + msg);
+    });
+}
+
+/* ── Issue government certificate (API-backed) ── */
+function _regIssueCert(certType, typeName){
+  /* Map button type to backend CertificateType enum */
+  var CERT_TYPE_MAP = {
+    environmental: 'ENVIRONMENTAL_COMPLIANCE',
+    esg:           'PCB_CLEARANCE',
+    sustainability:'WATER_QUALITY',
+    carbon:        'AIR_EMISSION'
+  };
+  var backendType = CERT_TYPE_MAP[certType] || 'ENVIRONMENTAL_COMPLIANCE';
+
+  /* Remove any stale modal */
+  var old = document.getElementById('regIssueCertModal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'regIssueCertModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(28,20,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:36px;max-width:520px;width:100%;text-align:center">'
+    + '<i class="fas fa-spinner fa-spin" style="font-size:1.6rem;color:#d97706;margin-bottom:10px"></i>'
+    + '<p style="color:#64748b;font-size:.88rem">Loading approved reports…</p></div>';
+  document.body.appendChild(modal);
+
+  /* Fetch REG_APPROVED reports the officer can certify */
+  var svc = window.EcoService && window.EcoService.Regulatory;
+  if (!svc) { modal.remove(); toast('⚠️ API service not ready — please wait a moment'); return; }
+
+  svc.getAllReports({ status: 'REG_APPROVED', limit: 50 })
+    .then(function(res){
+      var reports = (res && res.data && res.data.reports) ? res.data.reports
+                  : (res && res.data && Array.isArray(res.data)) ? res.data : [];
+
+      /* Filter by selected org if one is active */
+      var orgFilter = (window._regOrg || '').trim().toLowerCase();
+      if (orgFilter) {
+        reports = reports.filter(function(r){
+          var name = (r.organization && r.organization.name) || '';
+          return name.toLowerCase().indexOf(orgFilter) !== -1;
+        });
+      }
+
+      if (!reports.length) {
+        modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;text-align:center">'
+          + '<i class="fas fa-exclamation-triangle" style="font-size:2rem;color:#f59e0b;display:block;margin-bottom:12px"></i>'
+          + '<p style="font-weight:700;color:#1c1400;margin-bottom:8px">No Approved Reports Found</p>'
+          + '<p style="font-size:.84rem;color:#64748b;margin-bottom:20px">'
+          + (orgFilter ? 'No REG_APPROVED reports found for <b>' + _regEscH(window._regOrg) + '</b>.' : 'No reports with REG_APPROVED status are available.')
+          + ' Approve a pending report first, then issue a certificate.</p>'
+          + '<button onclick="document.getElementById(\'regIssueCertModal\').remove()" style="padding:9px 22px;border-radius:9px;background:#d97706;color:#fff;border:none;cursor:pointer;font-weight:600">OK</button>'
+          + '</div>';
+        return;
+      }
+
+      var optHtml = reports.map(function(r){
+        var orgName = (r.organization && r.organization.name) || 'Unknown Org';
+        var rNum = r.reportNumber || r.id.substring(0,8).toUpperCase();
+        var rType = (r.reportType || '').replace(/_/g,' ');
+        return '<option value="' + r.id + '">' + rNum + ' — ' + orgName + ' (' + rType + ')</option>';
+      }).join('');
+
+      var CERT_LABELS = {
+        ENVIRONMENTAL_COMPLIANCE: 'Environmental Compliance',
+        PCB_CLEARANCE:            'PCB Clearance',
+        WATER_QUALITY:            'Water Quality',
+        AIR_EMISSION:             'Air Emission',
+        ISO_14001:                'ISO 14001',
+        NABL_ACCREDITATION:       'NABL Accreditation'
+      };
+
+      modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:32px;max-width:520px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25)">'
+        + '<h3 style="font-family:Poppins,sans-serif;font-size:1.05rem;font-weight:900;color:#1c1400;margin:0 0 4px">'
+        + '<i class="fas fa-certificate" style="color:#d97706;margin-right:8px"></i>Issue Government Certificate</h3>'
+        + '<p style="font-size:.8rem;color:#78716c;margin:0 0 20px">Certificate will be sent to the organization and available for download</p>'
+
+        + '<label style="display:block;font-size:.75rem;font-weight:700;color:#374151;margin-bottom:5px">Select Approved Report *</label>'
+        + '<select id="certReportSel" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#fff;margin-bottom:14px">'
+        + optHtml + '</select>'
+
+        + '<label style="display:block;font-size:.75rem;font-weight:700;color:#374151;margin-bottom:5px">Certificate Type *</label>'
+        + '<select id="certTypeSel" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#fff;margin-bottom:14px">'
+        + Object.keys(CERT_LABELS).map(function(k){
+            return '<option value="' + k + '"' + (k === backendType ? ' selected' : '') + '>' + CERT_LABELS[k] + '</option>';
+          }).join('')
+        + '</select>'
+
+        + '<label style="display:block;font-size:.75rem;font-weight:700;color:#374151;margin-bottom:5px">Validity (months)</label>'
+        + '<input id="certValidity" type="number" value="12" min="1" max="60" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;margin-bottom:20px">'
+
+        + '<div id="certIssueErr" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:.84rem;color:#b91c1c;margin-bottom:14px"></div>'
+
+        + '<div style="display:flex;gap:10px;justify-content:flex-end">'
+        + '<button onclick="document.getElementById(\'regIssueCertModal\').remove()" style="padding:9px 20px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fff;color:#374151;cursor:pointer;font-size:.88rem">Cancel</button>'
+        + '<button id="certIssueBtn" style="padding:9px 22px;border-radius:9px;border:none;background:#d97706;color:#fff;cursor:pointer;font-size:.88rem;font-weight:700">'
+        + '<i class="fas fa-certificate"></i> Issue Certificate</button>'
+        + '</div></div>';
+
+      /* Wire confirm button */
+      document.getElementById('certIssueBtn').onclick = function(){
+        var btn      = this;
+        var errBox   = document.getElementById('certIssueErr');
+        var reportId = document.getElementById('certReportSel').value;
+        var certT    = document.getElementById('certTypeSel').value;
+        var validity = parseInt(document.getElementById('certValidity').value, 10) || 12;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Issuing…';
+        errBox.style.display = 'none';
+
+        svc.issueCertificate(reportId, { certificateType: certT, validityMonths: validity })
+          .then(function(res){
+            var cert = res && res.data && res.data.certificate;
+            document.getElementById('regIssueCertModal').remove();
+            toast('🏛️ Certificate issued: ' + (cert && cert.certificateNumber ? cert.certificateNumber : 'Success'));
+            /* Reload the cert list and dashboard */
+            if (typeof window._loadRegCertsFromAPI === 'function') window._loadRegCertsFromAPI();
+            var cs = document.getElementById('statCerts');
+            if (cs) cs.textContent = parseInt(cs.textContent || '0', 10) + 1;
+          })
+          .catch(function(err){
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-certificate"></i> Issue Certificate';
+            errBox.textContent   = (err && err.message) || 'Failed to issue certificate';
+            errBox.style.display = 'block';
+          });
+      };
+    })
+    .catch(function(err){
+      modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;text-align:center">'
+        + '<i class="fas fa-exclamation-circle" style="font-size:2rem;color:#dc2626;display:block;margin-bottom:12px"></i>'
+        + '<p style="font-weight:700;color:#1c1400;margin-bottom:8px">Failed to load reports</p>'
+        + '<p style="font-size:.84rem;color:#64748b;margin-bottom:20px">' + ((err && err.message) || 'Please try again.') + '</p>'
+        + '<button onclick="document.getElementById(\'regIssueCertModal\').remove()" style="padding:9px 22px;border-radius:9px;background:#dc2626;color:#fff;border:none;cursor:pointer;font-weight:600">Close</button>'
+        + '</div>';
+    });
+
+  /* Close on backdrop click */
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.remove(); });
 }
 
 /* ── New Notice modal ── */
@@ -1430,6 +1601,7 @@ window.addEventListener('storage', function(e) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/eco-universe.js"></script>
 <!-- EcoSphere Backend API Client -->
+<script src="/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/pdf-download.js"></script>
 <script src="js/eco-export.js"></script>

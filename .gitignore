@@ -1,0 +1,26 @@
+# Vercel
+.vercel
+
+# Environment secrets
+backend/.env
+*.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+backend/node_modules/
+
+# Logs
+backend/logs/*.log
+backend/logs/.*.json
+
+# Python
+backend-py/__pycache__/
+backend-py/*.pyc
+backend-py/venv/
+backend-py/.venv/
+
+# OS
+.DS_Store
+Thumbs.db

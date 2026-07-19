@@ -113,6 +113,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .eb-td{width:8px;height:8px;background:#94a3b8;border-radius:50%;animation:eb-bounce .8s ease-in-out infinite}
 .eb-td:nth-child(2){animation-delay:.15s}.eb-td:nth-child(3){animation-delay:.3s}
 @keyframes eb-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+@keyframes eb-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#eb-mic-btn.listening{background:var(--danger)!important;color:#fff!important;animation:eb-pulse .8s infinite}
+#eb-mic-btn:hover{background:#e2e8f0!important}
+#eb-voice-status{display:none}
+#eb-voice-status.active{display:flex!important}
 @keyframes eb-fade-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .eb-cm{animation:eb-fade-in .2s ease}
 
@@ -542,9 +547,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="eb-quick-prompts" id="chat-quick-prompts"></div>
         <div class="eb-chat-msgs" id="chat-msgs"></div>
         <div class="eb-chat-input-area">
-          <div class="eb-chat-input-wrap">
+          <div id="eb-voice-status" style="display:none;font-size:.72rem;color:var(--p);padding:4px 0 8px;display:flex;align-items:center;gap:6px">
+            <span id="eb-voice-dot" style="width:8px;height:8px;border-radius:50%;background:var(--danger);animation:eb-pulse 1s infinite"></span>
+            <span id="eb-voice-label">Listening…</span>
+          </div>
+          <div class="eb-chat-input-wrap" id="eb-input-wrap">
             <textarea id="chat-inp" placeholder="Ask ECO BOT about your environmental data, compliance, monitoring parameters…" rows="1" style="height:24px"></textarea>
+            <button id="eb-mic-btn" title="Voice input" onclick="window.ebToggleMic()" style="width:40px;height:40px;background:#f1f5f9;border:none;border-radius:10px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;align-self:flex-end"><i class="fas fa-microphone"></i></button>
             <button class="eb-chat-send" onclick="window.ebChatSend()"><i class="fas fa-paper-plane"></i></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+            <span style="font-size:.65rem;color:var(--muted)">Wake words: "Hello Eco" · "Hey Eco" · "EcoBot" &nbsp;|&nbsp; <span id="eb-tts-toggle" style="cursor:pointer;color:var(--p);font-weight:700" onclick="window.ebToggleTTS()">🔊 Auto-speak: <span id="eb-tts-state">Off</span></span></span>
+            <select id="eb-lang-select" onchange="window.ebSetLang(this.value)" style="font-size:.65rem;border:1px solid var(--bdr);border-radius:6px;padding:2px 6px;color:var(--muted);background:#fff;cursor:pointer">
+              <option value="en-IN">English</option>
+              <option value="hi-IN">Hindi</option>
+              <option value="ta-IN">Tamil</option>
+            </select>
           </div>
         </div>
       </div>
@@ -1866,6 +1884,61 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     saveHistory(hist);
   }
 
+  /* ── Auth token helper ── */
+  function getAuthToken() {
+    return localStorage.getItem('eco_access_token') || '';
+  }
+
+  /* ── Active conversation ID for backend persistence ── */
+  var backendConvId = null;
+  /* ── Voice settings ── */
+  var voiceLang   = 'en-IN';
+  var ttsEnabled  = false;
+  var recognition = null;
+  var isListening = false;
+
+  /* ── Send message via backend Claude API ── */
+  function sendToBackend(text, onSuccess, onError) {
+    var token = getAuthToken();
+    if (!token) {
+      /* No auth — fall back to local pattern matching */
+      onSuccess(generateWorkspaceResponse(text));
+      return;
+    }
+    var payload = {
+      message:        text,
+      conversationId: backendConvId || undefined,
+      context: {
+        portal:  PORTAL,
+        section: window._currentSection || null,
+        role:    null  /* resolved server-side from JWT */
+      }
+    };
+    fetch('/api/v1/ecobot/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify(payload)
+    })
+    .then(function (r) {
+      if (!r.ok) return r.json().then(function (e) { throw new Error(e.message || r.status); });
+      return r.json();
+    })
+    .then(function (data) {
+      if (data.data && data.data.conversationId) backendConvId = data.data.conversationId;
+      var reply = (data.data && data.data.reply) ? data.data.reply : generateWorkspaceResponse(text);
+      /* Handle [NAV:section_id] navigation commands from Claude */
+      reply = reply.replace(/\[NAV:([^\]]+)\]/g, function (_, secId) {
+        setTimeout(function () { if (window.ebNav) window.ebNav(secId.trim()); }, 500);
+        return '';
+      });
+      onSuccess(reply);
+    })
+    .catch(function (err) {
+      console.warn('[EcoBot] API error, using local fallback:', err);
+      onSuccess(generateWorkspaceResponse(text));
+    });
+  }
+
   window.ebChatSend = function () {
     var inp = document.getElementById('chat-inp');
     if (!inp) return;
@@ -1875,10 +1948,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     inp.style.height = '24px';
     appendUserChatMsg(text);
     showChatTyping();
-    setTimeout(function () {
+    sendToBackend(text, function (reply) {
+      removeChatTyping();
+      appendBotChatMsg(reply);
+      if (ttsEnabled) speakText(stripHtml(reply));
+    }, function () {
       removeChatTyping();
       appendBotChatMsg(generateWorkspaceResponse(text));
-    }, 800 + Math.random() * 500);
+    });
   };
 
   window.ebChatQuick = function (text) {
@@ -1886,12 +1963,194 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     setTimeout(function () {
       appendUserChatMsg(text);
       showChatTyping();
-      setTimeout(function () {
+      sendToBackend(text, function (reply) {
+        removeChatTyping();
+        appendBotChatMsg(reply);
+        if (ttsEnabled) speakText(stripHtml(reply));
+      }, function () {
         removeChatTyping();
         appendBotChatMsg(generateWorkspaceResponse(text));
-      }, 700);
+      });
     }, 100);
   };
+
+  /* ── Strip HTML tags for TTS ── */
+  function stripHtml(html) {
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  }
+
+  /* ── Text-to-Speech ── */
+  function speakText(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text.substring(0, 500));
+    utter.lang = voiceLang;
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    /* Try to find a matching voice */
+    var voices = window.speechSynthesis.getVoices();
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang === voiceLang || voices[i].lang.indexOf(voiceLang.split('-')[0]) === 0) {
+        utter.voice = voices[i];
+        break;
+      }
+    }
+    window.speechSynthesis.speak(utter);
+  }
+
+  /* ── TTS toggle ── */
+  window.ebToggleTTS = function () {
+    ttsEnabled = !ttsEnabled;
+    var el = document.getElementById('eb-tts-state');
+    if (el) el.textContent = ttsEnabled ? 'On' : 'Off';
+    if (!ttsEnabled) window.speechSynthesis && window.speechSynthesis.cancel();
+  };
+
+  /* ── Language selector ── */
+  window.ebSetLang = function (lang) {
+    voiceLang = lang;
+    if (recognition) {
+      var wasListening = isListening;
+      if (wasListening) window.ebToggleMic();
+      recognition.lang = lang;
+      if (wasListening) setTimeout(window.ebToggleMic, 200);
+    }
+  };
+
+  /* ── Speech Recognition (microphone) ── */
+  window.ebToggleMic = function () {
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+
+    if (isListening) {
+      /* Stop listening */
+      isListening = false;
+      if (recognition) recognition.stop();
+      var micBtn   = document.getElementById('eb-mic-btn');
+      var voiceSt  = document.getElementById('eb-voice-status');
+      if (micBtn) { micBtn.classList.remove('listening'); micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; }
+      if (voiceSt) voiceSt.classList.remove('active');
+      return;
+    }
+
+    /* Start listening */
+    recognition = new SpeechRec();
+    recognition.lang        = voiceLang;
+    recognition.interimResults = true;
+    recognition.continuous  = false;
+    recognition.maxAlternatives = 1;
+
+    isListening = true;
+    var micBtn  = document.getElementById('eb-mic-btn');
+    var voiceSt = document.getElementById('eb-voice-status');
+    var voiceLbl= document.getElementById('eb-voice-label');
+    if (micBtn) { micBtn.classList.add('listening'); micBtn.innerHTML = '<i class="fas fa-stop"></i>'; }
+    if (voiceSt) voiceSt.classList.add('active');
+    if (voiceLbl) voiceLbl.textContent = 'Listening…';
+
+    recognition.onresult = function (event) {
+      var transcript = '';
+      for (var i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      var inp = document.getElementById('chat-inp');
+      if (inp) {
+        inp.value = transcript;
+        inp.style.height = 'auto';
+        inp.style.height = Math.min(inp.scrollHeight, 120) + 'px';
+      }
+      if (event.results[event.results.length - 1].isFinal) {
+        if (voiceLbl) voiceLbl.textContent = 'Processing…';
+        setTimeout(function () {
+          isListening = false;
+          if (recognition) recognition.stop();
+          if (micBtn) { micBtn.classList.remove('listening'); micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; }
+          if (voiceSt) voiceSt.classList.remove('active');
+          if (transcript.trim()) window.ebChatSend();
+        }, 300);
+      }
+    };
+
+    recognition.onerror = function (e) {
+      console.warn('[EcoBot] Speech recognition error:', e.error);
+      isListening = false;
+      if (micBtn) { micBtn.classList.remove('listening'); micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; }
+      if (voiceSt) voiceSt.classList.remove('active');
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        alert('Microphone error: ' + e.error + '. Please check browser permissions.');
+      }
+    };
+
+    recognition.onend = function () {
+      if (isListening) {
+        isListening = false;
+        if (micBtn) { micBtn.classList.remove('listening'); micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; }
+        if (voiceSt) voiceSt.classList.remove('active');
+      }
+    };
+
+    recognition.start();
+  };
+
+  /* ══════════════════ WAKE WORD DETECTION ══════════════════
+     Runs a continuous background recognition session.
+     Triggers when user says "Hello Eco", "Hey Eco", or "EcoBot".
+  ═══════════════════════════════════════════════════════════ */
+  var wakeRecognition   = null;
+  var wakeWordActive    = false;
+  var WAKE_WORDS        = ['hello eco', 'hey eco', 'ecobot', 'eco bot'];
+
+  function startWakeWordDetection() {
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec || wakeWordActive) return;
+
+    wakeRecognition = new SpeechRec();
+    wakeRecognition.lang = voiceLang;
+    wakeRecognition.continuous = true;
+    wakeRecognition.interimResults = true;
+
+    wakeRecognition.onresult = function (event) {
+      for (var i = event.resultIndex; i < event.results.length; i++) {
+        var transcript = event.results[i][0].transcript.toLowerCase().trim();
+        for (var w = 0; w < WAKE_WORDS.length; w++) {
+          if (transcript.indexOf(WAKE_WORDS[w]) >= 0) {
+            /* Wake word detected — activate mic input */
+            if (!isListening) {
+              setTimeout(function () { window.ebToggleMic(); }, 300);
+            }
+            return;
+          }
+        }
+      }
+    };
+
+    wakeRecognition.onend = function () {
+      if (wakeWordActive) {
+        setTimeout(function () {
+          try { wakeRecognition.start(); } catch (e) { /* already running */ }
+        }, 1000);
+      }
+    };
+
+    wakeRecognition.onerror = function () {
+      /* silently restart on errors */
+      setTimeout(function () {
+        if (wakeWordActive) try { wakeRecognition.start(); } catch (e) { /* skip */ }
+      }, 2000);
+    };
+
+    wakeWordActive = true;
+    try { wakeRecognition.start(); } catch (e) { wakeWordActive = false; }
+  }
+
+  /* Start wake word detection after a short delay */
+  setTimeout(function () {
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRec) startWakeWordDetection();
+  }, 2000);
 
   /* ══════════════════ WORKSPACE RESPONSE ENGINE ══════════════════ */
   function generateWorkspaceResponse(question) {
@@ -2355,6 +2614,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   };
 
   window.ebNav = function (name) {
+    window._currentSection = name;
     for (var i = 0; i < panels.length; i++) {
       var p = panels[i];
       var panEl = document.getElementById('panel-' + p);

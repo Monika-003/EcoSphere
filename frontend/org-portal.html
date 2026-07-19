@@ -416,6 +416,10 @@ body.eco-readonly .body-wrap #orgFormArea{display:none!important}
           <button onclick="regGoStep2()" style="width:100%;padding:12px;background:linear-gradient(135deg,#0a3d2e,#16a34a);border:none;border-radius:10px;color:#fff;font-family:Poppins,sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:4px">
             Next: Organization Details <i class="fas fa-arrow-right" style="margin-left:6px"></i>
           </button>
+          <p style="text-align:center;margin:12px 0 0;font-size:.78rem;color:#64748b">
+            Already registered?
+            <a href="#" onclick="switchAuthTab('signin');return false;" style="color:#16a34a;font-weight:700;text-decoration:none">Sign In here</a>
+          </p>
         </div>
 
         <!-- ── Step 2: Organization Details ── -->
@@ -8343,6 +8347,7 @@ function initCharts() {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/eco-universe.js"></script>
 <!-- EcoSphere Backend API Client -->
+<script src="/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/pdf-download.js"></script>
 <!-- EcoSphere Frontend ↔ Backend Integration -->

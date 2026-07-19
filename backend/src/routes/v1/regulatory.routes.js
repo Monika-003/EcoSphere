@@ -47,8 +47,12 @@ router.get('/alerts',      authorize('reg_review', 'read'), ctrl.getAlerts);
 // ── Documents ────────────────────────────────────────────────────
 router.get('/documents',   authorize('reg_review', 'read'), ctrl.getDocuments);
 
+// ── Single report view (auto-transitions to REG_UNDER_REVIEW) ────
+router.get('/reports/:id',           authorize('reg_review', 'read'),          ctrl.viewReport);
+
 // ── Write actions (scoped by assertOrgAccess inside each handler) ─
 router.post('/reports/:id/approve',  authorize('reg_review',   'approve'),    ctrl.approveReport);
+router.post('/reports/:id/reject',   authorize('reg_review',   'approve'),    ctrl.rejectReport);
 router.post('/reports/:id/request-correction', authorize('reg_review', 'approve'), ctrl.requestCorrection);
 router.post('/reports/:id/certify',  authorize('certificate',  'issue'),      ctrl.issueCertificate);
 router.post('/notices',              authorize('notice',        'issue'),      ctrl.issueNotice);

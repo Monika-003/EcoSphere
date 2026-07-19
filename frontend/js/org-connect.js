@@ -350,12 +350,11 @@
         role:      window._selRole || 'ENV_ENGINEER'
       })
       .then(function () {
-        /* Step 2: Login to get token */
+        /* Step 2: Create the organization (login happens when user signs in manually) */
         return EcoService.Auth.login(email, password);
       })
       .then(function (res) {
         var user = res.data.user;
-        /* Step 3: Create the organization */
         return window.EcoSphereAPI.Organization.create({
           name:               orgName,
           industryType:       industry.toUpperCase().replace(/\s+/g,'_'),
@@ -371,35 +370,58 @@
           contactEmail:       contEmail,
           contactPhone:       contPhone,
           website:            website || undefined
-        }).then(function (orgRes) {
-          var org = orgRes && orgRes.data && (orgRes.data.organization || orgRes.data);
-          /* Persist and show dashboard */
+        }).then(function () {
+          /* Reset button */
+          btn.disabled = false;
+          txt.style.opacity = '1';
+          spin.style.display = 'none';
+
+          /* Switch to Sign In tab with email pre-filled */
+          var loginEmailEl = document.getElementById('orgEmail');
+          if (loginEmailEl) loginEmailEl.value = email;
+          if (typeof switchAuthTab === 'function') switchAuthTab('signin');
+
+          /* Show a green success banner above the login form */
+          var loginErr = document.getElementById('loginErrMsg');
+          if (loginErr) {
+            loginErr.style.display = 'flex';
+            loginErr.style.background = '#f0fdf4';
+            loginErr.style.border = '1px solid #86efac';
+            loginErr.style.color = '#15803d';
+            loginErr.innerHTML =
+              '<i class="fas fa-check-circle" style="margin-right:7px;font-size:1rem"></i>' +
+              '<span><b>Registration successful!</b> Sign in below using<br>' +
+              '<b>' + email + '</b> and the password you just created.</span>';
+          }
+
+          /* Persist org context for after login */
           sessionStorage.setItem('ecoOrgName',  orgName);
           sessionStorage.setItem('ecoIndustry', industry);
           sessionStorage.setItem('ecoRole',     window._selRole || 'ENV_OFFICER');
           _pushToAllOrgs(orgName, industry);
 
-          /* Persist org ID for child pages */
-          var newOrgId = org && (org.id || org._id);
-          if (newOrgId) localStorage.setItem('eco_org_id', newOrgId);
-
-          applyUserToUI(Object.assign({}, user, { organization: org }), industry);
-
-          /* Re-run RBAC with the real JWT role stored by api.js login */
-          if (typeof window._ecoApplyRBAC === 'function') window._ecoApplyRBAC();
-
-          document.getElementById('stepLogin').style.display = 'none';
-          document.getElementById('stepDash').style.display  = 'flex';
-
-          loadDashboardStats();
-          loadReportsTable();
-          setTimeout(initCharts, 200);
-
-          EcoService.toast('🎉 Welcome, ' + firstName + '! Your organization has been registered.');
+          /* Logout the auto-session so the user signs in manually */
+          EcoService.Auth.logout().catch(function(){});
         });
       })
       .catch(function (e) {
-        _showErr(e && e.message ? e.message : 'Registration failed. Please try again.');
+        var msg = e && e.message ? e.message : 'Registration failed. Please try again.';
+        /* If email already exists, redirect to Sign In tab with email pre-filled */
+        if (msg.toLowerCase().indexOf('already') !== -1 || (e && e.status === 409)) {
+          var loginEmailEl = document.getElementById('orgEmail');
+          if (loginEmailEl) loginEmailEl.value = email;
+          if (typeof switchAuthTab === 'function') switchAuthTab('signin');
+          var loginErr = document.getElementById('loginErrMsg');
+          if (loginErr) {
+            loginErr.style.display = 'flex';
+            loginErr.innerHTML = '<i class="fas fa-info-circle" style="color:#1d4ed8;margin-right:6px"></i> This email is already registered. Sign in below with your password.';
+          }
+          btn.disabled = false;
+          txt.style.opacity = '1';
+          spin.style.display = 'none';
+        } else {
+          _showErr(msg);
+        }
       });
     };
 
@@ -870,16 +892,21 @@
             else chip = '<span class="chip c-warn"><span class="cdot"></span>' + st.replace(/_/g,' ') + '</span>';
 
             /* Action buttons */
-            var canSubmit = (st === 'DRAFT' || st === 'LAB_CORRECTION_REQUESTED');
+            var canSubmitLab = (st === 'DRAFT' || st === 'LAB_CORRECTION_REQUESTED');
+            var canSubmitReg = (st === 'LAB_APPROVED');
             var actions =
               '<div style="display:flex;gap:5px;flex-wrap:wrap">' +
               '<button class="btn b-vw" onclick="orgDownloadCert(\'' + r.id + '\',\'' + rNum + '\')" style="font-size:.7rem" title="Download PDF">' +
                 '<i class="fas fa-file-pdf"></i> PDF</button>' +
               '<button class="btn b-bl" onclick="navTo(\'pgTrack\',document.querySelector(\'.sb-item[onclick*=pgTrack]\'))" style="font-size:.7rem" title="Track status">' +
                 '<i class="fas fa-stream"></i> Track</button>';
-            if (canSubmit) {
+            if (canSubmitLab) {
               actions += '<button class="btn b-gen" onclick="submitExistingReport(\'' + r.id + '\',\'' + rNum + '\',this)" style="font-size:.7rem">' +
                 '<i class="fas fa-paper-plane"></i> Submit to Lab</button>';
+            }
+            if (canSubmitReg) {
+              actions += '<button class="btn b-gen" style="font-size:.7rem;background:linear-gradient(135deg,#1d4ed8,#1e40af)" onclick="orgSubmitToRegulatory(\'' + r.id + '\',\'' + rNum + '\',this)">' +
+                '<i class="fas fa-university"></i> Submit to Regulatory</button>';
             }
             actions += '</div>';
 
@@ -918,6 +945,23 @@
         .catch(function (err) {
           btn.disabled = false;
           btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit to Lab';
+          EcoService.error((err && err.message) || 'Submission failed.');
+        });
+    };
+
+    /* ── Submit a LAB_APPROVED report to Regulatory Authority ── */
+    window.orgSubmitToRegulatory = function (reportId, rNum, btn) {
+      if (!window.confirm('Submit "' + rNum + '" to the Regulatory Authority for compliance review?')) return;
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+      window.EcoSphereAPI.Reports.submitToRegulatory(reportId)
+        .then(function () {
+          EcoService.toast('✅ ' + rNum + ' submitted to Regulatory Authority!');
+          loadDashboardStats();
+          setTimeout(loadSubmitPage, 600);
+        })
+        .catch(function (err) {
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-university"></i> Submit to Regulatory'; }
           EcoService.error((err && err.message) || 'Submission failed.');
         });
     };

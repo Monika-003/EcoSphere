@@ -9,7 +9,7 @@ const aiService    = require('../services/ai.service');
    CHAT WITH ECOBOT
 ══════════════════════════════════════ */
 exports.chat = async (req, res) => {
-  const { message, conversationId } = req.body;
+  const { message, conversationId, context } = req.body;
   if (!message?.trim()) throw new AppError('Message is required', 400);
 
   /* Load conversation history */
@@ -30,11 +30,18 @@ exports.chat = async (req, res) => {
   }
 
   /* Get response from AI */
+  const aiContext = {
+    portal:   context?.portal   || null,
+    section:  context?.section  || null,
+    role:     context?.role     || req.user.role,
+    userRole: req.user.role
+  };
   const { reply, tokens, model } = await aiService.ecobotQuery(
     req.user.id,
     req.user.orgId,
     message,
-    history
+    history,
+    aiContext
   );
 
   /* Save conversation */

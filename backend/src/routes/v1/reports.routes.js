@@ -25,7 +25,8 @@ router.get ('/files/:filename', authorize('report', 'read'), ctrl.serveFile);
 
 /* ── Single report actions ── */
 router.get ('/:id',            authorize('report', 'read'),   ctrl.getReport);
-router.post('/:id/submit-lab', authorize('report', 'submit'), validate(submitReportSchema), ctrl.submitToLab);
+router.post('/:id/submit-lab',         authorize('report', 'submit'), validate(submitReportSchema), ctrl.submitToLab);
+router.post('/:id/submit-regulatory',  authorize('report', 'submit'), ctrl.submitToRegulatory);
 router.post('/:id/pdf',        reportGenLimiter, authorize('report', 'read'),               ctrl.generatePdf);
 router.get ('/:id/download',   authorize('report', 'read'),   ctrl.getDownloadUrl);
 

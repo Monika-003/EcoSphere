@@ -190,7 +190,7 @@ exports.createReport = async (req, res) => {
         esgScore, envScore, socialScore, govScore,
         scope1, scope2, scope3, totalCarbon, complianceScore,
         aiSummary, aiRecommendations, aiRiskScore,
-        status: isDraft ? 'DRAFT' : 'DRAFT'
+        status: 'DRAFT'
       }
     });
 
@@ -218,10 +218,13 @@ exports.createReport = async (req, res) => {
    SUBMIT TO LABORATORY
 ══════════════════════════════════════ */
 exports.submitToLab = async (req, res) => {
-  const report = await prisma.report.findUnique({ where: { id: req.params.id } });
+  const report = await prisma.report.findUnique({
+    where:   { id: req.params.id },
+    include: { organization: true }
+  });
   if (!report) throw new AppError('Report not found', 404);
   if (report.organizationId !== req.user.orgId) throw new AppError('Access denied', 403);
-  if (!['DRAFT'].includes(report.status)) {
+  if (!['DRAFT', 'LAB_CORRECTION_REQUESTED'].includes(report.status)) {
     throw new AppError(`Cannot submit report in status: ${report.status}`, 400);
   }
 
@@ -229,7 +232,9 @@ exports.submitToLab = async (req, res) => {
 
   /* Real-time notification to lab users */
   const io = getIo();
-  if (io) io.to('lab').emit('report:submitted', { reportId: report.id, orgName: req.body.orgName || '' });
+  if (io) io.to('lab').emit('report:submitted', { reportId: report.id, orgName: report.organization?.name || '' });
+
+  await notificationService.notifyNewReportForLab(report.id, report.reportNumber, report.organization?.name || '');
 
   await createAuditLog({
     userId: req.user.id, action: 'SUBMIT', entityType: 'Report', entityId: report.id,
@@ -238,6 +243,46 @@ exports.submitToLab = async (req, res) => {
   });
 
   return success(res, { report: updated }, 'Report submitted to laboratory for review');
+};
+
+/* ══════════════════════════════════════
+   SUBMIT TO REGULATORY
+══════════════════════════════════════ */
+exports.submitToRegulatory = async (req, res) => {
+  const report = await prisma.report.findUnique({ where: { id: req.params.id } });
+  if (!report) throw new AppError('Report not found', 404);
+  if (report.organizationId !== req.user.orgId) throw new AppError('Access denied', 403);
+  if (!['LAB_APPROVED', 'REG_CORRECTION_REQUESTED'].includes(report.status)) {
+    throw new AppError(`Report must be LAB_APPROVED or REG_CORRECTION_REQUESTED to submit to regulatory. Current status: ${report.status}`, 400);
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const r = await tx.report.update({
+      where: { id: report.id },
+      data:  { status: 'SUBMITTED_TO_REGULATORY', submittedToRegAt: new Date(), currentStage: 'REGULATORY' }
+    });
+    await tx.workflowHistory.create({
+      data: {
+        reportId: report.id, organizationId: report.organizationId, performedById: req.user.id,
+        stage: 'REGULATORY', fromStatus: report.status, toStatus: 'SUBMITTED_TO_REGULATORY',
+        action: 'SUBMITTED_TO_REGULATORY', comments: req.body.notes || ''
+      }
+    });
+    return r;
+  });
+
+  const io = getIo();
+  if (io) io.to('reg').emit('report:submitted_regulatory', { reportId: report.id, orgName: '' });
+
+  await notificationService.notifyNewReportForRegulatory(report.id, report.organizationId);
+
+  await createAuditLog({
+    userId: req.user.id, action: 'SUBMIT', entityType: 'Report', entityId: report.id,
+    description: `Report submitted to regulatory: ${report.reportNumber}`,
+    ipAddress: req.ip, requestId: req.requestId
+  });
+
+  return success(res, { report: updated }, 'Report submitted to regulatory authority');
 };
 
 /* ══════════════════════════════════════
