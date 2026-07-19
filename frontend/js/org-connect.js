@@ -14,22 +14,6 @@
 (function (window) {
   'use strict';
 
-  /* ── If opened from file:// or wrong origin, redirect to the server ── */
-  (function checkOrigin() {
-    var proto = window.location.protocol;
-    var host  = window.location.hostname;
-    var port  = window.location.port;
-    /* Only redirect if NOT already on the server (localhost:5000) */
-    if (proto === 'file:' || (host === 'localhost' && port !== '5000') || (host !== 'localhost' && host !== '127.0.0.1')) {
-      /* Ping the server first */
-      fetch('http://localhost:5000/health')
-        .then(function() { window.location.href = 'http://localhost:5000/org-portal.html'; })
-        .catch(function() {
-          var w = document.getElementById('serverWarnMsg');
-          if (w) w.style.display = 'flex';
-        });
-    }
-  })();
 
   /* ── Persistent org registry shared across all portals ── */
   function _pushToAllOrgs(name, industry) {
