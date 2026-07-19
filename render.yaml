@@ -1,6 +1,12 @@
+databases:
+  - name: ecosphere-db
+    plan: free
+    databaseName: ecosphere_db
+    user: ecosphere_user
+
 services:
   - type: web
-    name: ecosphere-api
+    name: ecosphere
     env: node
     plan: free
     rootDir: backend
@@ -12,7 +18,9 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: ecosphere-db
+          property: connectionString
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
@@ -21,7 +29,7 @@ services:
         value: 15m
       - key: JWT_REFRESH_EXPIRY
         value: 7d
-      - key: ALLOWED_ORIGINS
-        value: https://ecosphere-liard.vercel.app
       - key: BCRYPT_ROUNDS
         value: 12
+      - key: REDIS_URL
+        value: ""
