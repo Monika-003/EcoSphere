@@ -1,35 +1,10 @@
-databases:
-  - name: ecosphere-db
-    plan: free
-    databaseName: ecosphere_db
-    user: ecosphere_user
-
 services:
   - type: web
     name: ecosphere
-    env: node
-    plan: free
-    rootDir: backend
-    buildCommand: npm install && npx prisma generate && npx prisma db push
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ecosphere-db
-          property: connectionString
-      - key: JWT_ACCESS_SECRET
-        generateValue: true
-      - key: JWT_REFRESH_SECRET
-        generateValue: true
-      - key: JWT_ACCESS_EXPIRY
-        value: 15m
-      - key: JWT_REFRESH_EXPIRY
-        value: 7d
-      - key: BCRYPT_ROUNDS
-        value: 12
-      - key: REDIS_URL
-        value: ""
+    env: static
+    staticPublishPath: ./frontend
+    buildCommand: echo "static site — no build needed"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
