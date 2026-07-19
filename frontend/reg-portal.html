@@ -260,6 +260,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
       <div class="lr-sub">Select your authority type to continue</div>
     </div>
 
+    <div id="serverWarnMsg" class="l-err" style="display:none;background:#fff3cd;border-color:#ffc107;color:#856404"><i class="fas fa-exclamation-triangle"></i> <strong>Server not reachable.</strong> Run <code style="background:#f8f9fa;padding:1px 5px;border-radius:3px">npm start</code> in the EcoSphere folder, then open <strong>http://localhost:5000</strong></div>
     <div id="loginErr" class="l-err"><i class="fas fa-exclamation-circle"></i>Please fill in all fields.</div>
 
     <p style="font-size:.75rem;font-weight:900;color:#d97706;margin-bottom:9px;letter-spacing:2px;text-transform:uppercase">AUTHORITY TYPE</p>
@@ -1599,13 +1600,14 @@ window.addEventListener('storage', function(e) {
 <!-- EcoSphere 3D Environmental Intelligence Universe -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/eco-universe.js"></script>
-<script>
-/* Static demo mode — forms are display-only, no backend */
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('form').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); }); });
-  document.querySelectorAll('button[type="submit"]').forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); }); });
-});
-</script>
+<!-- EcoSphere Backend API Client -->
+<script src="/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/pdf-download.js"></script>
+<script src="js/eco-export.js"></script>
+<!-- EcoSphere Frontend ↔ Backend Integration -->
+<script src="js/eco-api-service.js"></script>
+<script src="js/reg-connect.js"></script>
 <script src="js/ecobot-widget.js"></script>
 <script src="js/eco-cursor.js"></script>
 </body>

@@ -16,6 +16,29 @@
 (function (window) {
   'use strict';
 
+  /* ── If opened from file:// or wrong origin, redirect to the server ── */
+  (function checkOrigin() {
+    var proto = window.location.protocol;
+    var host  = window.location.hostname;
+    var port  = window.location.port;
+    if (proto === 'file:' || (host === 'localhost' && port !== '5000') || (host !== 'localhost' && host !== '127.0.0.1')) {
+      fetch('http://localhost:5000/health')
+        .then(function() { window.location.href = 'http://localhost:5000/lab-portal.html'; })
+        .catch(function() {
+          var w = document.getElementById('serverWarnMsg');
+          if (w) w.style.display = 'flex';
+        });
+    }
+  })();
+
+  document.addEventListener('DOMContentLoaded', function() {
+    fetch('/health', { method: 'GET' })
+      .then(function(r) { if (!r.ok) throw new Error('bad'); })
+      .catch(function() {
+        var w = document.getElementById('serverWarnMsg');
+        if (w) w.style.display = 'flex';
+      });
+  });
 
   function whenReady(fn) {
     if (window.EcoService && window.EcoSphereAPI) { fn(); return; }
