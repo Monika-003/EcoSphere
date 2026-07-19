@@ -432,64 +432,30 @@
       txt.style.opacity = '.4';
       spin.style.display = 'inline-block';
 
-      /* Map login UI role buttons → backend role enum */
-      EcoService.Auth.login(email.value.trim(), pw.value)
-        .then(function (res) {
-          var user     = res.data.user;
-          var wantRole = _selRole; // role value IS the backend role — no mapping needed
+      /* Client-side login — no backend required */
+      var ind          = _selInd || sessionStorage.getItem('ecoIndustry') || 'Manufacturing';
+      var orgNameVal   = name ? name.value.trim() : '';
+      var mockUser     = { firstName: orgNameVal || 'User', role: _selRole || 'ENV_OFFICER' };
 
-          /* If the selected role differs from the stored JWT role, sync it */
-          if (wantRole && wantRole !== user.role) {
-            return window.EcoSphereAPI.Auth.updateRole(wantRole)
-              .then(function (rr) {
-                if (rr && rr.data) {
-                  /* Store fresh tokens + updated user directly in localStorage */
-                  if (rr.data.accessToken)  localStorage.setItem('eco_access_token', rr.data.accessToken);
-                  if (rr.data.refreshToken) localStorage.setItem('eco_refresh_token', rr.data.refreshToken);
-                  if (rr.data.user)         localStorage.setItem('eco_user', JSON.stringify(rr.data.user));
-                  return Object.assign({}, res, { data: Object.assign({}, res.data, { user: rr.data.user }) });
-                }
-                return res;
-              })
-              .catch(function () { return res; }); // silently fall back to original role on error
-          }
-          return res;
-        })
-        .then(function (res) {
-          var user = res.data.user;
-          var ind  = _selInd || sessionStorage.getItem('ecoIndustry') ||
-                     (user.organization && user.organization.industry) || 'Manufacturing';
+      sessionStorage.setItem('ecoOrgName',  orgNameVal);
+      sessionStorage.setItem('ecoIndustry', ind);
+      sessionStorage.setItem('ecoRole',     mockUser.role);
+      if (typeof _pushToAllOrgs === 'function') _pushToAllOrgs(orgNameVal, ind);
+      if (typeof window._ecoApplyRBAC === 'function') window._ecoApplyRBAC();
+      if (typeof applyUserToUI === 'function') applyUserToUI(mockUser, ind);
 
-          /* Persist context */
-          var _loginOrgName = name ? name.value.trim() : (user.organization && user.organization.name) || user.firstName;
-          sessionStorage.setItem('ecoOrgName', _loginOrgName);
-          sessionStorage.setItem('ecoIndustry', ind);
-          sessionStorage.setItem('ecoRole', _selRole || user.role || 'ENV_OFFICER');
-          _pushToAllOrgs(_loginOrgName, ind);
+      document.getElementById('stepLogin').style.display = 'none';
+      document.getElementById('stepDash').style.display  = 'flex';
 
-          /* Re-apply RBAC with the real role so editor/viewer access is correct */
-          if (typeof window._ecoApplyRBAC === 'function') window._ecoApplyRBAC();
+      if (typeof loadDashboardStats === 'function') loadDashboardStats();
+      if (typeof loadReportsTable   === 'function') loadReportsTable();
+      setTimeout(function(){ if (typeof initCharts === 'function') initCharts(); }, 200);
+      if (typeof EcoService !== 'undefined' && EcoService.toast)
+        EcoService.toast('🌿 Welcome, ' + (orgNameVal || mockUser.role) + '!');
 
-          applyUserToUI(user, ind);
-
-          /* Hide login, show dashboard */
-          document.getElementById('stepLogin').style.display = 'none';
-          document.getElementById('stepDash').style.display  = 'flex';
-
-          /* Load real data */
-          loadDashboardStats();
-          loadReportsTable();
-          setTimeout(initCharts, 200);
-
-          EcoService.toast('🌿 Welcome, ' + (user.firstName || _selRole || 'User') + '!');
-        })
-        .catch(function (err2) {
-          btn.disabled = false;
-          txt.style.opacity = '1';
-          spin.style.display = 'none';
-          err.style.display = 'flex';
-          err.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (err2.message || 'Login failed. Check your credentials.');
-        });
+      btn.disabled = false;
+      txt.style.opacity = '1';
+      spin.style.display = 'none';
     };
 
     /* ════════════════════════════════════════════════
