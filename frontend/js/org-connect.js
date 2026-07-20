@@ -427,6 +427,18 @@
         return;
       }
 
+      /* Industry must match the one selected on screen */
+      var selectedInd = (window._selInd || sessionStorage.getItem('ecoIndustry') || '').trim().toLowerCase();
+      var registeredInd = (matched.industry || '').trim().toLowerCase();
+      if (selectedInd && registeredInd && selectedInd !== registeredInd) {
+        _loginErr(
+          'This account is registered under <b>' + matched.industry + '</b>. ' +
+          'Please go back and select <b>' + matched.industry + '</b> to sign in, ' +
+          'or <a href="#" onclick="switchAuthTab(\'register\');return false;" style="color:#1d4ed8;font-weight:700">register a new account</a> for ' + (window._selInd || 'this industry') + '.'
+        );
+        return;
+      }
+
       /* Credentials valid — log in with the REGISTERED industry, not the screen-selected one */
       window._selInd  = matched.industry;
       window._selRole = matched.role;
