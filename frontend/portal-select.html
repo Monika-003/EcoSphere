@@ -34,8 +34,8 @@ body::before{
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 .nav-brand{display:flex;align-items:center;gap:12px}
-.nav-logo-pill{background:rgba(255,255,255,.95);border-radius:9px;padding:4px 10px;display:inline-flex;align-items:center}
-.nav-logo-pill img{height:34px;mix-blend-mode:multiply;display:block}
+.nav-logo-pill{background:transparent;border-radius:9px;padding:4px 10px;display:inline-flex;align-items:center}
+.nav-logo-pill img{height:34px;display:block}
 .nav-brand-txt{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:800;color:#fff}
 .nav-brand-txt em{color:#4ade80;font-style:normal}
 .nav-back{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 16px;color:rgba(255,255,255,.7);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:.15s;font-family:'Inter',sans-serif}
@@ -43,8 +43,8 @@ body::before{
 
 /* ── Header ── */
 .header{text-align:center;margin-bottom:52px;padding-top:20px}
-.header-logo{background:rgba(255,255,255,.95);border-radius:12px;padding:7px 16px;display:inline-flex;align-items:center;margin-bottom:22px;box-shadow:0 4px 20px rgba(0,0,0,.2)}
-.header-logo img{height:46px;mix-blend-mode:multiply;display:block}
+.header-logo{background:transparent;border-radius:12px;padding:7px 16px;display:inline-flex;align-items:center;margin-bottom:22px}
+.header-logo img{height:46px;display:block}
 .header h1{font-family:'Poppins',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;color:#fff;margin-bottom:10px}
 .header h1 span{color:#4ade80}
 .header p{font-size:1rem;color:rgba(255,255,255,.55);max-width:520px;margin:0 auto;line-height:1.65}
@@ -173,7 +173,7 @@ body::before{
 <!-- Top nav -->
 <header class="top-nav">
   <div class="nav-brand">
-    <div class="nav-logo-pill"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    <div class="nav-logo-pill"><img src="assets/logo-transparent.png" alt="EcoSphere"/></div>
     <div class="nav-brand-txt">Eco<em>Sphere</em></div>
   </div>
   <a href="index.html" class="nav-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
@@ -182,7 +182,7 @@ body::before{
 <div class="page">
   <!-- Header -->
   <div class="header">
-    <div class="header-logo"><img src="assets/logo.png" alt="EcoSphere"/></div>
+    <div class="header-logo"><img src="assets/logo-transparent.png" alt="EcoSphere"/></div>
     <h1>Welcome to <span>EcoSphere</span></h1>
     <p>Environmental Compliance Ecosystem — Select your portal to continue</p>
   </div>
