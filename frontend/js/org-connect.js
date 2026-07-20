@@ -431,11 +431,7 @@
       var selectedInd = (window._selInd || sessionStorage.getItem('ecoIndustry') || '').trim().toLowerCase();
       var registeredInd = (matched.industry || '').trim().toLowerCase();
       if (selectedInd && registeredInd && selectedInd !== registeredInd) {
-        _loginErr(
-          'This account is registered under <b>' + matched.industry + '</b>. ' +
-          'Please go back and select <b>' + matched.industry + '</b> to sign in, ' +
-          'or <a href="#" onclick="switchAuthTab(\'register\');return false;" style="color:#1d4ed8;font-weight:700">register a new account</a> for ' + (window._selInd || 'this industry') + '.'
-        );
+        _loginErr('No account found for this industry. Please <a href="#" onclick="switchAuthTab(\'register\');return false;" style="color:#1d4ed8;font-weight:700">register</a> to continue.');
         return;
       }
 
