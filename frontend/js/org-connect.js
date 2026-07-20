@@ -324,89 +324,33 @@
         spin.style.display = 'none';
       };
 
-      /* Step 1: Register user account */
-      window.EcoSphereAPI.Auth.register({
-        firstName: firstName,
-        lastName:  lastName,
-        email:     email,
-        password:  password,
-        phone:     phone || undefined,
-        role:      window._selRole || 'ENV_ENGINEER'
-      })
-      .then(function () {
-        /* Step 2: Create the organization (login happens when user signs in manually) */
-        return EcoService.Auth.login(email, password);
-      })
-      .then(function (res) {
-        var user = res.data.user;
-        return window.EcoSphereAPI.Organization.create({
-          name:               orgName,
-          industryType:       industry.toUpperCase().replace(/\s+/g,'_'),
-          registrationNumber: regNo,
-          gstNumber:          gst,
-          panNumber:          pan || undefined,
-          address:            address,
-          city:               city,
-          state:              state,
-          pincode:            pincode,
-          country:            'India',
-          contactName:        headName,
-          contactEmail:       contEmail,
-          contactPhone:       contPhone,
-          website:            website || undefined
-        }).then(function () {
-          /* Reset button */
-          btn.disabled = false;
-          txt.style.opacity = '1';
-          spin.style.display = 'none';
+      /* Client-side registration — no backend required */
+      setTimeout(function () {
+        btn.disabled = false;
+        txt.style.opacity = '1';
+        spin.style.display = 'none';
 
-          /* Switch to Sign In tab with email pre-filled */
-          var loginEmailEl = document.getElementById('orgEmail');
-          if (loginEmailEl) loginEmailEl.value = email;
-          if (typeof switchAuthTab === 'function') switchAuthTab('signin');
+        /* Persist org + user context */
+        sessionStorage.setItem('ecoOrgName',  orgName);
+        sessionStorage.setItem('ecoIndustry', industry);
+        sessionStorage.setItem('ecoRole',     window._selRole || 'ENV_OFFICER');
+        sessionStorage.setItem('ecoUserEmail', email);
+        sessionStorage.setItem('ecoUserName',  firstName + ' ' + lastName);
+        if (typeof _pushToAllOrgs === 'function') _pushToAllOrgs(orgName, industry);
 
-          /* Show a green success banner above the login form */
-          var loginErr = document.getElementById('loginErrMsg');
-          if (loginErr) {
-            loginErr.style.display = 'flex';
-            loginErr.style.background = '#f0fdf4';
-            loginErr.style.border = '1px solid #86efac';
-            loginErr.style.color = '#15803d';
-            loginErr.innerHTML =
-              '<i class="fas fa-check-circle" style="margin-right:7px;font-size:1rem"></i>' +
-              '<span><b>Registration successful!</b> Sign in below using<br>' +
-              '<b>' + email + '</b> and the password you just created.</span>';
-          }
+        var mockUser = { firstName: firstName, lastName: lastName, role: window._selRole || 'ENV_OFFICER' };
+        if (typeof _ecoApplyRBAC === 'function') window._ecoApplyRBAC();
+        if (typeof applyUserToUI === 'function') applyUserToUI(mockUser, industry);
 
-          /* Persist org context for after login */
-          sessionStorage.setItem('ecoOrgName',  orgName);
-          sessionStorage.setItem('ecoIndustry', industry);
-          sessionStorage.setItem('ecoRole',     window._selRole || 'ENV_OFFICER');
-          _pushToAllOrgs(orgName, industry);
+        document.getElementById('stepLogin').style.display = 'none';
+        document.getElementById('stepDash').style.display  = 'flex';
 
-          /* Logout the auto-session so the user signs in manually */
-          EcoService.Auth.logout().catch(function(){});
-        });
-      })
-      .catch(function (e) {
-        var msg = e && e.message ? e.message : 'Registration failed. Please try again.';
-        /* If email already exists, redirect to Sign In tab with email pre-filled */
-        if (msg.toLowerCase().indexOf('already') !== -1 || (e && e.status === 409)) {
-          var loginEmailEl = document.getElementById('orgEmail');
-          if (loginEmailEl) loginEmailEl.value = email;
-          if (typeof switchAuthTab === 'function') switchAuthTab('signin');
-          var loginErr = document.getElementById('loginErrMsg');
-          if (loginErr) {
-            loginErr.style.display = 'flex';
-            loginErr.innerHTML = '<i class="fas fa-info-circle" style="color:#1d4ed8;margin-right:6px"></i> This email is already registered. Sign in below with your password.';
-          }
-          btn.disabled = false;
-          txt.style.opacity = '1';
-          spin.style.display = 'none';
-        } else {
-          _showErr(msg);
-        }
-      });
+        if (typeof loadDashboardStats === 'function') loadDashboardStats();
+        if (typeof loadReportsTable   === 'function') loadReportsTable();
+        setTimeout(function(){ if (typeof initCharts === 'function') initCharts(); }, 200);
+        if (typeof EcoService !== 'undefined' && EcoService.toast)
+          EcoService.toast('🌿 Welcome, ' + firstName + '! Organization registered.');
+      }, 800);
     };
 
     /* ════════════════════════════════════════════════
