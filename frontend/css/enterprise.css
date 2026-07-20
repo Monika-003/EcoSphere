@@ -31,7 +31,7 @@
 }
 .ent-nav-logo { display: flex; align-items: center; gap: 12px; }
 .ent-nav-logo-pill { background: transparent; border-radius: 10px; padding: 4px 10px; }
-.ent-nav-logo-img  { height: 42px; }
+.ent-nav-logo-img  { height: 42px; filter: drop-shadow(0 1px 4px rgba(0,0,0,.7)); }
 .ent-nav-tagline { font-family: 'Plus Jakarta Sans',sans-serif; font-size: .72rem; font-weight: 700; color: rgba(255,255,255,.4); letter-spacing: 2px; text-transform: uppercase; }
 .ent-nav-links { display: flex; gap: 4px; margin-left: auto; }
 .ent-nav-links a { text-decoration: none; color: rgba(255,255,255,.7); font-family: 'Plus Jakarta Sans',sans-serif; font-size: .9rem; font-weight: 600; padding: 7px 16px; border-radius: 8px; transition: all .2s ease; }
@@ -184,7 +184,7 @@
 .onboard-container { max-width:860px;margin:0 auto;padding:40px 24px 80px; }
 .onboard-header { text-align:center;padding:32px 0 28px; }
 .onboard-logo-pill { background:transparent;border-radius:12px;padding:6px 16px;display:inline-flex;align-items:center;margin-bottom:20px; }
-.onboard-logo-img  { height:48px; }
+.onboard-logo-img  { height:48px; filter: drop-shadow(0 1px 4px rgba(0,0,0,.7)); }
 .onboard-header h2 { font-family:'Poppins',sans-serif;font-size:1.6rem;font-weight:900;color:#0f172a;margin-bottom:6px; }
 .onboard-header p  { font-family:'Inter',sans-serif;font-size:.92rem;color:#64748b; }
 

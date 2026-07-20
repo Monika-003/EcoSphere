@@ -61,6 +61,7 @@ h1,h2,h3,h4,h5,h6,.sec-h2,.lnd-hero-title,.hero-big-title,.about-h2,.lc-title,
   object-fit:contain;
   display:block;
   image-rendering:crisp-edges;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,0.7));
 }
 
 /* ── LOGO PILL WRAPPERS — transparent, no white box ── */
