@@ -1252,13 +1252,19 @@
     <div class="land-nav-brand">
       <div class="logo-pill-sm"><img src="assets/logo.png" alt="EcoSphere" class="logo-img-sm"/></div>
     </div>
-    <div class="land-nav-links">
-      <a href="#lnd-about">About</a>
-      <a href="#lnd-features">Features</a>
-      <a href="#lnd-industries">Industries</a>
-      <a href="#lnd-monitoring">Monitoring</a>
-      <a href="#lnd-contact">Contact</a>
+    <div class="land-nav-links" id="landNavLinks">
+      <a href="#" class="lnav-item lnav-active" onclick="switchNavPage('home');return false;">Home</a>
+      <a href="#" class="lnav-item" onclick="switchNavPage('about');return false;">About</a>
+      <a href="#" class="lnav-item" onclick="switchNavPage('features');return false;">Features</a>
+      <a href="#" class="lnav-item" onclick="switchNavPage('industries');return false;">Industries</a>
+      <a href="#" class="lnav-item" onclick="switchNavPage('monitoring');return false;">Monitoring</a>
+      <a href="#" class="lnav-item" onclick="switchNavPage('contact');return false;">Contact</a>
     </div>
+    <style>
+      .lnav-item{text-decoration:none;color:rgba(255,255,255,.65);font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;padding:7px 13px;border-radius:8px;transition:all .2s;white-space:nowrap}
+      .lnav-item:hover{color:#fff;background:rgba(255,255,255,.08)}
+      .lnav-item.lnav-active{color:#4ade80 !important;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.25)}
+    </style>
     <!-- Country Selector -->
     <div id="navCntWrap" style="position:relative;margin-right:4px">
       <button id="navCntTrigger" onclick="document.getElementById('navCntDrop').classList.toggle('ncnt-open')"
@@ -1369,6 +1375,95 @@
       buildGrid(saved);
       buildPreview(saved);
     });
+  })();
+  </script>
+
+  <script>
+  // ── Nav Page Switcher ─────────────────────────────────────────────
+  var NAV_PAGES = {
+    home:        ['lnd-hero','lnd-why','lnd-vision','lnd-demo'],
+    about:       ['lnd-about'],
+    features:    ['lnd-features'],
+    industries:  ['lnd-industries'],
+    monitoring:  ['lnd-monitoring'],
+    contact:     ['lnd-contact']
+  };
+  var ALL_SECTION_IDS = [
+    'lnd-hero','lnd-about','lnd-features','lnd-industries',
+    'lnd-monitoring','lnd-why','lnd-vision','lnd-demo','lnd-contact'
+  ];
+
+  var SEC_COVER_META = {
+    home:       {icon:'🏠', label:'Home',        color:'#16a34a', hint:'Why EcoSphere · Vision & Mission · Book Demo'},
+    about:      {icon:'ℹ️',  label:'About',       color:'#2563eb', hint:'Platform overview & QMICS Group'},
+    features:   {icon:'⚡',  label:'Features',    color:'#d97706', hint:'6 integrated modules'},
+    industries: {icon:'🏭',  label:'Industries',  color:'#7c3aed', hint:'Sector-specific monitoring'},
+    monitoring: {icon:'📊',  label:'Monitoring',  color:'#0891b2', hint:'Real-time environmental data'},
+    contact:    {icon:'📞',  label:'Contact',     color:'#dc2626', hint:'Get in touch with QMICS Group'}
+  };
+
+  function switchNavPage(page) {
+    var meta = SEC_COVER_META[page] || {icon:'📄', label:page, color:'#16a34a', hint:''};
+    var cover = document.getElementById('secCover');
+    // Fill cover content
+    document.getElementById('scIcon').style.background = meta.color+'22';
+    document.getElementById('scIcon').style.border = '2px solid '+meta.color+'55';
+    document.getElementById('scIcon').textContent = meta.icon;
+    document.getElementById('scName').textContent = meta.label;
+    document.getElementById('scLine').style.background = meta.color;
+    document.getElementById('scHint').textContent = meta.hint;
+    // Animate in
+    cover.classList.remove('sec-cover-out');
+    cover.classList.add('sec-cover-in');
+    // After 650ms swap content and animate out
+    setTimeout(function() {
+      // Hide all sections
+      ALL_SECTION_IDS.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      // Show only the sections for this page
+      var show = NAV_PAGES[page] || [];
+      show.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+      // Update active nav link
+      document.querySelectorAll('#landNavLinks .lnav-item').forEach(function(a) {
+        var isActive = (a.getAttribute('onclick') || '').indexOf("'"+page+"'") !== -1;
+        a.classList.toggle('lnav-active', isActive);
+      });
+      window.scrollTo({top: 0});
+      // Animate cover out
+      cover.classList.remove('sec-cover-in');
+      cover.classList.add('sec-cover-out');
+      setTimeout(function(){ cover.classList.remove('sec-cover-out'); }, 420);
+    }, 650);
+  }
+
+  // Initialise: show Home page when landing page becomes visible
+  (function initNavPage() {
+    function doInit() {
+      var lp = document.getElementById('landingPage');
+      if (!lp) { setTimeout(doInit, 100); return; }
+      // Watch for the landing page being shown
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          if (m.attributeName === 'class') {
+            var visible = !lp.classList.contains('page-hidden');
+            if (visible) switchNavPage('home');
+          }
+        });
+      });
+      observer.observe(lp, { attributes: true });
+      // Also fire immediately if already visible
+      if (!lp.classList.contains('page-hidden')) switchNavPage('home');
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', doInit);
+    } else {
+      doInit();
+    }
   })();
   </script>
 
@@ -1663,7 +1758,57 @@
 
 
 
-<section id="lnd-about" style="position:relative;overflow:hidden;padding:90px 0;background:linear-gradient(180deg,#f0fdf8 0%,#fff 45%,#f0fdf4 100%)">
+<section id="lnd-about" style="position:relative;overflow:hidden;padding:0 0 90px;background:linear-gradient(180deg,#f0fdf8 0%,#fff 45%,#f0fdf4 100%)">
+  <!-- ── SHARED SECTION COVER CSS ── -->
+  <style>
+    .sec-cov{position:relative;z-index:2;padding:108px 68px 88px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,.18);margin-bottom:52px}
+    .sec-cov-tag{display:inline-flex;align-items:center;gap:7px;border-radius:30px;padding:5px 16px;font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:20px}
+    .sec-cov-h1{font-family:Poppins,sans-serif;font-size:2.6rem;font-weight:900;line-height:1.12;margin:0 0 16px}
+    .sec-cov-p{font-family:Inter,sans-serif;font-size:.97rem;line-height:1.78;margin:0 0 30px;max-width:680px}
+    .sec-cov-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:0}
+    .sec-cov-pill{display:flex;align-items:center;gap:7px;border-radius:30px;padding:8px 18px;font-family:Inter,sans-serif;font-size:.8rem;font-weight:600;white-space:nowrap}
+    .sec-cov-right{position:absolute;right:52px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;gap:22px}
+    .sec-cov-stat{text-align:right}
+    .sec-cov-stat-num{font-family:Poppins,sans-serif;font-size:3rem;font-weight:900;line-height:1}
+    .sec-cov-stat-lbl{font-family:Inter,sans-serif;font-size:.74rem;margin-top:3px}
+    .sec-cov-accent-bar{position:absolute;bottom:0;left:0;right:0;height:5px}
+    @media(max-width:1000px){
+      .sec-cov{padding:52px 22px 56px}
+      .sec-cov-h1{font-size:1.9rem}
+      .sec-cov-right{position:static;transform:none;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:20px 36px;margin-top:28px;border-top:1px solid rgba(0,0,0,.1);padding-top:22px}
+      .sec-cov-stat{text-align:left;display:flex;align-items:baseline;gap:8px}
+      .sec-cov-stat-num{font-size:2rem}
+      .sec-cov-stat-lbl{font-size:.72rem;margin-top:0}
+    }
+  </style>
+  <!-- ── ABOUT COVER ── -->
+  <div class="sec-cov" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 55%,#ecfdf5 100%)">
+    <!-- 3D floating panel -->
+    <div style="position:absolute;right:7%;top:50%;transform:translateY(-50%) perspective(520px) rotateX(14deg) rotateY(-24deg);width:120px;height:120px;border:2px solid rgba(22,163,74,.2);border-radius:14px;background:rgba(22,163,74,.06);pointer-events:none"><div style="position:absolute;inset:10px;border:1.5px solid rgba(22,163,74,.12);border-radius:9px"></div><div style="position:absolute;inset:22px;border:1px solid rgba(22,163,74,.08);border-radius:6px"></div></div>
+    <!-- 3D sphere -->
+    <div style="position:absolute;right:20%;top:10%;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 32% 32%,rgba(255,255,255,.85),rgba(22,163,74,.22) 55%,rgba(22,163,74,.08));box-shadow:4px 4px 20px rgba(22,163,74,.2);pointer-events:none"></div>
+    <!-- floating ring -->
+    <div style="position:absolute;bottom:18%;right:14%;width:90px;height:90px;border-radius:50%;border:2px solid rgba(22,163,74,.15);transform:perspective(400px) rotateX(55deg);pointer-events:none"></div>
+    <!-- small accent dots -->
+    <div style="position:absolute;top:28%;left:60%;width:8px;height:8px;border-radius:50%;background:rgba(22,163,74,.3);pointer-events:none"></div>
+    <div style="position:absolute;top:65%;left:55%;width:5px;height:5px;border-radius:50%;background:rgba(22,163,74,.2);pointer-events:none"></div>
+    <div class="sec-cov-accent-bar" style="background:linear-gradient(90deg,#4ade80,#22c55e,#86efac)"></div>
+    <div class="sec-cov-tag" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);color:#15803d"><i class="fas fa-leaf"></i> About EcoSphere</div>
+    <h1 class="sec-cov-h1" style="color:#14532d">Environmental Intelligence<br><span style="color:#16a34a">Platform</span> for Indian Industry</h1>
+    <p class="sec-cov-p" style="color:rgba(20,83,45,.68)">EcoSphere by QMICS Group is India's most comprehensive AI-powered environmental compliance platform — connecting industries, accredited laboratories, and regulatory authorities in one unified digital ecosystem. Built for Pharmaceutical, Manufacturing, Textile, Chemical, and 15+ other sectors.</p>
+    <div class="sec-cov-pills">
+      <div class="sec-cov-pill" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);color:#166534"><i class="fas fa-building"></i> 500+ Companies</div>
+      <div class="sec-cov-pill" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);color:#166534"><i class="fas fa-industry"></i> 150+ Industries</div>
+      <div class="sec-cov-pill" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);color:#166534"><i class="fas fa-satellite-dish"></i> 2400+ Sensors</div>
+      <div class="sec-cov-pill" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);color:#166534"><i class="fas fa-robot"></i> AI-Powered</div>
+      <div class="sec-cov-pill" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.2);color:#166534"><i class="fas fa-certificate"></i> ISO 14001 Aligned</div>
+    </div>
+    <div class="sec-cov-right">
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#15803d">98%</div><div class="sec-cov-stat-lbl" style="color:rgba(20,83,45,.5)">Data Accuracy</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#16a34a">24/7</div><div class="sec-cov-stat-lbl" style="color:rgba(20,83,45,.5)">Live Monitoring</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0d9488">5+</div><div class="sec-cov-stat-lbl" style="color:rgba(20,83,45,.5)">Years Experience</div></div>
+    </div>
+  </div>
   <div style="position:absolute;bottom:-30px;left:0;right:0;height:300px;background-image:linear-gradient(rgba(22,163,74,.11) 1px,transparent 1px),linear-gradient(90deg,rgba(22,163,74,.11) 1px,transparent 1px);background-size:44px 44px;transform:perspective(700px) rotateX(58deg);transform-origin:bottom center;pointer-events:none;opacity:.9"></div>
   <div class="lnd-leaf-a" style="position:absolute;top:8%;right:3%;pointer-events:none">
     <svg width="52" height="72" viewBox="0 0 52 72" xmlns="http://www.w3.org/2000/svg"><path d="M26,2 C38,2 48,13 46,27 C44,42 34,68 26,70 C18,68 8,42 6,27 C4,13 14,2 26,2 Z" fill="rgba(22,163,74,.16)" stroke="rgba(22,163,74,.55)" stroke-width="1.2"/><line x1="26" y1="2" x2="26" y2="70" stroke="rgba(22,163,74,.38)" stroke-width="0.9"/></svg>
@@ -1712,6 +1857,39 @@
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px">
           <button class="btn-solid-green" onclick="location.href='portal-select.html'"><i class="fas fa-rocket"></i> Get Started</button>
           <button onclick="openSiteMap()" style="display:flex;align-items:center;gap:8px;padding:13px 22px;border-radius:10px;background:transparent;border:2px solid rgba(22,163,74,.5);color:#16a34a;font-family:Poppins,sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;transition:.2s" onmouseover="this.style.background='rgba(22,163,74,.1)'" onmouseout="this.style.background='transparent'"><i class="fas fa-map-marked-alt"></i> View Site Map</button>
+        </div>
+
+        <!-- Website Overview preview card / button -->
+        <div onclick="openWebOverview()" style="margin-top:22px;cursor:pointer;border-radius:16px;overflow:hidden;position:relative;border:2px solid rgba(22,163,74,.25);box-shadow:0 8px 32px rgba(0,0,0,.1);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 48px rgba(22,163,74,.2)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 32px rgba(0,0,0,.1)'">
+          <!-- mock browser top bar -->
+          <div style="background:#1e293b;padding:9px 14px;display:flex;align-items:center;gap:8px">
+            <div style="display:flex;gap:5px"><span style="width:11px;height:11px;border-radius:50%;background:#ef4444;display:block"></span><span style="width:11px;height:11px;border-radius:50%;background:#f59e0b;display:block"></span><span style="width:11px;height:11px;border-radius:50%;background:#22c55e;display:block"></span></div>
+            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:6px;padding:4px 12px;font-family:Inter,sans-serif;font-size:.72rem;color:rgba(255,255,255,.4)">ecosphere.qmicsgroup.com</div>
+          </div>
+          <!-- mini portal preview -->
+          <div style="background:linear-gradient(135deg,#0a1628 0%,#042f2e 100%);padding:18px 20px 14px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:10px;align-items:center">
+              <div style="background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);border-radius:8px;padding:6px 12px;font-family:Poppins,sans-serif;font-size:.65rem;font-weight:800;color:#4ade80">ORG PORTAL</div>
+              <div style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:8px;padding:6px 12px;font-family:Poppins,sans-serif;font-size:.65rem;font-weight:800;color:#60a5fa">LAB PORTAL</div>
+              <div style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:6px 12px;font-family:Poppins,sans-serif;font-size:.65rem;font-weight:800;color:#fbbf24">REG PORTAL</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 8px;text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.8rem;font-weight:900;color:#4ade80">PM2.5</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:Inter,sans-serif">62 µg/m³</div></div>
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 8px;text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.8rem;font-weight:900;color:#60a5fa">BOD</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:Inter,sans-serif">3.0 mg/L</div></div>
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 8px;text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.8rem;font-weight:900;color:#f472b6">NOISE</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:Inter,sans-serif">88 dB ⚠</div></div>
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 8px;text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.8rem;font-weight:900;color:#a78bfa">ESG</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);font-family:Inter,sans-serif">A–</div></div>
+            </div>
+            <!-- AI bar -->
+            <div style="background:linear-gradient(90deg,rgba(22,163,74,.2),rgba(6,182,212,.1));border:1px solid rgba(22,163,74,.2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;animation:pulseGreen 1.5s infinite"></div>
+              <span style="font-family:Poppins,sans-serif;font-size:.68rem;font-weight:700;color:#4ade80">EcoBot AI Active</span>
+              <span style="font-family:Inter,sans-serif;font-size:.65rem;color:rgba(255,255,255,.4);margin-left:auto">Compliance Index: 57</span>
+            </div>
+          </div>
+          <!-- click overlay -->
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s" onmouseover="this.style.background='rgba(0,0,0,.45)';this.querySelector('.ov-btn').style.opacity='1'" onmouseout="this.style.background='rgba(0,0,0,0)';this.querySelector('.ov-btn').style.opacity='0'">
+            <div class="ov-btn" style="opacity:0;transition:opacity .2s;background:linear-gradient(135deg,#16a34a,#0d9488);color:#fff;font-family:Poppins,sans-serif;font-size:.85rem;font-weight:800;padding:12px 22px;border-radius:30px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(22,163,74,.5)"><i class="fas fa-play-circle"></i> View Platform Overview</div>
+          </div>
         </div>
       </div>
       <div class="lnd-col-visual" style="position:relative">
@@ -2336,6 +2514,8 @@
 <script>
 function openSiteMap(){document.getElementById('siteMapModal').classList.add('open');document.body.style.overflow='hidden';}
 function closeSiteMap(){document.getElementById('siteMapModal').classList.remove('open');document.body.style.overflow='';}
+function openWebOverview(){document.getElementById('webOverviewModal').classList.add('wov-open');document.body.style.overflow='hidden';}
+function closeWebOverview(){document.getElementById('webOverviewModal').classList.remove('wov-open');document.body.style.overflow='';}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap();});
 </script>
 
@@ -2350,7 +2530,34 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap
 
 
 
-<section id="lnd-features" style="position:relative;overflow:hidden;padding:100px 0;background:linear-gradient(180deg,#fffbeb 0%,#ffffff 45%,#f7fee7 100%)">
+<section id="lnd-features" style="position:relative;overflow:hidden;padding:0 0 100px;background:linear-gradient(180deg,#fffbeb 0%,#ffffff 45%,#f7fee7 100%)">
+  <!-- ── FEATURES COVER ── -->
+  <div class="sec-cov" style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 55%,#fff7ed 100%)">
+    <!-- 3D diamond/hexagon -->
+    <div style="position:absolute;right:8%;top:50%;transform:translateY(-50%) perspective(520px) rotateX(10deg) rotateY(-28deg) rotateZ(12deg);width:110px;height:110px;border:2px solid rgba(234,88,12,.2);border-radius:10px;background:rgba(234,88,12,.05);pointer-events:none"><div style="position:absolute;inset:10px;border:1.5px solid rgba(234,88,12,.12);border-radius:6px"></div></div>
+    <!-- 3D sphere -->
+    <div style="position:absolute;right:21%;top:8%;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(234,88,12,.2) 55%,rgba(234,88,12,.07));box-shadow:4px 4px 18px rgba(234,88,12,.2);pointer-events:none"></div>
+    <!-- 3D flat ring -->
+    <div style="position:absolute;bottom:20%;right:16%;width:80px;height:80px;border-radius:50%;border:2.5px solid rgba(234,88,12,.15);transform:perspective(400px) rotateX(60deg);pointer-events:none"></div>
+    <div style="position:absolute;top:30%;left:58%;width:7px;height:7px;border-radius:50%;background:rgba(234,88,12,.3);pointer-events:none"></div>
+    <div class="sec-cov-accent-bar" style="background:linear-gradient(90deg,#fb923c,#f97316,#fdba74)"></div>
+    <div class="sec-cov-tag" style="background:rgba(234,88,12,.1);border:1px solid rgba(234,88,12,.22);color:#c2410c"><i class="fas fa-bolt"></i> Platform Features</div>
+    <h1 class="sec-cov-h1" style="color:#7c2d12">6 Integrated Modules for<br><span style="color:#ea580c">Complete Compliance</span></h1>
+    <p class="sec-cov-p" style="color:rgba(124,45,18,.68)">Every tool your organisation needs — from real-time IoT sensor monitoring and AI-powered analysis, to automated ESG scorecards, EIA assessments, carbon tracking, and one-click regulatory submissions. All in one platform, all working together.</p>
+    <div class="sec-cov-pills">
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-satellite-dish"></i> Environmental Monitoring</div>
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-leaf"></i> ESG Assessment</div>
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-file-alt"></i> EIA Reporting</div>
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-cloud"></i> Carbon Tracking</div>
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-robot"></i> AI Intelligence</div>
+      <div class="sec-cov-pill" style="background:rgba(234,88,12,.09);border:1px solid rgba(234,88,12,.18);color:#9a3412"><i class="fas fa-paper-plane"></i> Regulatory Submission</div>
+    </div>
+    <div class="sec-cov-right">
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#ea580c">6</div><div class="sec-cov-stat-lbl" style="color:rgba(124,45,18,.5)">Core Modules</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#c2410c">50+</div><div class="sec-cov-stat-lbl" style="color:rgba(124,45,18,.5)">Report Types</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#d97706">AI</div><div class="sec-cov-stat-lbl" style="color:rgba(124,45,18,.5)">Powered</div></div>
+    </div>
+  </div>
   <!-- Amber 3D grid floor -->
   <div style="position:absolute;bottom:-30px;left:0;right:0;height:340px;background-image:linear-gradient(rgba(217,119,6,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(217,119,6,.09) 1px,transparent 1px);background-size:48px 48px;transform:perspective(700px) rotateX(58deg);transform-origin:bottom center;pointer-events:none;opacity:.85"></div>
   <!-- Lime 3D grid top -->
@@ -2578,7 +2785,36 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap
 </section>
 
   <!-- Industries "” QMICS 3D Showcase -->
-  <section id="lnd-industries" style="position:relative;overflow:hidden;padding:80px 0;background:#050e08">
+  <section id="lnd-industries" style="position:relative;overflow:hidden;padding:0 0 80px;background:#050e08">
+    <!-- ── INDUSTRIES COVER ── -->
+    <div class="sec-cov" style="background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 55%,#f0fdfa 100%);position:relative;z-index:5">
+      <!-- 3D floating panel -->
+      <div style="position:absolute;right:7%;top:50%;transform:translateY(-50%) perspective(520px) rotateX(16deg) rotateY(-20deg);width:115px;height:115px;border:2px solid rgba(13,148,136,.2);border-radius:13px;background:rgba(13,148,136,.06);pointer-events:none"><div style="position:absolute;inset:10px;border:1.5px solid rgba(13,148,136,.12);border-radius:8px"></div><div style="position:absolute;inset:22px;border:1px solid rgba(13,148,136,.07);border-radius:5px"></div></div>
+      <!-- 3D sphere -->
+      <div style="position:absolute;right:21%;top:9%;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.88),rgba(13,148,136,.22) 55%,rgba(13,148,136,.07));box-shadow:4px 4px 18px rgba(13,148,136,.2);pointer-events:none"></div>
+      <!-- flat ring -->
+      <div style="position:absolute;bottom:18%;right:15%;width:84px;height:84px;border-radius:50%;border:2px solid rgba(13,148,136,.15);transform:perspective(400px) rotateX(55deg);pointer-events:none"></div>
+      <div style="position:absolute;top:32%;left:57%;width:7px;height:7px;border-radius:50%;background:rgba(13,148,136,.3);pointer-events:none"></div>
+      <div class="sec-cov-accent-bar" style="background:linear-gradient(90deg,#2dd4bf,#14b8a6,#5eead4)"></div>
+      <div class="sec-cov-tag" style="background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.22);color:#0f766e"><i class="fas fa-industry"></i> Industries We Serve</div>
+      <h1 class="sec-cov-h1" style="color:#134e4a">15+ Sectors, <span style="color:#0d9488">One Platform</span></h1>
+      <p class="sec-cov-p" style="color:rgba(19,78,74,.68)">EcoSphere comes pre-configured for every major industrial sector — monitoring parameters, permissible limits, and regulatory frameworks are built-in. No generic setup. Your industry's compliance requirements are ready from day one.</p>
+      <div class="sec-cov-pills">
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-pills"></i> Pharmaceutical</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-cogs"></i> Manufacturing</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-tshirt"></i> Textile</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-flask"></i> Chemical</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-bolt"></i> Power Generation</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-utensils"></i> Food Processing</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-car"></i> Automotive</div>
+        <div class="sec-cov-pill" style="background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.18);color:#0f766e"><i class="fas fa-hard-hat"></i> +8 More</div>
+      </div>
+      <div class="sec-cov-right">
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0f766e">15+</div><div class="sec-cov-stat-lbl" style="color:rgba(19,78,74,.5)">Industries</div></div>
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0d9488">200+</div><div class="sec-cov-stat-lbl" style="color:rgba(19,78,74,.5)">Parameters</div></div>
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0891b2">CPCB</div><div class="sec-cov-stat-lbl" style="color:rgba(19,78,74,.5)">Pre-loaded</div></div>
+      </div>
+    </div>
     <!-- Industrial background -->
     <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1600&q=60') center/cover no-repeat;opacity:.1;filter:grayscale(70%)"></div>
     <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,14,8,.96) 0%,rgba(2,30,15,.92) 50%,rgba(5,14,8,.97) 100%)"></div>
@@ -2886,7 +3122,34 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap
     </script>
   </section>
 
-<section id="lnd-monitoring" style="position:relative;overflow:hidden;padding:100px 0;background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 50%,#ecfdf5 100%)">
+<section id="lnd-monitoring" style="position:relative;overflow:hidden;padding:0 0 100px;background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 50%,#ecfdf5 100%)">
+  <!-- ── MONITORING COVER ── -->
+  <div class="sec-cov" style="background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 55%,#f0f9ff 100%)">
+    <!-- 3D floating panel -->
+    <div style="position:absolute;right:7%;top:50%;transform:translateY(-50%) perspective(520px) rotateX(14deg) rotateY(-22deg);width:118px;height:118px;border:2px solid rgba(2,132,199,.2);border-radius:14px;background:rgba(2,132,199,.06);pointer-events:none"><div style="position:absolute;inset:10px;border:1.5px solid rgba(2,132,199,.12);border-radius:9px"></div><div style="position:absolute;inset:22px;border:1px solid rgba(2,132,199,.07);border-radius:5px"></div></div>
+    <!-- 3D sphere -->
+    <div style="position:absolute;right:21%;top:9%;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(2,132,199,.2) 55%,rgba(2,132,199,.07));box-shadow:4px 4px 18px rgba(2,132,199,.18);pointer-events:none"></div>
+    <!-- flat perspective ring -->
+    <div style="position:absolute;bottom:18%;right:15%;width:86px;height:86px;border-radius:50%;border:2px solid rgba(2,132,199,.14);transform:perspective(400px) rotateX(55deg);pointer-events:none"></div>
+    <div style="position:absolute;top:30%;left:58%;width:7px;height:7px;border-radius:50%;background:rgba(2,132,199,.28);pointer-events:none"></div>
+    <div class="sec-cov-accent-bar" style="background:linear-gradient(90deg,#38bdf8,#0ea5e9,#7dd3fc)"></div>
+    <div class="sec-cov-tag" style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.22);color:#0369a1"><i class="fas fa-satellite-dish"></i> Environmental Monitoring</div>
+    <h1 class="sec-cov-h1" style="color:#0c4a6e">Real-Time <span style="color:#0284c7">Multi-Parameter</span><br>Data Collection</h1>
+    <p class="sec-cov-p" style="color:rgba(12,74,110,.68)">Continuously collect, analyse, and report across Air Quality, Water Quality, Noise, Soil, Temperature, Humidity, and Waste parameters. IoT sensor integration or manual entry — both supported, both AI-analysed against CPCB/NAAQS standards in real time.</p>
+    <div class="sec-cov-pills">
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-wind"></i> Air Quality</div>
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-tint"></i> Water Quality</div>
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-volume-up"></i> Noise Levels</div>
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-seedling"></i> Soil Parameters</div>
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-thermometer-half"></i> Temperature</div>
+      <div class="sec-cov-pill" style="background:rgba(2,132,199,.09);border:1px solid rgba(2,132,199,.18);color:#0369a1"><i class="fas fa-recycle"></i> Waste</div>
+    </div>
+    <div class="sec-cov-right">
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0284c7">20+</div><div class="sec-cov-stat-lbl" style="color:rgba(12,74,110,.5)">Parameters</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0369a1">Live</div><div class="sec-cov-stat-lbl" style="color:rgba(12,74,110,.5)">Data Stream</div></div>
+      <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0d9488">AI</div><div class="sec-cov-stat-lbl" style="color:rgba(12,74,110,.5)">Anomaly Detection</div></div>
+    </div>
+  </div>
   <!-- Ocean blue 3D grid top -->
   <div style="position:absolute;top:-20px;left:0;right:0;height:300px;background-image:linear-gradient(rgba(8,145,178,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(8,145,178,.09) 1px,transparent 1px);background-size:44px 44px;transform:perspective(700px) rotateX(-58deg);transform-origin:top center;pointer-events:none;opacity:.85"></div>
   <!-- Teal 3D grid bottom -->
@@ -2992,8 +3255,345 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap
   </style>
 </section>
 
+  <!-- ═══════════════════════════════════════════════
+       WHY ECOSPHERE — Uniqueness / USP
+  ═══════════════════════════════════════════════ -->
+  <section id="lnd-why" style="position:relative;overflow:hidden;padding:100px 0;background:linear-gradient(180deg,#020d1a 0%,#041a0f 60%,#020d1a 100%)">
+    <style>
+      .why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-top:56px}
+      .why-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:32px 28px;transition:.3s;position:relative;overflow:hidden}
+      .why-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(22,163,74,.06),transparent);opacity:0;transition:.3s}
+      .why-card:hover{border-color:rgba(22,163,74,.45);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+      .why-card:hover::before{opacity:1}
+      .why-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:1.4rem}
+      .why-card h4{font-family:Poppins,sans-serif;font-size:1rem;font-weight:800;color:#fff;margin:0 0 10px}
+      .why-card p{font-family:Inter,sans-serif;font-size:.83rem;color:rgba(255,255,255,.55);line-height:1.65;margin:0}
+      .why-vs-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);border-radius:30px;padding:5px 16px;font-family:Poppins,sans-serif;font-size:.72rem;font-weight:700;color:#4ade80;letter-spacing:.5px;margin-bottom:16px}
+      .why-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px;border:1px solid rgba(255,255,255,.07);border-radius:18px;overflow:hidden}
+      .why-col{padding:28px 24px}
+      .why-col.bad{background:rgba(239,68,68,.05);border-right:1px solid rgba(255,255,255,.07)}
+      .why-col.good{background:rgba(22,163,74,.06)}
+      .why-col h5{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin:0 0 18px}
+      .why-col.bad h5{color:#f87171}
+      .why-col.good h5{color:#4ade80}
+      .why-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:13px;font-family:Inter,sans-serif;font-size:.8rem;line-height:1.5}
+      .why-col.bad .why-row{color:rgba(255,255,255,.45)}
+      .why-col.good .why-row{color:rgba(255,255,255,.75)}
+      .why-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:.6rem}
+      @media(max-width:600px){.why-compare{grid-template-columns:1fr}.why-col.bad{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}}
+    </style>
+    <div class="lnd-container">
+      <div class="sec-tag-center" style="background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.25);color:#4ade80">WHY ECOSPHERE</div>
+      <h2 class="sec-h2 text-center" style="color:#fff">The Platform Built for <span style="background:linear-gradient(135deg,#4ade80,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent">India's Industries</span></h2>
+      <p style="text-align:center;font-family:Inter,sans-serif;font-size:.95rem;color:rgba(255,255,255,.5);max-width:600px;margin:0 auto;line-height:1.7">Most compliance tools were built for data entry. EcoSphere was built for <b style="color:rgba(255,255,255,.8)">outcomes</b> — from sensor to certificate, in one platform.</p>
+
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(59,130,246,.15)"><i class="fas fa-bolt" style="color:#60a5fa"></i></div>
+          <h4>India-First Compliance Engine</h4>
+          <p>Built specifically for CPCB, SPCB, and MoEFCC frameworks. Regulatory formats, consent conditions, and reporting schedules pre-loaded for 15+ industries.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(16,185,129,.15)"><i class="fas fa-robot" style="color:#34d399"></i></div>
+          <h4>EcoBot AI — Not Just a Chatbot</h4>
+          <p>Our AI doesn't just answer questions. It analyses your monitoring data, flags anomalies, predicts exceedances, and auto-generates remediation reports before violations occur.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(139,92,246,.15)"><i class="fas fa-project-diagram" style="color:#a78bfa"></i></div>
+          <h4>Org → Lab → Regulatory — One Flow</h4>
+          <p>The only platform where your monitoring data flows automatically from your site to the accredited lab and straight to the regulatory authority — no emails, no PDFs by hand.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(245,158,11,.15)"><i class="fas fa-industry" style="color:#fbbf24"></i></div>
+          <h4>Industry-Specific Intelligence</h4>
+          <p>Pharmaceutical, textile, cement, food processing — each industry gets its own parameter sets, exceedance thresholds, and AI benchmarks. Not a generic template you configure yourself.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(236,72,153,.15)"><i class="fas fa-shield-alt" style="color:#f472b6"></i></div>
+          <h4>Zero Backend Dependency on Your Side</h4>
+          <p>Deployed as a static web app with secure localStorage-based workflows. No server setup, no IT team needed. Works even in low-connectivity environments.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" style="background:rgba(6,182,212,.15)"><i class="fas fa-chart-line" style="color:#22d3ee"></i></div>
+          <h4>ESG & Carbon Ready</h4>
+          <p>Track GHG emissions, generate ESG scorecards, and produce audit-ready sustainability reports aligned with GRI, ISO 14001, and BRSR disclosure requirements.</p>
+        </div>
+      </div>
+
+      <!-- Before / After comparison -->
+      <h3 style="font-family:Poppins,sans-serif;font-size:1.3rem;font-weight:800;color:#fff;text-align:center;margin:60px 0 0">EcoSphere vs. Traditional Compliance</h3>
+      <p style="text-align:center;font-family:Inter,sans-serif;font-size:.82rem;color:rgba(255,255,255,.4);margin:8px 0 24px">How most teams do it today vs. how EcoSphere works</p>
+      <div class="why-compare">
+        <div class="why-col bad">
+          <h5><i class="fas fa-times-circle" style="margin-right:7px"></i>Without EcoSphere</h5>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>Manual data entry in Excel spreadsheets</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>Reports emailed back and forth with labs</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>Compliance deadlines missed due to paper trails</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>No visibility into regulatory submission status</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>AI insights require expensive consultants</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(239,68,68,.2);color:#f87171">✗</div>ESG reporting done once a year from scratch</div>
+        </div>
+        <div class="why-col good">
+          <h5><i class="fas fa-check-circle" style="margin-right:7px"></i>With EcoSphere</h5>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>Structured digital entry with live AI analysis</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>Automatic submission to registered lab portal</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>Real-time tracking — Submitted → Approved → Certified</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>One-click regulatory submission with full audit trail</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>EcoBot AI flags risks and writes remediation drafts</div>
+          <div class="why-row"><div class="why-dot" style="background:rgba(22,163,74,.2);color:#4ade80">✓</div>Live ESG dashboard updated with every data entry</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       VISION & MISSION
+  ═══════════════════════════════════════════════ -->
+  <section id="lnd-vision" style="position:relative;overflow:hidden;padding:100px 0;background:linear-gradient(160deg,#f0fdf8 0%,#ffffff 50%,#f0f9ff 100%)">
+    <style>
+      .vm-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:56px}
+      .vm-card{border-radius:22px;padding:44px 40px;position:relative;overflow:hidden}
+      .vm-card.vision{background:linear-gradient(135deg,#042f2e,#065f46);color:#fff}
+      .vm-card.mission{background:#fff;border:2px solid #d1fae5}
+      .vm-card-tag{display:inline-flex;align-items:center;gap:8px;border-radius:30px;padding:5px 16px;font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:20px}
+      .vm-card.vision .vm-card-tag{background:rgba(255,255,255,.1);color:#6ee7b7;border:1px solid rgba(255,255,255,.15)}
+      .vm-card.mission .vm-card-tag{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+      .vm-card h3{font-family:Poppins,sans-serif;font-size:1.65rem;font-weight:900;margin:0 0 16px;line-height:1.2}
+      .vm-card.vision h3{color:#fff}
+      .vm-card.mission h3{color:#042f2e}
+      .vm-card p{font-family:Inter,sans-serif;font-size:.92rem;line-height:1.75;margin:0 0 24px}
+      .vm-card.vision p{color:rgba(255,255,255,.7)}
+      .vm-card.mission p{color:#374151}
+      .vm-pillars{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+      .vm-pill{display:flex;align-items:center;gap:7px;border-radius:30px;padding:6px 14px;font-family:Inter,sans-serif;font-size:.77rem;font-weight:600}
+      .vm-card.vision .vm-pill{background:rgba(255,255,255,.08);color:#a7f3d0;border:1px solid rgba(255,255,255,.1)}
+      .vm-card.mission .vm-pill{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+      .vm-card.vision::after{content:'◎';position:absolute;right:-20px;bottom:-30px;font-size:10rem;color:rgba(255,255,255,.03);font-weight:900;pointer-events:none}
+      .vm-values{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+      .vm-val{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px 18px;text-align:center;transition:.2s}
+      .vm-val:hover{border-color:#6ee7b7;box-shadow:0 8px 30px rgba(22,163,74,.1);transform:translateY(-3px)}
+      .vm-val-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.2rem}
+      .vm-val h5{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;color:#0f172a;margin:0 0 6px}
+      .vm-val p{font-family:Inter,sans-serif;font-size:.74rem;color:#64748b;line-height:1.55;margin:0}
+      @media(max-width:700px){.vm-grid{grid-template-columns:1fr}.vm-values{grid-template-columns:1fr 1fr}}
+    </style>
+    <div class="lnd-container">
+      <div class="sec-tag-center green">OUR PURPOSE</div>
+      <h2 class="sec-h2 text-center">Vision &amp; <span class="t-green">Mission</span></h2>
+      <p style="text-align:center;font-family:Inter,sans-serif;font-size:.95rem;color:#64748b;max-width:580px;margin:0 auto;line-height:1.7">Built on a belief that environmental compliance should be a <b>strategic advantage</b>, not a paperwork burden.</p>
+
+      <div class="vm-grid">
+        <div class="vm-card vision">
+          <div class="vm-card-tag"><i class="fas fa-eye"></i> Our Vision</div>
+          <h3>A Compliant &amp; Sustainable Industrial India</h3>
+          <p>We envision a future where every Indian industry — from a small textile unit in Surat to a pharmaceutical giant in Hyderabad — operates with full environmental transparency, zero compliance gaps, and a measurable positive impact on the planet.</p>
+          <div class="vm-pillars">
+            <div class="vm-pill"><i class="fas fa-leaf"></i> Zero Violations</div>
+            <div class="vm-pill"><i class="fas fa-globe-asia"></i> Net Zero by 2050</div>
+            <div class="vm-pill"><i class="fas fa-balance-scale"></i> Regulatory Harmony</div>
+          </div>
+        </div>
+        <div class="vm-card mission">
+          <div class="vm-card-tag"><i class="fas fa-rocket"></i> Our Mission</div>
+          <h3>Simplify Compliance. Empower Industries.</h3>
+          <p>To deliver India's most intelligent environmental compliance platform — one that replaces manual paperwork with AI-driven workflows, connects organisations directly to labs and regulators, and turns environmental data into actionable business intelligence.</p>
+          <div class="vm-pillars">
+            <div class="vm-pill"><i class="fas fa-brain"></i> AI-Driven Insights</div>
+            <div class="vm-pill"><i class="fas fa-link"></i> Connected Ecosystem</div>
+            <div class="vm-pill"><i class="fas fa-chart-bar"></i> Data Transparency</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Values -->
+      <h3 style="font-family:Poppins,sans-serif;font-size:1.25rem;font-weight:800;color:#0f172a;text-align:center;margin:60px 0 0">Our Core Values</h3>
+      <p style="text-align:center;font-family:Inter,sans-serif;font-size:.82rem;color:#64748b;margin:8px 0 0">The principles that guide every line of code and every client engagement</p>
+      <div class="vm-values">
+        <div class="vm-val">
+          <div class="vm-val-icon" style="background:#dcfce7"><i class="fas fa-leaf" style="color:#16a34a"></i></div>
+          <h5>Environmental Integrity</h5>
+          <p>We build tools that make it easier to do the right thing for the environment, always.</p>
+        </div>
+        <div class="vm-val">
+          <div class="vm-val-icon" style="background:#dbeafe"><i class="fas fa-lock" style="color:#2563eb"></i></div>
+          <h5>Trust &amp; Transparency</h5>
+          <p>Every data point, submission, and certificate is traceable and tamper-evident.</p>
+        </div>
+        <div class="vm-val">
+          <div class="vm-val-icon" style="background:#fef3c7"><i class="fas fa-lightbulb" style="color:#d97706"></i></div>
+          <h5>Continuous Innovation</h5>
+          <p>Regulatory landscapes evolve. Our AI and platform evolve ahead of them.</p>
+        </div>
+        <div class="vm-val">
+          <div class="vm-val-icon" style="background:#fce7f3"><i class="fas fa-handshake" style="color:#db2777"></i></div>
+          <h5>Industry Partnership</h5>
+          <p>We treat every client as a compliance partner, not just a software subscriber.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BOOK A DEMO
+  ═══════════════════════════════════════════════ -->
+  <section id="lnd-demo" style="position:relative;overflow:hidden;padding:100px 0;background:linear-gradient(135deg,#020d1a 0%,#041a0f 100%)">
+    <style>
+      .demo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+      .demo-left h2{font-family:Poppins,sans-serif;font-size:2.2rem;font-weight:900;color:#fff;line-height:1.2;margin:0 0 18px}
+      .demo-left p{font-family:Inter,sans-serif;font-size:.92rem;color:rgba(255,255,255,.6);line-height:1.75;margin:0 0 32px}
+      .demo-perks{display:flex;flex-direction:column;gap:14px;margin-bottom:36px}
+      .demo-perk{display:flex;align-items:center;gap:12px;font-family:Inter,sans-serif;font-size:.85rem;color:rgba(255,255,255,.75)}
+      .demo-perk-dot{width:28px;height:28px;border-radius:8px;background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#4ade80;font-size:.75rem}
+      .demo-form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:40px 36px;backdrop-filter:blur(12px)}
+      .demo-form-card h3{font-family:Poppins,sans-serif;font-size:1.15rem;font-weight:800;color:#fff;margin:0 0 6px}
+      .demo-form-card .sub{font-family:Inter,sans-serif;font-size:.8rem;color:rgba(255,255,255,.4);margin:0 0 28px}
+      .demo-field{margin-bottom:18px}
+      .demo-field label{display:block;font-family:Inter,sans-serif;font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:7px}
+      .demo-field input,.demo-field select,.demo-field textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;font-family:Inter,sans-serif;font-size:.84rem;color:#fff;outline:none;transition:.2s;box-sizing:border-box}
+      .demo-field input::placeholder,.demo-field textarea::placeholder{color:rgba(255,255,255,.25)}
+      .demo-field input:focus,.demo-field select:focus,.demo-field textarea:focus{border-color:rgba(22,163,74,.5);background:rgba(255,255,255,.08)}
+      .demo-field select option{background:#042f2e;color:#fff}
+      .demo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+      .demo-submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#0d9488);border:none;border-radius:12px;color:#fff;font-family:Poppins,sans-serif;font-size:.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:.25s;margin-top:4px}
+      .demo-submit-btn:hover{background:linear-gradient(135deg,#15803d,#0f766e);transform:translateY(-1px);box-shadow:0 12px 40px rgba(22,163,74,.35)}
+      .demo-success{display:none;text-align:center;padding:24px 0}
+      .demo-success-icon{width:64px;height:64px;border-radius:50%;background:rgba(22,163,74,.15);border:2px solid rgba(22,163,74,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;color:#4ade80}
+      .demo-success h4{font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:800;color:#fff;margin:0 0 8px}
+      .demo-success p{font-family:Inter,sans-serif;font-size:.84rem;color:rgba(255,255,255,.5);margin:0}
+      .demo-logos{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:32px}
+      .demo-logo-badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 16px;font-family:Poppins,sans-serif;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.4px}
+      @media(max-width:800px){.demo-wrap{grid-template-columns:1fr}.demo-left h2{font-size:1.65rem}.demo-row{grid-template-columns:1fr}}
+    </style>
+    <div class="lnd-container">
+      <div class="demo-wrap">
+        <div class="demo-left">
+          <div class="sec-tag" style="background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.25);color:#4ade80;display:inline-flex;border-radius:30px;padding:5px 16px;font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.5px;margin-bottom:22px">BOOK A DEMO</div>
+          <h2>See EcoSphere in Action — <span style="background:linear-gradient(135deg,#4ade80,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Live &amp; Free</span></h2>
+          <p>Schedule a 30-minute personalised walkthrough with our compliance experts. We'll show you exactly how EcoSphere handles your industry's specific monitoring parameters, reporting requirements, and regulatory submission workflows.</p>
+          <div class="demo-perks">
+            <div class="demo-perk"><div class="demo-perk-dot"><i class="fas fa-check"></i></div>Industry-specific demo tailored to your sector</div>
+            <div class="demo-perk"><div class="demo-perk-dot"><i class="fas fa-check"></i></div>Live walkthrough of the Org → Lab → Regulatory workflow</div>
+            <div class="demo-perk"><div class="demo-perk-dot"><i class="fas fa-check"></i></div>EcoBot AI analysis demo with your real parameters</div>
+            <div class="demo-perk"><div class="demo-perk-dot"><i class="fas fa-check"></i></div>No commitment — completely free, no credit card needed</div>
+            <div class="demo-perk"><div class="demo-perk-dot"><i class="fas fa-check"></i></div>Get a free compliance gap assessment report post-demo</div>
+          </div>
+          <p style="font-family:Inter,sans-serif;font-size:.78rem;color:rgba(255,255,255,.35);margin:0 0 14px">Trusted by teams across</p>
+          <div class="demo-logos">
+            <div class="demo-logo-badge">PHARMACEUTICAL</div>
+            <div class="demo-logo-badge">MANUFACTURING</div>
+            <div class="demo-logo-badge">TEXTILE</div>
+            <div class="demo-logo-badge">CHEMICAL</div>
+            <div class="demo-logo-badge">FOOD PROCESSING</div>
+          </div>
+        </div>
+
+        <div class="demo-form-card">
+          <h3>Schedule Your Demo</h3>
+          <p class="sub">Fill in your details and our team will confirm your slot within 4 hours.</p>
+          <form id="demoForm" onsubmit="submitDemoForm(event)">
+            <div class="demo-row">
+              <div class="demo-field">
+                <label>First Name *</label>
+                <input type="text" id="demoFirst" placeholder="Priya" required>
+              </div>
+              <div class="demo-field">
+                <label>Last Name *</label>
+                <input type="text" id="demoLast" placeholder="Sharma" required>
+              </div>
+            </div>
+            <div class="demo-field">
+              <label>Work Email *</label>
+              <input type="email" id="demoEmail" placeholder="priya@company.com" required>
+            </div>
+            <div class="demo-field">
+              <label>Phone Number *</label>
+              <input type="tel" id="demoPhone" placeholder="+91 98765 43210" required>
+            </div>
+            <div class="demo-row">
+              <div class="demo-field">
+                <label>Company Name *</label>
+                <input type="text" id="demoCompany" placeholder="GreenTech Industries" required>
+              </div>
+              <div class="demo-field">
+                <label>Industry *</label>
+                <select id="demoIndustry" required>
+                  <option value="" disabled selected>Select industry</option>
+                  <option>Pharmaceutical</option>
+                  <option>Manufacturing</option>
+                  <option>Textile</option>
+                  <option>Chemical</option>
+                  <option>Food Processing</option>
+                  <option>Power Generation</option>
+                  <option>Automotive</option>
+                  <option>Construction</option>
+                  <option>Mining</option>
+                  <option>Oil &amp; Gas</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="demo-field">
+              <label>Preferred Demo Date</label>
+              <input type="date" id="demoDate">
+            </div>
+            <div class="demo-field">
+              <label>What's your biggest compliance challenge?</label>
+              <textarea id="demoMsg" rows="3" placeholder="e.g. Lab report tracking, CPCB submission delays, ESG reporting…"></textarea>
+            </div>
+            <button type="submit" class="demo-submit-btn">
+              <i class="fas fa-calendar-check"></i> Book My Free Demo
+            </button>
+          </form>
+          <div class="demo-success" id="demoSuccess">
+            <div class="demo-success-icon"><i class="fas fa-check"></i></div>
+            <h4>Demo Booked Successfully!</h4>
+            <p>Our compliance expert will contact you within 4 hours to confirm your slot.<br>Check your inbox for a confirmation email.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function submitDemoForm(e) {
+        e.preventDefault();
+        var btn = e.target.querySelector('.demo-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking…';
+        setTimeout(function() {
+          document.getElementById('demoForm').style.display = 'none';
+          document.getElementById('demoSuccess').style.display = 'block';
+        }, 1400);
+      }
+    </script>
+  </section>
+
   <!-- Contact -->
-  <section class="lnd-section bg-white" id="lnd-contact">
+  <section class="lnd-section bg-white" id="lnd-contact" style="padding-top:0">
+    <!-- ── CONTACT COVER ── -->
+    <div class="sec-cov" style="background:linear-gradient(135deg,#faf5ff 0%,#ede9fe 55%,#faf5ff 100%)">
+      <!-- 3D floating panel -->
+      <div style="position:absolute;right:7%;top:50%;transform:translateY(-50%) perspective(520px) rotateX(12deg) rotateY(-26deg);width:116px;height:116px;border:2px solid rgba(124,58,237,.2);border-radius:14px;background:rgba(124,58,237,.06);pointer-events:none"><div style="position:absolute;inset:10px;border:1.5px solid rgba(124,58,237,.12);border-radius:9px"></div><div style="position:absolute;inset:22px;border:1px solid rgba(124,58,237,.07);border-radius:5px"></div></div>
+      <!-- 3D sphere -->
+      <div style="position:absolute;right:21%;top:9%;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.88),rgba(124,58,237,.2) 55%,rgba(124,58,237,.07));box-shadow:4px 4px 18px rgba(124,58,237,.18);pointer-events:none"></div>
+      <!-- flat ring -->
+      <div style="position:absolute;bottom:18%;right:15%;width:84px;height:84px;border-radius:50%;border:2px solid rgba(124,58,237,.14);transform:perspective(400px) rotateX(55deg);pointer-events:none"></div>
+      <div style="position:absolute;top:30%;left:58%;width:7px;height:7px;border-radius:50%;background:rgba(124,58,237,.28);pointer-events:none"></div>
+      <div class="sec-cov-accent-bar" style="background:linear-gradient(90deg,#c4b5fd,#a78bfa,#ddd6fe)"></div>
+      <div class="sec-cov-tag" style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.22);color:#7c3aed"><i class="fas fa-headset"></i> Get In Touch</div>
+      <h1 class="sec-cov-h1" style="color:#4c1d95">Partner with <span style="color:#7c3aed">QMICS Group</span></h1>
+      <p class="sec-cov-p" style="color:rgba(76,29,149,.68)">Schedule a free live demo, request technical support, explore enterprise licensing, or discuss custom compliance integration for your organisation. Our team responds within 4 hours — every inquiry matters.</p>
+      <div class="sec-cov-pills">
+        <div class="sec-cov-pill" style="background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.18);color:#6d28d9"><i class="fas fa-calendar-check"></i> Free Demo</div>
+        <div class="sec-cov-pill" style="background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.18);color:#6d28d9"><i class="fas fa-phone"></i> +91 98494 99111</div>
+        <div class="sec-cov-pill" style="background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.18);color:#6d28d9"><i class="fas fa-envelope"></i> info@qmicsgroup.com</div>
+        <div class="sec-cov-pill" style="background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.18);color:#6d28d9"><i class="fas fa-map-marker-alt"></i> Hyderabad, India</div>
+        <div class="sec-cov-pill" style="background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.18);color:#6d28d9"><i class="fas fa-clock"></i> 4hr Response</div>
+      </div>
+      <div class="sec-cov-right">
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#7c3aed">4hr</div><div class="sec-cov-stat-lbl" style="color:rgba(76,29,149,.5)">Response Time</div></div>
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#6d28d9">Free</div><div class="sec-cov-stat-lbl" style="color:rgba(76,29,149,.5)">Live Demo</div></div>
+        <div class="sec-cov-stat"><div class="sec-cov-stat-num" style="color:#0369a1">24/7</div><div class="sec-cov-stat-lbl" style="color:rgba(76,29,149,.5)">Support</div></div>
+      </div>
+    </div>
     <div class="lnd-container">
       <div class="sec-tag-center blue">QMICS GROUP</div>
       <h2 class="sec-h2 text-center">Get In <span class="t-gold">Touch</span></h2>
@@ -3120,6 +3720,299 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSiteMap
       }, 1200);
     }
   </script>
+
+  <!-- ══════════════════════════════════════════
+       WEBSITE OVERVIEW MODAL
+  ══════════════════════════════════════════ -->
+  <style>
+    #webOverviewModal{position:fixed;inset:0;z-index:10001;display:none;flex-direction:column;background:rgba(2,8,20,.97);backdrop-filter:blur(16px)}
+    #webOverviewModal.wov-open{display:flex}
+    .wov-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+    .wov-title{font-family:Poppins,sans-serif;font-size:1rem;font-weight:800;color:#fff}
+    .wov-sub{font-family:Inter,sans-serif;font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px}
+    .wov-close{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.6);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+    .wov-close:hover{background:rgba(220,38,38,.3);color:#fff}
+    .wov-track-wrap{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;align-items:center;padding:28px 40px;gap:24px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:rgba(22,163,74,.4) transparent}
+    .wov-track-wrap::-webkit-scrollbar{height:5px}
+    .wov-track-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:3px}
+    .wov-track-wrap::-webkit-scrollbar-thumb{background:rgba(22,163,74,.4);border-radius:3px}
+    .wov-card{flex-shrink:0;width:420px;border-radius:16px;overflow:hidden;border:1.5px solid rgba(255,255,255,.08);scroll-snap-align:start;box-shadow:0 24px 60px rgba(0,0,0,.5);transition:transform .25s,border-color .25s}
+    .wov-card:hover{transform:translateY(-6px) scale(1.01);border-color:rgba(22,163,74,.4)}
+    .wov-browser-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#1e293b}
+    .wov-dot{width:10px;height:10px;border-radius:50%;display:block}
+    .wov-url{flex:1;background:rgba(255,255,255,.07);border-radius:5px;padding:3px 10px;font-family:Inter,sans-serif;font-size:.67rem;color:rgba(255,255,255,.35)}
+    .wov-screen{height:280px;position:relative;overflow:hidden}
+    .wov-label{padding:12px 16px;background:#1e293b;border-top:1px solid rgba(255,255,255,.06)}
+    .wov-label h4{font-family:Poppins,sans-serif;font-size:.82rem;font-weight:800;color:#fff;margin:0 0 3px}
+    .wov-label p{font-family:Inter,sans-serif;font-size:.72rem;color:rgba(255,255,255,.4);margin:0}
+    .wov-dots{display:flex;justify-content:center;gap:7px;padding:14px;flex-shrink:0}
+    .wov-dot-nav{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);border:none;cursor:pointer;transition:.2s;padding:0}
+    .wov-dot-nav.active{background:#4ade80;width:22px;border-radius:4px}
+    /* ── screen contents ── */
+    .wsc-hero{background:linear-gradient(135deg,#020d1a 0%,#041a0f 100%);height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;position:relative}
+    .wsc-portal-sel{background:#0f172a;height:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:16px}
+    .wsc-pcard{flex:1;border-radius:12px;padding:14px 10px;text-align:center}
+    .wsc-org{background:linear-gradient(135deg,#1e3a8a,#1d4ed8)}
+    .wsc-lab{background:linear-gradient(135deg,#14532d,#16a34a)}
+    .wsc-reg{background:linear-gradient(135deg,#78350f,#d97706)}
+    .wsc-pcard-icon{font-size:1.6rem;margin-bottom:8px}
+    .wsc-pcard h5{font-family:Poppins,sans-serif;font-size:.7rem;font-weight:800;color:#fff;margin:0 0 6px}
+    .wsc-pcard p{font-family:Inter,sans-serif;font-size:.58rem;color:rgba(255,255,255,.65);margin:0;line-height:1.4}
+    .wsc-dash{display:flex;height:100%}
+    .wsc-sidebar{width:72px;background:#0f172a;padding:8px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+    .wsc-sb-item{height:22px;border-radius:5px;background:rgba(255,255,255,.05)}
+    .wsc-sb-item.active{background:rgba(22,163,74,.2)}
+    .wsc-main{flex:1;padding:10px;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+    .wsc-bar{height:10px;border-radius:4px;background:rgba(255,255,255,.07)}
+    .wsc-cards-row{display:flex;gap:6px}
+    .wsc-mini-card{flex:1;border-radius:6px;padding:8px 6px}
+    .wsc-chart-bar{display:flex;align-items:flex-end;gap:3px;height:60px;padding:4px 0}
+    .wsc-bar-col{flex:1;border-radius:3px 3px 0 0;min-width:8px}
+    .wsc-table-row{height:8px;border-radius:3px;background:rgba(255,255,255,.06);margin-bottom:4px}
+  </style>
+
+  <div id="webOverviewModal" onclick="if(event.target===this)closeWebOverview()">
+    <div class="wov-topbar">
+      <div>
+        <div class="wov-title">EcoSphere Platform Overview</div>
+        <div class="wov-sub">Scroll to explore all portals — 8 screens</div>
+      </div>
+      <button class="wov-close" onclick="closeWebOverview()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="wov-track-wrap" id="wovTrack">
+
+      <!-- CARD 1 — Landing Hero -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">ecosphere.qmicsgroup.com</div></div>
+        <div class="wov-screen wsc-hero">
+          <div style="position:absolute;inset:0;background:radial-gradient(circle at 70% 40%,rgba(22,163,74,.15),transparent 60%)"></div>
+          <div style="position:relative;z-index:2">
+            <div style="display:flex;gap:8px;margin-bottom:10px"><span style="background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.3);border-radius:20px;padding:3px 10px;font-family:Poppins,sans-serif;font-size:.6rem;color:#4ade80;font-weight:700">AI-POWERED</span><span style="background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.3);border-radius:20px;padding:3px 10px;font-family:Poppins,sans-serif;font-size:.6rem;color:#4ade80;font-weight:700">CPCB COMPLIANT</span></div>
+            <div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#fff;line-height:1.2">Environmental Monitoring<br><span style="color:#4ade80">Beyond</span> <span style="color:#fbbf24">Compliance</span></div>
+            <div style="display:flex;gap:14px;margin-top:12px">
+              <div style="text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.9rem;font-weight:900;color:#fff">2400+</div><div style="font-size:.58rem;color:rgba(255,255,255,.5);font-family:Inter,sans-serif">Sensors</div></div>
+              <div style="text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.9rem;font-weight:900;color:#fff">150+</div><div style="font-size:.58rem;color:rgba(255,255,255,.5);font-family:Inter,sans-serif">Industries</div></div>
+              <div style="text-align:center"><div style="font-family:Poppins,sans-serif;font-size:.9rem;font-weight:900;color:#fff">98%</div><div style="font-size:.58rem;color:rgba(255,255,255,.5);font-family:Inter,sans-serif">Accuracy</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>Landing Page</h4><p>Hero section with EcoSphere intro &amp; statistics</p></div>
+      </div>
+
+      <!-- CARD 2 — Portal Selection -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">ecosphere / portal-select.html</div></div>
+        <div class="wov-screen wsc-portal-sel">
+          <div class="wsc-pcard wsc-org"><div class="wsc-pcard-icon">🏢</div><h5>Organization Portal</h5><p>Enter monitoring data, generate reports &amp; track approvals</p></div>
+          <div class="wsc-pcard wsc-lab"><div class="wsc-pcard-icon">🔬</div><h5>Laboratory Portal</h5><p>Review submissions, approve or reject reports</p></div>
+          <div class="wsc-pcard wsc-reg"><div class="wsc-pcard-icon">🏛</div><h5>Regulatory Authority</h5><p>Issue certificates &amp; monitor compliance</p></div>
+        </div>
+        <div class="wov-label"><h4>Portal Selection</h4><p>Choose your role — Org, Lab, or Regulatory</p></div>
+      </div>
+
+      <!-- CARD 3 — Org: Environmental Monitoring -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">org-portal / Environmental Monitoring</div></div>
+        <div class="wov-screen wsc-dash" style="background:#f8fafc">
+          <div class="wsc-sidebar">
+            <div class="wsc-sb-item active"></div>
+            <div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div>
+            <div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div>
+          </div>
+          <div class="wsc-main">
+            <div style="background:#dcfce7;border:1px solid #86efac;border-radius:6px;padding:6px 10px;font-family:Inter,sans-serif;font-size:.62rem;color:#166534;font-weight:600">Active Standards: CPCB — NAAQS 2009 · IN</div>
+            <div class="wsc-cards-row">
+              <div class="wsc-mini-card" style="background:#eff6ff;border:1px solid #bfdbfe"><div style="font-family:Poppins,sans-serif;font-size:.62rem;font-weight:800;color:#1d4ed8">Air Quality</div><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif;margin-top:3px">PM2.5: 62</div><div style="height:3px;background:#3b82f6;border-radius:2px;margin-top:5px;width:70%"></div></div>
+              <div class="wsc-mini-card" style="background:#f0fdf4;border:1px solid #bbf7d0"><div style="font-family:Poppins,sans-serif;font-size:.62rem;font-weight:800;color:#166534">Water</div><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif;margin-top:3px">BOD: 3.0</div><div style="height:3px;background:#22c55e;border-radius:2px;margin-top:5px;width:40%"></div></div>
+              <div class="wsc-mini-card" style="background:#fff7ed;border:1px solid #fed7aa"><div style="font-family:Poppins,sans-serif;font-size:.62rem;font-weight:800;color:#c2410c">Noise ⚠</div><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif;margin-top:3px">88 dB</div><div style="height:3px;background:#ef4444;border-radius:2px;margin-top:5px;width:90%"></div></div>
+              <div class="wsc-mini-card" style="background:#faf5ff;border:1px solid #e9d5ff"><div style="font-family:Poppins,sans-serif;font-size:.62rem;font-weight:800;color:#7c3aed">Soil</div><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif;margin-top:3px">pH: 6.5</div><div style="height:3px;background:#a855f7;border-radius:2px;margin-top:5px;width:55%"></div></div>
+            </div>
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px;flex:1"><div style="font-family:Poppins,sans-serif;font-size:.62rem;font-weight:700;color:#0f172a;margin-bottom:6px">Submit to Lab Portal</div><div class="wsc-table-row"></div><div class="wsc-table-row" style="width:80%"></div><div class="wsc-table-row" style="width:60%"></div></div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>Environmental Monitoring</h4><p>Real-time Air, Water, Noise &amp; Soil parameter tracking</p></div>
+      </div>
+
+      <!-- CARD 4 — Org: AI Intelligence -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">org-portal / AI Intelligence</div></div>
+        <div class="wov-screen wsc-dash" style="background:#f8fafc">
+          <div class="wsc-sidebar" style="background:#0f172a">
+            <div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item active"></div><div class="wsc-sb-item"></div>
+          </div>
+          <div class="wsc-main">
+            <div style="font-family:Poppins,sans-serif;font-size:.75rem;font-weight:800;color:#0f172a">AI Intelligence</div>
+            <div class="wsc-cards-row">
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center"><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif">Compliance Index</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#ef4444">57</div><div style="font-size:.55rem;color:#ef4444;font-family:Inter,sans-serif">Below Average</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center"><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif">Critical Issues</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#ef4444">2</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center"><div style="font-size:.58rem;color:#64748b;font-family:Inter,sans-serif">Env. Health</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#16a34a">76</div></div>
+            </div>
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px;flex:1">
+              <div style="font-family:Poppins,sans-serif;font-size:.6rem;font-weight:700;color:#ef4444;margin-bottom:5px">▲ Compliance Issues</div>
+              <div class="wsc-table-row" style="background:rgba(239,68,68,.15)"></div><div class="wsc-table-row" style="background:rgba(239,68,68,.1);width:85%"></div><div class="wsc-table-row" style="background:rgba(245,158,11,.1);width:75%"></div><div class="wsc-table-row" style="background:rgba(245,158,11,.1);width:65%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>AI Intelligence Dashboard</h4><p>Compliance scoring, health pillars &amp; EcoBot AI</p></div>
+      </div>
+
+      <!-- CARD 5 — EcoBot Workspace -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">org-portal / EcoBot AI Workspace</div></div>
+        <div class="wov-screen wsc-dash" style="background:#fff">
+          <div class="wsc-sidebar" style="background:#0c1f0e;width:88px">
+            <div style="font-family:Poppins,sans-serif;font-size:.55rem;font-weight:800;color:#4ade80;padding:4px 4px 8px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:6px">ECO BOT</div>
+            <div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item active"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div>
+          </div>
+          <div class="wsc-main">
+            <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;color:#0f172a">Ergonomic Risk Assessment</div>
+            <div class="wsc-cards-row">
+              <div class="wsc-mini-card" style="background:#fff;border:2px solid #fecaca;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">REBA SCORE</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#16a34a">1</div><div style="font-size:.52rem;color:#16a34a;font-family:Inter,sans-serif">Negligible</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:2px solid #ddd6fe;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">RULA SCORE</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#16a34a">1</div><div style="font-size:.52rem;color:#16a34a;font-family:Inter,sans-serif">Acceptable</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:2px solid #d1fae5;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">SAVED</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#0f172a">0</div></div>
+            </div>
+            <div style="background:#f9fafb;border:1.5px dashed #d1fae5;border-radius:6px;flex:1;display:flex;align-items:center;justify-content:center"><div style="text-align:center;font-family:Inter,sans-serif;font-size:.6rem;color:#94a3b8">Upload posture photo / video</div></div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>EcoBot AI Workspace</h4><p>Computer Vision — REBA &amp; RULA posture analysis</p></div>
+      </div>
+
+      <!-- CARD 6 — Portal Manager -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">org-portal / Portal Manager</div></div>
+        <div class="wov-screen wsc-dash" style="background:#f8fafc">
+          <div class="wsc-sidebar" style="background:#0f172a"><div class="wsc-sb-item active"></div><div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div></div>
+          <div class="wsc-main">
+            <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;color:#0f172a">Portal Content Manager</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span style="background:#e0f2fe;color:#0369a1;font-family:Inter,sans-serif;font-size:.55rem;font-weight:700;padding:3px 7px;border-radius:4px">Gallery</span>
+              <span style="background:#f1f5f9;color:#64748b;font-family:Inter,sans-serif;font-size:.55rem;font-weight:600;padding:3px 7px;border-radius:4px">Org Info</span>
+              <span style="background:#f1f5f9;color:#64748b;font-family:Inter,sans-serif;font-size:.55rem;font-weight:600;padding:3px 7px;border-radius:4px">Mission</span>
+              <span style="background:#f1f5f9;color:#64748b;font-family:Inter,sans-serif;font-size:.55rem;font-weight:600;padding:3px 7px;border-radius:4px">Metrics</span>
+              <span style="background:#f1f5f9;color:#64748b;font-family:Inter,sans-serif;font-size:.55rem;font-weight:600;padding:3px 7px;border-radius:4px">Team</span>
+            </div>
+            <div style="background:#fff;border:1.5px dashed #bfdbfe;border-radius:8px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+              <div style="font-size:1.4rem">☁️</div>
+              <div style="font-family:Inter,sans-serif;font-size:.62rem;color:#3b82f6;font-weight:600">Drag &amp; drop facility photos</div>
+              <div style="font-family:Inter,sans-serif;font-size:.58rem;color:#94a3b8">JPG, PNG, WebP · Max 5MB</div>
+            </div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>Portal Manager</h4><p>Gallery, Org Info, Metrics, Certifications &amp; Team</p></div>
+      </div>
+
+      <!-- CARD 7 — Lab Portal -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">lab-portal / Dashboard</div></div>
+        <div class="wov-screen wsc-dash" style="background:#f0fdf4">
+          <div class="wsc-sidebar" style="background:#0c1f0e"><div class="wsc-sb-item active" style="background:rgba(34,197,94,.3)"></div><div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div></div>
+          <div class="wsc-main">
+            <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;color:#0f172a">Laboratory Dashboard</div>
+            <div class="wsc-cards-row">
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center;border-top:3px solid #f59e0b"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Pending</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#d97706">4</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center;border-top:3px solid #22c55e"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Approved</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#16a34a">1</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #e2e8f0;text-align:center;border-top:3px solid #ef4444"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Rejected</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#ef4444">0</div></div>
+            </div>
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;flex:1;padding:8px">
+              <div style="font-family:Poppins,sans-serif;font-size:.6rem;font-weight:700;color:#0f172a;margin-bottom:6px">Monthly Review Activity</div>
+              <div class="wsc-chart-bar">
+                <div class="wsc-bar-col" style="height:60%;background:#22c55e"></div>
+                <div class="wsc-bar-col" style="height:80%;background:#22c55e"></div>
+                <div class="wsc-bar-col" style="height:70%;background:#22c55e"></div>
+                <div class="wsc-bar-col" style="height:20%;background:#ef4444"></div>
+                <div class="wsc-bar-col" style="height:100%;background:#22c55e"></div>
+                <div class="wsc-bar-col" style="height:80%;background:#22c55e"></div>
+                <div class="wsc-bar-col" style="height:70%;background:#22c55e"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>Laboratory Portal</h4><p>Review, approve/reject org submissions &amp; issue certs</p></div>
+      </div>
+
+      <!-- CARD 8 — Regulatory Portal -->
+      <div class="wov-card">
+        <div class="wov-browser-bar"><span class="wov-dot" style="background:#ef4444"></span><span class="wov-dot" style="background:#f59e0b"></span><span class="wov-dot" style="background:#22c55e"></span><div class="wov-url">reg-portal / Regulatory Dashboard</div></div>
+        <div class="wov-screen wsc-dash" style="background:#fffbeb">
+          <div class="wsc-sidebar" style="background:#1c1007"><div class="wsc-sb-item active" style="background:rgba(245,158,11,.3)"></div><div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div><div class="wsc-sb-item"></div></div>
+          <div class="wsc-main">
+            <div style="font-family:Poppins,sans-serif;font-size:.72rem;font-weight:800;color:#0f172a">Regulatory Authority Dashboard</div>
+            <div class="wsc-cards-row">
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #fde68a;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Pending</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#d97706">3</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #fde68a;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Certs Issued</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#16a34a">0</div></div>
+              <div class="wsc-mini-card" style="background:#fff;border:1px solid #fde68a;text-align:center"><div style="font-size:.55rem;color:#64748b;font-family:Inter,sans-serif">Orgs</div><div style="font-family:Poppins,sans-serif;font-size:1.1rem;font-weight:900;color:#d97706">3</div></div>
+            </div>
+            <div style="background:#fff;border:1px solid #fde68a;border-radius:6px;flex:1;padding:8px">
+              <div style="font-family:Poppins,sans-serif;font-size:.6rem;font-weight:700;color:#0f172a;margin-bottom:6px">Monthly Approvals</div>
+              <div class="wsc-chart-bar">
+                <div class="wsc-bar-col" style="height:45%;background:#f59e0b"></div>
+                <div class="wsc-bar-col" style="height:65%;background:#f59e0b"></div>
+                <div class="wsc-bar-col" style="height:55%;background:#f59e0b"></div>
+                <div class="wsc-bar-col" style="height:15%;background:#ef4444"></div>
+                <div class="wsc-bar-col" style="height:100%;background:#f59e0b"></div>
+                <div class="wsc-bar-col" style="height:70%;background:#f59e0b"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wov-label"><h4>Regulatory Authority Portal</h4><p>Issue compliance certificates &amp; monitor all orgs</p></div>
+      </div>
+
+    </div><!-- /wov-track-wrap -->
+
+    <div class="wov-dots" id="wovDots">
+      <button class="wov-dot-nav active" onclick="wovScrollTo(0)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(1)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(2)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(3)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(4)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(5)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(6)"></button>
+      <button class="wov-dot-nav" onclick="wovScrollTo(7)"></button>
+    </div>
+  </div>
+  <script>
+    function wovScrollTo(idx){
+      var track=document.getElementById('wovTrack');
+      var cards=track.querySelectorAll('.wov-card');
+      if(cards[idx]) cards[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'start'});
+      document.querySelectorAll('.wov-dot-nav').forEach(function(d,i){d.classList.toggle('active',i===idx)});
+    }
+    // sync dots on manual scroll
+    (function(){
+      var track=document.getElementById('wovTrack');
+      if(!track) return;
+      track.addEventListener('scroll',function(){
+        var cards=track.querySelectorAll('.wov-card');
+        var closest=0,minDist=99999;
+        cards.forEach(function(c,i){var d=Math.abs(c.getBoundingClientRect().left-track.getBoundingClientRect().left);if(d<minDist){minDist=d;closest=i;}});
+        document.querySelectorAll('.wov-dot-nav').forEach(function(d,i){d.classList.toggle('active',i===closest)});
+      },{passive:true});
+    })();
+  </script>
+
+  <!-- ══════════════════════════════════════════
+       SECTION COVER PAGE (transition overlay)
+  ══════════════════════════════════════════ -->
+  <style>
+    #secCover{position:fixed;inset:0;z-index:9998;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;opacity:0;transform:translateY(0)}
+    #secCover.sec-cover-in{opacity:1;pointer-events:all;animation:secCoverIn .3s ease forwards}
+    #secCover.sec-cover-out{animation:secCoverOut .4s ease forwards}
+    @keyframes secCoverIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+    @keyframes secCoverOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-30px)}}
+    #secCover::before{content:'';position:absolute;inset:0;background:rgba(2,8,20,.96);z-index:-1}
+    .sc-icon{width:72px;height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:4px}
+    .sc-name{font-family:Poppins,sans-serif;font-size:2.2rem;font-weight:900;color:#fff;letter-spacing:-.01em}
+    .sc-line{width:48px;height:3px;border-radius:2px;margin-top:4px}
+    .sc-hint{font-family:Inter,sans-serif;font-size:.82rem;color:rgba(255,255,255,.35);margin-top:6px}
+  </style>
+  <div id="secCover">
+    <div class="sc-icon" id="scIcon"></div>
+    <div class="sc-name" id="scName"></div>
+    <div class="sc-line" id="scLine"></div>
+    <div class="sc-hint" id="scHint"></div>
+  </div>
 
   <!-- Landing Footer -->
   <footer class="land-footer">
