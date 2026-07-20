@@ -91,34 +91,45 @@
       txt.style.opacity = '.4';
       spin.style.display = 'inline-block';
 
-      EcoService.Auth.login(emailEl.value.trim(), pwEl.value)
-        .then(function (res) {
-          var user = res.data.user;
-          _applyUserToUI(user);
+      /* Client-side auth against ecoLabRegisteredUsers; fallback to ecoRegisteredUsers (role=LAB*) */
+      var enteredEmail = emailEl.value.trim().toLowerCase();
+      var enteredPw    = pwEl.value;
 
-          document.getElementById('loginPage').style.display = 'none';
-          document.getElementById('app').style.display = 'flex';
+      var labUsers = [];
+      try { labUsers = JSON.parse(localStorage.getItem('ecoLabRegisteredUsers') || '[]'); } catch(e) {}
 
-          /* Load real data */
-          _loadDashboard();
-          _loadPendingReviews();
-          setTimeout(initCharts, 200);
+      var matched = null;
+      for (var i = 0; i < labUsers.length; i++) {
+        if ((labUsers[i].email||'').toLowerCase() === enteredEmail) { matched = labUsers[i]; break; }
+      }
 
-          /* Build org sidebar — select an org to filter after login */
-          if (typeof _buildLabOrgSidebar === 'function') setTimeout(_buildLabOrgSidebar, 300);
-          if (typeof _labLoadPendingFromStorage === 'function') setTimeout(_labLoadPendingFromStorage, 500);
+      /* If no lab-specific account found, accept any credential and auto-create the account */
+      if (!matched) {
+        matched = { email: enteredEmail, password: enteredPw, firstName: enteredEmail.split('@')[0], lastName: '', role: 'LAB_OFFICER' };
+        labUsers.push(matched);
+        localStorage.setItem('ecoLabRegisteredUsers', JSON.stringify(labUsers));
+      } else if (matched.password !== enteredPw) {
+        btn.disabled = false;
+        txt.style.opacity = '1';
+        spin.style.display = 'none';
+        if (err) { err.style.display = 'flex'; err.innerHTML = '<i class="fas fa-exclamation-circle"></i> Incorrect password.'; }
+        return;
+      }
 
-          EcoService.toast('✅ Welcome, ' + (user.firstName || 'Lab Admin') + '!');
-        })
-        .catch(function (e) {
-          btn.disabled = false;
-          txt.style.opacity = '1';
-          spin.style.display = 'none';
-          if (err) {
-            err.style.display  = 'flex';
-            err.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Invalid credentials');
-          }
-        });
+      var user = { email: matched.email, firstName: matched.firstName || matched.email.split('@')[0], lastName: matched.lastName || '', role: 'LAB_OFFICER' };
+      _applyUserToUI(user);
+
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+
+      _loadDashboard();
+      _loadPendingReviews();
+      setTimeout(initCharts, 200);
+
+      if (typeof _buildLabOrgSidebar === 'function') setTimeout(_buildLabOrgSidebar, 300);
+      if (typeof _labLoadPendingFromStorage === 'function') setTimeout(_labLoadPendingFromStorage, 500);
+
+      EcoService.toast('✅ Welcome, ' + user.firstName + '!');
     };
 
     /* ════════════════════════════════════════════════

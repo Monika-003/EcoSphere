@@ -644,29 +644,45 @@
       }
       EcoService.toast('⏳ Saving ' + (cfg ? cfg.title : type) + '…');
 
-      EcoService.Monitoring.submitRecord(type)
-        .then(function (res) {
-          var record = res && res.data;
-          var aiText = (record && record.aiAnalysis && record.aiAnalysis.summary)
-            ? record.aiAnalysis.summary
-            : (cfg ? cfg.aiResult : '✅ Data saved successfully.');
+      /* Client-side save — store in localStorage */
+      setTimeout(function () {
+        var orgName  = sessionStorage.getItem('ecoOrgName') || 'Organization';
+        var industry = sessionStorage.getItem('ecoIndustry') || '';
+        var now      = new Date();
+        var record   = {
+          id:             'REC-' + now.getTime() + '-' + Math.floor(Math.random()*9000+1000),
+          monitoringType: type.toUpperCase(),
+          orgName:        orgName,
+          industry:       industry,
+          recordingDate:  now.toISOString(),
+          params:         preParams,
+          aiAnalysis:     cfg ? cfg.aiResult : '✅ Data recorded.',
+          createdAt:      now.toISOString()
+        };
 
-          if (aiBox && aiTxt) {
-            aiTxt.innerHTML = aiText;
-            aiBox.style.display = 'block';
-            aiBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-          EcoService.toast('✅ ' + (cfg ? cfg.title : type) + ' saved to database. AI analysis complete!');
+        var records = [];
+        try { records = JSON.parse(localStorage.getItem('eco_monitoring_records') || '[]'); } catch(e) {}
+        records.unshift(record);
+        localStorage.setItem('eco_monitoring_records', JSON.stringify(records));
 
-          /* Refresh stats */
-          loadDashboardStats();
-        })
-        .catch(function (err) {
-          EcoService.error(err.message || 'Failed to save monitoring record');
-          if (aiBox && aiTxt) {
-            aiTxt.innerHTML = '❌ Failed to save: ' + (err.message || 'Server error');
-          }
-        });
+        /* Write to eco_monitoring_shared for regulatory portal visibility */
+        try {
+          var shared = JSON.parse(localStorage.getItem('eco_monitoring_shared') || '{}');
+          if (!shared[orgName]) shared[orgName] = { orgName: orgName, industry: industry, records: [] };
+          shared[orgName].records.unshift({ type: type, date: now.toISOString(), params: preParams });
+          if (shared[orgName].records.length > 50) shared[orgName].records = shared[orgName].records.slice(0, 50);
+          localStorage.setItem('eco_monitoring_shared', JSON.stringify(shared));
+        } catch(e) {}
+
+        var aiText = cfg ? cfg.aiResult : '✅ Data saved successfully.';
+        if (aiBox && aiTxt) {
+          aiTxt.innerHTML = aiText;
+          aiBox.style.display = 'block';
+          aiBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        EcoService.toast('✅ ' + (cfg ? cfg.title : type) + ' saved. AI analysis complete!');
+        if (typeof loadDashboardStats === 'function') loadDashboardStats();
+      }, 600);
     };
 
     /* Override saveDepForm — slide panel Save button */
@@ -721,20 +737,42 @@
       grid.innerHTML   = spinnerHtml;
       if (recent) recent.innerHTML = spinnerHtml;
 
-      /* Fetch reports (required) + monitoring records (optional, for type cards) */
-      var monPromise = window.EcoSphereAPI.Monitoring.getRecords({ limit: 200 })
-        .catch(function () { return { data: { records: [] } }; });
-      var rptPromise = window.EcoSphereAPI.Reports.getReports({ limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+      /* Read from localStorage */
+      setTimeout(function () {
+          var orgName = sessionStorage.getItem('ecoOrgName') || '';
+          var normOrg = orgName.toLowerCase().trim();
 
-      Promise.all([monPromise, rptPromise])
-        .then(function (results) {
-          var recRes  = results[0];
-          var rptRes  = results[1];
+          var allRec = [];
+          try { allRec = JSON.parse(localStorage.getItem('eco_monitoring_records') || '[]'); } catch(e) {}
+          if (normOrg) allRec = allRec.filter(function(r){ return (r.orgName||'').toLowerCase().trim() === normOrg; });
 
-          var allRec  = (recRes && recRes.data && recRes.data.records) ? recRes.data.records
-                      : (recRes && Array.isArray(recRes.data) ? recRes.data : []);
-          var reports = (rptRes && rptRes.data && rptRes.data.reports) ? rptRes.data.reports
-                      : (rptRes && Array.isArray(rptRes.data) ? rptRes.data : []);
+          var reports = [];
+          try { reports = JSON.parse(localStorage.getItem('eco_reports') || '[]'); } catch(e) {}
+          if (normOrg) reports = reports.filter(function(r){ return (r.orgName||'').toLowerCase().trim() === normOrg; });
+
+          /* Sync status from eco_lab_feedback */
+          try {
+            var lfa = JSON.parse(localStorage.getItem('eco_lab_feedback') || '[]');
+            reports = reports.map(function(r) {
+              var fb = null;
+              for (var fi = 0; fi < lfa.length; fi++) { if (lfa[fi].reportId === r.id) { fb = lfa[fi]; break; } }
+              if (fb) { r.status = (fb.status === 'APPROVED') ? 'LAB_APPROVED' : 'LAB_REJECTED'; r.labComment = fb.feedback || ''; }
+              return r;
+            });
+          } catch(e) {}
+
+          /* Also sync from eco_pending_lab_reports (lab may have set status there) */
+          try {
+            var plab = JSON.parse(localStorage.getItem('eco_pending_lab_reports') || '[]');
+            reports = reports.map(function(r) {
+              var pl = null;
+              for (var pi = 0; pi < plab.length; pi++) { if (plab[pi].reportId === r.id) { pl = plab[pi]; break; } }
+              if (pl && pl.status && pl.status !== 'SUBMITTED_TO_LAB') { r.status = pl.status; }
+              return r;
+            });
+          } catch(e) {}
+
+          reports.sort(function(a,b){ return new Date(b.createdAt) - new Date(a.createdAt); });
 
           /* ── Group monitoring records by type ── */
           var countByType  = {};
@@ -876,32 +914,45 @@
 
           tbl += '</tbody></table>';
           recent.innerHTML = tbl;
-        })
-        .catch(function (err) {
-          var msg = (err && err.message) ? ' (' + err.message + ')' : '';
-          grid.innerHTML =
-            '<div style="text-align:center;padding:30px;background:#fff;border:1px solid #e2e8f0;border-radius:13px;color:#ef4444">' +
-            '<i class="fas fa-exclamation-circle" style="margin-right:6px"></i>Failed to load data' + msg + '. ' +
-            '<button class="btn b-bl" onclick="loadSubmitPage()" style="margin-left:8px">Retry</button></div>';
-          if (recent) recent.innerHTML = '';
-        });
+      }, 100);
     };
 
     /* ── Submit an existing report (DRAFT) to lab ── */
     window.submitExistingReport = function (reportId, rNum, btn) {
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-      window.EcoSphereAPI.Reports.submitToLab(reportId)
-        .then(function () {
-          EcoService.toast('✅ ' + rNum + ' submitted to Laboratory!');
-          loadDashboardStats();
-          setTimeout(loadSubmitPage, 600);
-        })
-        .catch(function (err) {
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit to Lab';
-          EcoService.error((err && err.message) || 'Submission failed.');
+
+      var orgName  = sessionStorage.getItem('ecoOrgName') || 'Organization';
+      var industry = sessionStorage.getItem('ecoIndustry') || '';
+      var now      = new Date();
+
+      /* Update status in eco_reports */
+      var reports = [];
+      try { reports = JSON.parse(localStorage.getItem('eco_reports') || '[]'); } catch(e) {}
+      var report = null;
+      reports = reports.map(function(r) {
+        if (r.id === reportId) { r.status = 'SUBMITTED_TO_LAB'; r.submittedAt = now.toISOString(); report = r; }
+        return r;
+      });
+      localStorage.setItem('eco_reports', JSON.stringify(reports));
+
+      /* Write to eco_pending_lab_reports for lab portal */
+      var pending = [];
+      try { pending = JSON.parse(localStorage.getItem('eco_pending_lab_reports') || '[]'); } catch(e) {}
+      if (!pending.some(function(p){ return p.reportId === reportId; })) {
+        pending.unshift({
+          reportId: reportId, reportNumber: rNum, orgName: orgName, industry: industry,
+          reportType: report ? (report.reportType || 'ENVIRONMENTAL_MONITORING') : 'ENVIRONMENTAL_MONITORING',
+          monitoringType: report ? (report.monitoringType || '') : '',
+          label: report ? (report.title || rNum) : rNum,
+          status: 'SUBMITTED_TO_LAB', submittedAt: now.toISOString()
         });
+        localStorage.setItem('eco_pending_lab_reports', JSON.stringify(pending));
+      }
+
+      EcoService.toast('✅ ' + rNum + ' submitted to Laboratory!');
+      if (typeof loadDashboardStats === 'function') loadDashboardStats();
+      setTimeout(loadSubmitPage, 600);
     };
 
     /* ── Submit a LAB_APPROVED report to Regulatory Authority ── */
@@ -909,16 +960,37 @@
       if (!window.confirm('Submit "' + rNum + '" to the Regulatory Authority for compliance review?')) return;
       if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
 
-      window.EcoSphereAPI.Reports.submitToRegulatory(reportId)
-        .then(function () {
-          EcoService.toast('✅ ' + rNum + ' submitted to Regulatory Authority!');
-          loadDashboardStats();
-          setTimeout(loadSubmitPage, 600);
-        })
-        .catch(function (err) {
-          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-university"></i> Submit to Regulatory'; }
-          EcoService.error((err && err.message) || 'Submission failed.');
+      var orgName  = sessionStorage.getItem('ecoOrgName') || 'Organization';
+      var industry = sessionStorage.getItem('ecoIndustry') || '';
+      var now      = new Date();
+
+      /* Update status in eco_reports */
+      var reports = [];
+      try { reports = JSON.parse(localStorage.getItem('eco_reports') || '[]'); } catch(e) {}
+      var report = null;
+      reports = reports.map(function(r) {
+        if (r.id === reportId) { r.status = 'SUBMITTED_TO_REGULATORY'; r.submittedToRegAt = now.toISOString(); report = r; }
+        return r;
+      });
+      localStorage.setItem('eco_reports', JSON.stringify(reports));
+
+      /* Write to eco_reg_submissions for regulatory portal */
+      var subs = [];
+      try { subs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]'); } catch(e) {}
+      if (!subs.some(function(s){ return s.reportId === reportId; })) {
+        subs.unshift({
+          reportId: reportId, reportNumber: rNum, orgName: orgName,
+          industry: industry, industryType: industry,
+          reportType: report ? (report.reportType || 'ENVIRONMENTAL_MONITORING') : 'ENVIRONMENTAL_MONITORING',
+          label: report ? (report.title || rNum) : rNum,
+          score: 85, status: 'PENDING_REGULATORY', submittedAt: now.toISOString()
         });
+        localStorage.setItem('eco_reg_submissions', JSON.stringify(subs));
+      }
+
+      EcoService.toast('✅ ' + rNum + ' submitted to Regulatory Authority!');
+      if (typeof loadDashboardStats === 'function') loadDashboardStats();
+      setTimeout(loadSubmitPage, 600);
     };
 
     /* ── Submit a single monitoring type to lab ── */
@@ -926,39 +998,54 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
 
-      var orgName = sessionStorage.getItem('ecoOrgName') || 'Organization';
-      var now     = new Date();
-      var start   = new Date(now.getFullYear(), now.getMonth(), 1);
-      var title   = orgName + ' — ' + monLabel + ' Report (' + now.getFullYear() + ')';
+      var orgName  = sessionStorage.getItem('ecoOrgName') || 'Organization';
+      var industry = sessionStorage.getItem('ecoIndustry') || '';
+      var now      = new Date();
+      var pad      = function(n){ return String(n).padStart(2,'0'); };
+      var rNum     = 'RPT-' + now.getFullYear() + pad(now.getMonth()+1) + '-' + (Math.floor(Math.random()*9000)+1000);
+      var reportId = 'rpt-' + now.getTime() + '-' + Math.floor(Math.random()*100000);
+      var title    = orgName + ' — ' + monLabel + ' Report (' + now.getFullYear() + ')';
 
-      window.EcoSphereAPI.Reports.createReport({
-        title:               title,
-        type:                reportType,
-        period:              'MONTHLY',
-        periodStartDate:     start.toISOString(),
-        periodEndDate:       now.toISOString(),
-        monitoringRecordIds: recordIds.length ? recordIds : undefined,
-        isDraft:             false
-      })
-      .then(function (res) {
-        var report   = res && res.data && (res.data.report || res.data);
-        var reportId = report && report.id;
-        if (!reportId) throw new Error('Report creation failed — no ID returned.');
-        return window.EcoSphereAPI.Reports.submitToLab(reportId);
-      })
-      .then(function () {
+      /* Create report in eco_reports */
+      var report = {
+        id: reportId, reportNumber: rNum, title: title,
+        reportType: reportType, monitoringType: monType,
+        orgName: orgName, industry: industry,
+        status: 'SUBMITTED_TO_LAB',
+        monitoringRecordIds: recordIds,
+        createdAt: now.toISOString(), submittedAt: now.toISOString()
+      };
+      var rptStore = [];
+      try { rptStore = JSON.parse(localStorage.getItem('eco_reports') || '[]'); } catch(e) {}
+      rptStore.unshift(report);
+      localStorage.setItem('eco_reports', JSON.stringify(rptStore));
+
+      /* Write to eco_pending_lab_reports for lab portal */
+      var pending = [];
+      try { pending = JSON.parse(localStorage.getItem('eco_pending_lab_reports') || '[]'); } catch(e) {}
+      pending.unshift({
+        reportId: reportId, reportNumber: rNum, orgName: orgName, industry: industry,
+        reportType: reportType, monitoringType: monType, label: title,
+        status: 'SUBMITTED_TO_LAB', submittedAt: now.toISOString()
+      });
+      localStorage.setItem('eco_pending_lab_reports', JSON.stringify(pending));
+
+      /* Register org in eco_all_orgs */
+      try {
+        var allOrgs = JSON.parse(localStorage.getItem('eco_all_orgs') || '[]');
+        if (!allOrgs.some(function(o){ return (o.orgName||o.name||'').toLowerCase() === orgName.toLowerCase(); })) {
+          allOrgs.push({ name: orgName, orgName: orgName, industry: industry, registeredAt: now.toISOString() });
+          localStorage.setItem('eco_all_orgs', JSON.stringify(allOrgs));
+        }
+      } catch(e) {}
+
+      setTimeout(function () {
         EcoService.toast('✅ ' + monLabel + ' report submitted to Laboratory!');
         btn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
         btn.style.background = '#16a34a';
-        loadDashboardStats();
-        /* Refresh the recent list */
-        setTimeout(loadSubmitPage, 1000);
-      })
-      .catch(function (err) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit to Lab';
-        EcoService.error((err && err.message) || 'Submission failed. Please try again.');
-      });
+        if (typeof loadDashboardStats === 'function') loadDashboardStats();
+        setTimeout(loadSubmitPage, 800);
+      }, 500);
     };
 
     /* ════════════════════════════════════════════════
@@ -1398,40 +1485,78 @@
       if (!container) return;
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8"><i class="fas fa-spinner fa-spin" style="font-size:1.4rem"></i></div>';
 
-      EcoSphereAPI.Reports.getReports({ limit: 50, sortBy: 'createdAt', sortOrder: 'desc' })
-        .then(function (res) {
-          var reports = (res && res.data && res.data.reports) ? res.data.reports
-                      : (res && Array.isArray(res.data) ? res.data : []);
+      /* Read from localStorage */
+      setTimeout(function () {
+        var orgName = sessionStorage.getItem('ecoOrgName') || '';
+        var normOrg = orgName.toLowerCase().trim();
 
-          var lbl = document.getElementById('trackCountLabel');
-          if (lbl) lbl.textContent = reports.length + ' report' + (reports.length !== 1 ? 's' : '') + ' tracked';
+        var reports = [];
+        try { reports = JSON.parse(localStorage.getItem('eco_reports') || '[]'); } catch(e) {}
+        if (normOrg) reports = reports.filter(function(r){ return (r.orgName||'').toLowerCase().trim() === normOrg; });
 
-          if (!reports.length) {
+        /* Also merge eco_reg_submissions for reports submitted to regulatory */
+        try {
+          var subs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]');
+          subs.forEach(function(s) {
+            if (normOrg && (s.orgName||'').toLowerCase().trim() !== normOrg) return;
+            if (!reports.some(function(r){ return r.id === s.reportId; })) {
+              reports.push({ id: s.reportId, reportNumber: s.reportNumber, title: s.label,
+                reportType: s.reportType, monitoringType: s.monitoringType,
+                orgName: s.orgName, industry: s.industry,
+                status: 'SUBMITTED_TO_REGULATORY', createdAt: s.submittedAt });
+            }
+          });
+        } catch(e) {}
+
+        reports.sort(function(a,b){ return new Date(b.createdAt) - new Date(a.createdAt); });
+
+        /* Sync status from eco_lab_feedback */
+        try {
+          var lfa = JSON.parse(localStorage.getItem('eco_lab_feedback') || '[]');
+          reports = reports.map(function(r) {
+            var fb = null;
+            for (var fi = 0; fi < lfa.length; fi++) { if (lfa[fi].reportId === r.id) { fb = lfa[fi]; break; } }
+            if (fb) { r.status = (fb.status === 'APPROVED') ? 'LAB_APPROVED' : 'LAB_REJECTED'; r.labComment = fb.feedback || ''; }
+            return r;
+          });
+        } catch(e) {}
+
+        /* Sync regulatory decision from eco_reg_submissions */
+        try {
+          var rsubs = JSON.parse(localStorage.getItem('eco_reg_submissions') || '[]');
+          reports = reports.map(function(r) {
+            var rs = null;
+            for (var ri = 0; ri < rsubs.length; ri++) { if (rsubs[ri].reportId === r.id) { rs = rsubs[ri]; break; } }
+            if (rs && (rs.status === 'APPROVED' || rs.status === 'REJECTED')) {
+              r.status = rs.status === 'APPROVED' ? 'REG_APPROVED' : 'REG_REJECTED';
+              r.regComment = rs.feedback || '';
+            } else if (rs && r.status === 'LAB_APPROVED') {
+              r.status = 'SUBMITTED_TO_REGULATORY';
+            }
+            return r;
+          });
+        } catch(e) {}
+
+        var lbl = document.getElementById('trackCountLabel');
+        if (lbl) lbl.textContent = reports.length + ' report' + (reports.length !== 1 ? 's' : '') + ' tracked';
+
+        if (!reports.length) {
+          container.innerHTML = '';
+          _mergeLocalTrackData([]);
+          if (!container.children.length) {
             container.innerHTML =
               '<div style="text-align:center;padding:50px 20px;background:#fff;border:1px solid #e2e8f0;border-radius:13px">' +
               '<i class="fas fa-inbox" style="font-size:2.2rem;color:#cbd5e1;margin-bottom:12px;display:block"></i>' +
               '<div style="font-family:Poppins,sans-serif;font-weight:800;color:#374151;margin-bottom:6px">No reports submitted yet</div>' +
               '<div style="font-size:.82rem;color:#94a3b8">Go to Environmental Monitoring and submit your first report to start tracking.</div></div>';
-            return;
           }
+          return;
+        }
 
-          var apiIds = reports.map(function(r){ return r.reportNumber || (r.id||'').substring(0,8).toUpperCase(); });
-          container.innerHTML = reports.map(function (r) {
-            return _buildTrackCard(r);
-          }).join('');
-          _mergeLocalTrackData(apiIds);
-        })
-        .catch(function () {
-          container.innerHTML = '';
-          _mergeLocalTrackData([]);
-          if (!container.children.length) {
-            container.innerHTML =
-              '<div style="text-align:center;padding:30px;background:#fff;border:1px solid #e2e8f0;border-radius:13px;color:#94a3b8">' +
-              '<i class="fas fa-inbox" style="font-size:1.8rem;margin-bottom:10px;display:block"></i>' +
-              'No backend connection — showing local tracking data. ' +
-              '<button class="btn b-bl" onclick="loadTrackTable()" style="margin-left:8px;font-size:.76rem">Retry</button></div>';
-          }
-        });
+        var apiIds = reports.map(function(r){ return r.reportNumber || (r.id||'').substring(0,8).toUpperCase(); });
+        container.innerHTML = reports.map(function (r) { return _buildTrackCard(r); }).join('');
+        _mergeLocalTrackData(apiIds);
+      }, 100);
     };
 
     /* ── Merge localStorage submissions into track view ── */
@@ -1548,7 +1673,7 @@
         +'<div style="background:'+hdrBg+';padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
           +'<div>'
             +'<div style="font-family:Poppins,sans-serif;font-size:.88rem;font-weight:800;color:#fff">'+sub.reportType+'</div>'
-            +'<div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:2px">'+sub.reportId+' · '+sub.labName+' · Lab approved '+sub.labApprovedDate+'</div>'
+            +'<div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:2px">'+sub.reportId+' · '+(sub.orgName||sub.labName||'')+(sub.labReviewedAt?' · Lab approved '+ new Date(sub.labReviewedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : sub.labApprovedDate ? ' · Lab approved '+sub.labApprovedDate : '')+'</div>'
           +'</div>'+chip
         +'</div>'
         +'<div style="padding:16px 20px">'

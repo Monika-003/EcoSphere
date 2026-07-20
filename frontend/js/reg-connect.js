@@ -86,36 +86,48 @@
       if (txt)  txt.style.opacity  = '.4';
       if (spin) spin.style.display = 'inline-block';
 
-      EcoService.Auth.login(emailEl.value.trim(), pwEl.value)
-        .then(function (res) {
-          var user = res.data.user;
-          _applyUserToUI(user);
+      /* Client-side auth against ecoRegRegisteredUsers; fallback auto-create for demo */
+      var enteredEmail = emailEl.value.trim().toLowerCase();
+      var enteredPw    = pwEl.value;
 
-          document.getElementById('loginPage').style.display = 'none';
-          document.getElementById('app').style.display = 'flex';
+      var regUsers = [];
+      try { regUsers = JSON.parse(localStorage.getItem('ecoRegRegisteredUsers') || '[]'); } catch(e) {}
 
-          _loadDashboard();
-          _loadAnalytics();
-          _loadAlerts();
-          _loadPendingApprovals();
-          setTimeout(initCharts, 200);
-          setTimeout(_loadRegCertsFromAPI, 500);
+      var matched = null;
+      for (var i = 0; i < regUsers.length; i++) {
+        if ((regUsers[i].email||'').toLowerCase() === enteredEmail) { matched = regUsers[i]; break; }
+      }
 
-          /* Build org sidebar from registered orgs */
-          if (typeof _buildRegOrgSidebar === 'function') setTimeout(_buildRegOrgSidebar, 300);
-          if (typeof _loadDynamicRegSubmissions === 'function') setTimeout(function(){ _loadDynamicRegSubmissions(window._regOrg||''); }, 500);
+      /* If no reg-specific account found, accept any credential and auto-create the account */
+      if (!matched) {
+        matched = { email: enteredEmail, password: enteredPw, firstName: enteredEmail.split('@')[0], lastName: '', role: 'REG_OFFICER' };
+        regUsers.push(matched);
+        localStorage.setItem('ecoRegRegisteredUsers', JSON.stringify(regUsers));
+      } else if (matched.password !== enteredPw) {
+        if (btn)  btn.disabled       = false;
+        if (txt)  txt.style.opacity  = '1';
+        if (spin) spin.style.display = 'none';
+        if (err) { err.style.display = 'flex'; err.innerHTML = '<i class="fas fa-exclamation-circle"></i> Incorrect password.'; }
+        return;
+      }
 
-          EcoService.toast('Welcome, ' + (user.firstName || 'Officer') + '!');
-        })
-        .catch(function (e) {
-          if (btn)  btn.disabled       = false;
-          if (txt)  txt.style.opacity  = '1';
-          if (spin) spin.style.display = 'none';
-          if (err) {
-            err.style.display = 'flex';
-            err.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (e.message || 'Invalid credentials');
-          }
-        });
+      var user = { email: matched.email, firstName: matched.firstName || matched.email.split('@')[0], lastName: matched.lastName || '', role: 'REG_OFFICER' };
+      _applyUserToUI(user);
+
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+
+      _loadDashboard();
+      _loadAnalytics();
+      _loadAlerts();
+      _loadPendingApprovals();
+      setTimeout(initCharts, 200);
+      setTimeout(_loadRegCertsFromAPI, 500);
+
+      if (typeof _buildRegOrgSidebar === 'function') setTimeout(_buildRegOrgSidebar, 300);
+      if (typeof _loadDynamicRegSubmissions === 'function') setTimeout(function(){ _loadDynamicRegSubmissions(window._regOrg||''); }, 500);
+
+      EcoService.toast('Welcome, ' + user.firstName + '!');
     };
 
     /* Apply org filter + dynamic submissions + approved/rejected lists in one call */
