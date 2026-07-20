@@ -324,22 +324,38 @@
         spin.style.display = 'none';
       };
 
-      /* Client-side registration — no backend required */
+      /* Client-side registration — save credentials to localStorage */
       setTimeout(function () {
         btn.disabled = false;
         txt.style.opacity = '1';
         spin.style.display = 'none';
 
-        /* Persist org + user context */
-        sessionStorage.setItem('ecoOrgName',  orgName);
-        sessionStorage.setItem('ecoIndustry', industry);
-        sessionStorage.setItem('ecoRole',     window._selRole || 'ENV_OFFICER');
+        /* Save this account to the registered-users store */
+        var users = [];
+        try { users = JSON.parse(localStorage.getItem('ecoRegisteredUsers') || '[]'); } catch(e) {}
+        /* If email already registered, update the record */
+        users = users.filter(function(u){ return u.email.toLowerCase() !== email.toLowerCase(); });
+        users.push({
+          email:     email.toLowerCase(),
+          password:  password,
+          firstName: firstName,
+          lastName:  lastName,
+          orgName:   orgName,
+          industry:  industry,
+          role:      window._selRole || 'ENV_OFFICER'
+        });
+        localStorage.setItem('ecoRegisteredUsers', JSON.stringify(users));
+
+        /* Persist org + user context for the current session */
+        sessionStorage.setItem('ecoOrgName',   orgName);
+        sessionStorage.setItem('ecoIndustry',  industry);
+        sessionStorage.setItem('ecoRole',      window._selRole || 'ENV_OFFICER');
         sessionStorage.setItem('ecoUserEmail', email);
         sessionStorage.setItem('ecoUserName',  firstName + ' ' + lastName);
         if (typeof _pushToAllOrgs === 'function') _pushToAllOrgs(orgName, industry);
 
         var mockUser = { firstName: firstName, lastName: lastName, role: window._selRole || 'ENV_OFFICER' };
-        if (typeof _ecoApplyRBAC === 'function') window._ecoApplyRBAC();
+        if (typeof window._ecoApplyRBAC === 'function') window._ecoApplyRBAC();
         if (typeof applyUserToUI === 'function') applyUserToUI(mockUser, industry);
 
         document.getElementById('stepLogin').style.display = 'none';
@@ -376,17 +392,51 @@
       txt.style.opacity = '.4';
       spin.style.display = 'inline-block';
 
-      /* Client-side login — no backend required */
-      var ind          = _selInd || sessionStorage.getItem('ecoIndustry') || 'Manufacturing';
-      var orgNameVal   = name ? name.value.trim() : '';
-      var mockUser     = { firstName: orgNameVal || 'User', role: _selRole || 'ENV_OFFICER' };
+      var _loginErr = function(msg) {
+        err.style.display = 'flex';
+        err.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right:6px"></i>' + msg;
+        btn.disabled = false;
+        txt.style.opacity = '1';
+        spin.style.display = 'none';
+      };
 
-      sessionStorage.setItem('ecoOrgName',  orgNameVal);
-      sessionStorage.setItem('ecoIndustry', ind);
-      sessionStorage.setItem('ecoRole',     mockUser.role);
-      if (typeof _pushToAllOrgs === 'function') _pushToAllOrgs(orgNameVal, ind);
+      /* Validate against registered users stored in localStorage */
+      var users = [];
+      try { users = JSON.parse(localStorage.getItem('ecoRegisteredUsers') || '[]'); } catch(e) {}
+
+      var enteredEmail = email.value.trim().toLowerCase();
+      var enteredPw    = pw.value;
+
+      if (!users.length) {
+        _loginErr('No accounts found. Please <a href="#" onclick="switchAuthTab(\'register\');return false;" style="color:#1d4ed8;font-weight:700">Register New Org</a> first.');
+        return;
+      }
+
+      var matched = null;
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].email === enteredEmail) { matched = users[i]; break; }
+      }
+
+      if (!matched) {
+        _loginErr('No account found for <b>' + email.value.trim() + '</b>. Please register first.');
+        return;
+      }
+
+      if (matched.password !== enteredPw) {
+        _loginErr('Incorrect password. Please try again.');
+        return;
+      }
+
+      /* Credentials valid — log in */
+      sessionStorage.setItem('ecoOrgName',   matched.orgName);
+      sessionStorage.setItem('ecoIndustry',  matched.industry);
+      sessionStorage.setItem('ecoRole',      matched.role);
+      sessionStorage.setItem('ecoUserEmail', matched.email);
+      sessionStorage.setItem('ecoUserName',  matched.firstName + ' ' + matched.lastName);
+      if (typeof _pushToAllOrgs === 'function') _pushToAllOrgs(matched.orgName, matched.industry);
       if (typeof window._ecoApplyRBAC === 'function') window._ecoApplyRBAC();
-      if (typeof applyUserToUI === 'function') applyUserToUI(mockUser, ind);
+      var mockUser = { firstName: matched.firstName, lastName: matched.lastName, role: matched.role };
+      if (typeof applyUserToUI === 'function') applyUserToUI(mockUser, matched.industry);
 
       document.getElementById('stepLogin').style.display = 'none';
       document.getElementById('stepDash').style.display  = 'flex';
@@ -395,7 +445,7 @@
       if (typeof loadReportsTable   === 'function') loadReportsTable();
       setTimeout(function(){ if (typeof initCharts === 'function') initCharts(); }, 200);
       if (typeof EcoService !== 'undefined' && EcoService.toast)
-        EcoService.toast('🌿 Welcome, ' + (orgNameVal || mockUser.role) + '!');
+        EcoService.toast('🌿 Welcome back, ' + matched.firstName + '!');
 
       btn.disabled = false;
       txt.style.opacity = '1';
