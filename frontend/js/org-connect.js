@@ -427,7 +427,10 @@
         return;
       }
 
-      /* Credentials valid — log in */
+      /* Credentials valid — log in with the REGISTERED industry, not the screen-selected one */
+      window._selInd  = matched.industry;
+      window._selRole = matched.role;
+
       sessionStorage.setItem('ecoOrgName',   matched.orgName);
       sessionStorage.setItem('ecoIndustry',  matched.industry);
       sessionStorage.setItem('ecoRole',      matched.role);
